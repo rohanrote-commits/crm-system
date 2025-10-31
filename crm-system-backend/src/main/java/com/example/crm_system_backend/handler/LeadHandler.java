@@ -3,6 +3,7 @@ package com.example.crm_system_backend.handler;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.exception.ErrorCode;
 import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
@@ -25,7 +26,7 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     @Override
     public LeadDto save(LeadDto leadDto) {
-        leadService.get
+        leadService.
         Lead lead = new Lead();
         BeanUtils.copyProperties(leadDto, lead);
         Lead savedLead =  leadService.save(lead);
@@ -36,7 +37,7 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     public List<LeadDto> getLeadsByUser(Long userId) {
         User user = userRepo.getUserById(userId).orElseThrow(
-                ()-> new UserException("User not found")
+                ()-> new UserException(ErrorCode.USER_NOT_FOUND)
         );
         List<LeadDto> leadList =  leadService.getLeadsByUser(user).orElseThrow(
                 ()-> new LeadException("Leads not found")
