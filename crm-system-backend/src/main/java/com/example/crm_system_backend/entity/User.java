@@ -1,7 +1,9 @@
 package com.example.crm_system_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity(name = "user")
 public class User{
 
@@ -21,16 +23,18 @@ public class User{
     private String password;
     @Column(nullable = true)
     private String address;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String city;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String state;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String country;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String pinCode;
+
     @Column(nullable = false)
     private Roles role;
+
 
     private long registeredBy;
 
