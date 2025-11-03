@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | GSTHero Style</title>
+  <link rel="stylesheet" href="/Frontend/css/login.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-bar">
+    <div class="logo">CRM<span>Lead Management</span></div>
+    <div class="contact">
+      <a href="mailto:rohan.rote@perennialsys.com">rohan.rote@perennialsys.com</a>
+      <span>|</span>
+      <a href="tel:+918007700800">+91 705 7058 631</a>
+    </div>
+  </header>
+
+  <!-- Login Container -->
+  <div class="login-container">
+    <div class="login-box">
+      <h2>Login</h2>
+
+      <label for="loginEmail">Email Address (User ID)<span class="required">*</span></label>
+      <input type="email" id="loginEmail" placeholder="Enter your email" required>
+
+      <label for="loginPassword">Password<span class="required">*</span></label>
+      <div class="password-wrapper">
+        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+      </div>
+
+      <!-- <div class="remember-row">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Remember my username.</label>
+      </div> -->
+
+      <button id="loginButton" class="btn-orange">Continue</button>
+
+      <!-- <p class="agreement">
+        By clicking Sign In, you agree to our <a href="#">License Agreement</a>.
+      </p> -->
+      <a href="#" class="forgot-link">I forgot my password</a>
+
+      <hr>
+
+      <p>Don't have an account yet?</p>
+      <button id="signupRedirectBtn" class="btn-blue">Register</button>
+    </div>
+  </div>
+
+  <script src="JS/jquery.js"></script>
+  <script src="JS/login.js"></script>
+</body>
+</html>
