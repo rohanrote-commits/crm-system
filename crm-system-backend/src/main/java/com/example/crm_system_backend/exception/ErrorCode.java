@@ -18,6 +18,7 @@ public enum ErrorCode {
     LEAD_NOT_FOUND("LNF","Lead Not Found" ,HttpStatus.NOT_FOUND),
     LEAD_ALREADY_EXISTS("LAE","Lead Already Exists", HttpStatus.CONFLICT),
     USER_ALREADY_EXISTS("LAE","User Already Exists", HttpStatus.CONFLICT),
+    ERROR_IN_FILE_DOWNLOAD("EDF","Error in File Download", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     private final String code;

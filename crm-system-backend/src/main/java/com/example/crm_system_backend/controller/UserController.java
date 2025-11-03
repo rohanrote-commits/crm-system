@@ -12,18 +12,18 @@ import com.example.crm_system_backend.handler.UserHandler;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.logging.Handler;
 
+@Slf4j
 @RestController
-@RequestMapping("/crm/")
+@RequestMapping("/crm/user")
 public class UserController {
     @Autowired
     private UserHandler userHandler;
@@ -34,7 +34,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> user(@RequestBody UserDTO userDTO,HttpServletRequest request){
-        Object registeredById = request.getAttribute("registeredById");
+        Object registeredById = request.getAttribute("userId");
         if (registeredById != null) {
             userDTO.setRegisteredBy((Long) registeredById);
         }
@@ -49,6 +49,14 @@ public class UserController {
     @PostMapping("/sign-in")
     public ResponseEntity<String> signIn(@RequestBody UserDTO request){
         return new ResponseEntity<>(authHandler.loginRequest(request), HttpStatus.OK);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> getAllUsers(HttpServletRequest request){
+        Long userId = (Long) request.getAttribute("userId");
+        log.info("userId:{}",userId);
+        return new ResponseEntity<>(userHandler.getUsers(userId), HttpStatus.OK);
+
     }
 
 
