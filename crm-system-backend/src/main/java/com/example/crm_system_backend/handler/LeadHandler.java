@@ -41,10 +41,10 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     public List<LeadDto> getLeadsByUser(Long userId) {
         User user = userRepo.getUserById(userId).orElseThrow(
-                ()-> new UserException("User not found")
+                ()-> new UserException(ErrorCode.USER_NOT_FOUND)
         );
         List<LeadDto> leadList =  leadService.getLeadsByUser(user).orElseThrow(
-                ()-> new LeadException("Leads not found")
+                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         ).stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
             BeanUtils.copyProperties(lead, leadDto);
