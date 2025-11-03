@@ -19,6 +19,9 @@ public enum ErrorCode {
     LEAD_ALREADY_EXISTS("LAE","Lead Already Exists", HttpStatus.CONFLICT),
     USER_ALREADY_EXISTS("LAE","User Already Exists", HttpStatus.CONFLICT),
     ERROR_IN_FILE_DOWNLOAD("EDF","Error in File Download", HttpStatus.INTERNAL_SERVER_ERROR),
+    WRONG_HEADERS("WH","Wrong Headers", HttpStatus.NOT_ACCEPTABLE),
+    FILE_PROCESSING_EXCEPTION("FPE","File Processing Exception", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_NOT_FOUND_EXCEPTION("FNF","File Not Found", HttpStatus.NOT_FOUND),
     ;
 
     private final String code;
