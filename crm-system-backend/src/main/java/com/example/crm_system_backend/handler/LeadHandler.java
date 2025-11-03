@@ -26,7 +26,11 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     @Override
     public LeadDto save(LeadDto leadDto) {
-        leadService.
+         leadService.getLeadByEmail(leadDto.getEmail()).ifPresent(
+                 lead -> {
+                     throw new LeadException(ErrorCode.LEAD_ALREADY_EXISTS);
+                 }
+         );
         Lead lead = new Lead();
         BeanUtils.copyProperties(leadDto, lead);
         Lead savedLead =  leadService.save(lead);
@@ -37,7 +41,7 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     public List<LeadDto> getLeadsByUser(Long userId) {
         User user = userRepo.getUserById(userId).orElseThrow(
-                ()-> new UserException(ErrorCode.USER_NOT_FOUND)
+                ()-> new UserException("User not found")
         );
         List<LeadDto> leadList =  leadService.getLeadsByUser(user).orElseThrow(
                 ()-> new LeadException("Leads not found")
@@ -62,7 +66,7 @@ public class LeadHandler implements IHandler<LeadDto> {
     @Override
     public LeadDto edit(Long leadId, LeadDto leadDto) {
         Lead oldLead = leadService.getLeadById(leadId).orElseThrow(
-                ()-> new LeadException("Lead not found")
+                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         );
         Lead lead = new Lead();
         BeanUtils.copyProperties(oldLead, lead);
