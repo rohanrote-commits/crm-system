@@ -19,16 +19,22 @@ public class RequestInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            return true;
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/crm/")) {
+
+            String token = request.getHeader("Authorization");
+            if (token == null || !token.startsWith("Bearer ")) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return false;
+            }
+
+            token = token.substring(7);
+            Long id = jwtUtil.getId(token);
+            request.setAttribute("userId", id);
         }
 
-        token = token.substring(7);
-        Long id = jwtUtil.getId(token);
-
-        request.setAttribute("registeredById", id);
         return true;
     }
+
 
 }

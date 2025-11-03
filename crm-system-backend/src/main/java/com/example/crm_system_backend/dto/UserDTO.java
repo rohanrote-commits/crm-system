@@ -22,4 +22,5 @@ public class UserDTO {
     private Roles role;
 
     private long registeredBy;
+    private String emailOfAdminRegistered;
 }

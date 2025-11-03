@@ -16,4 +16,13 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
     }
+
+    @ExceptionHandler(FileDownloadException.class)
+    public ResponseEntity<ErrorResponse> handleFileDownloadException(FileDownloadException exception){
+        ErrorResponse errorResponse = new ErrorResponse(
+                exception.getErrorCode().getMessage(),
+                exception.getErrorCode().getStatus()
+        );
+        return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
 }
