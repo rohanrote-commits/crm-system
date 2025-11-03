@@ -10,11 +10,10 @@ public interface IUserRepo extends JpaRepository<User, Long> {
 
     Optional<User> getUserById(Long id);
 
-    boolean findByRole(Roles role);
 
-    boolean findByEmail(String email);
+    boolean existsByEmail(String email);
 
-    boolean findByMobileNumber(String mobileNumber);
+    boolean existsByMobileNumber(String mobileNumber);
 
     Optional<User> findByEmailAndPassword(String email, String password);
 }

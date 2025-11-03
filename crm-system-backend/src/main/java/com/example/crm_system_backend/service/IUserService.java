@@ -18,6 +18,11 @@ public interface IUserService {
     //void getUser();
 
     Optional<User> getUser(UserDTO dto);
+    boolean checkUserByEmail(String email);
+
+   // Optional<User> getUserByMobileNumber(String number);
+
+    boolean checkUserByMobileNumber(String number);
 
     public void getAllUser();
 
