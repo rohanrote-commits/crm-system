@@ -32,13 +32,12 @@ public class AuthHandler {
 
 
     public User signUpMasterAdmin(UserDTO request) {
-        if (userSessionService.findSessionByEmail(request.getEmail())) {
+        if (userService.checkUserByEmail(request.getEmail())) {
             throw new UserException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
         if (userService.checkUserByMobileNumber(request.getMobileNumber())) {
             throw new UserException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
-
         User user = new User();
         BeanUtils.copyProperties(request, user);
         user.setRole(Roles.MASTER_ADMIN);

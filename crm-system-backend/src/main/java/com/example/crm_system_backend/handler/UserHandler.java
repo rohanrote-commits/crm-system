@@ -1,10 +1,7 @@
 package com.example.crm_system_backend.handler;
 
-import com.example.crm_system_backend.dto.SignUpRequest;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.Roles;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.entity.UserSession;
 import com.example.crm_system_backend.exception.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
@@ -16,10 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
-public class UserHandler implements IHandler<User> {
+public class UserHandler implements IHandler<UserDTO> {
 
     @Autowired
     private IUserRepo userRepo;
@@ -29,10 +25,9 @@ public class UserHandler implements IHandler<User> {
     private UserSessionRepo userSessionRepo;
     @Autowired
     private JwtUtil jwtUtil;
-    
 
     @Override
-    public User save(UserDTO userDTO) {
+    public UserDTO save(UserDTO userDTO) {
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
         if(user.getAddress() == null){
@@ -40,21 +35,22 @@ public class UserHandler implements IHandler<User> {
                     user.getState() != null ||
                     user.getCountry() != null ||
                     user.getPinCode() != null) {
-                throw new UserException(ErrorCode.INVALID_ADDRESS)
+                throw new UserException(ErrorCode.INVALID_ADDRESS);
             }
         }
 
-        return userService.registerUser(user);
+
+        BeanUtils.copyProperties(userService.registerUser(user),userDTO);
+        return userDTO;
     }
 
     @Override
-    public List<User> getAll() {
+    public List<UserDTO> getAll() {
         return List.of();
     }
 
-
     @Override
-    public User edit(Long Id, User entity) {
+    public UserDTO edit(Long Id, UserDTO entity) {
         return null;
     }
 
@@ -67,4 +63,12 @@ public class UserHandler implements IHandler<User> {
     public void bulkUpload() {
 
     }
+
+//
+//    @Override
+//    public UserDTO save(UserDTO userDTO) {
+
+//    }
+
+
 }

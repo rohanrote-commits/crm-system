@@ -3,6 +3,8 @@ package com.example.crm_system_backend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity(name = "user")
 public class User{
@@ -19,7 +21,7 @@ public class User{
     private String email;
     @Column(nullable = false, unique = true)
     private String mobileNumber;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String password;
     @Column(nullable = true)
     private String address;
@@ -33,10 +35,10 @@ public class User{
     private String pinCode;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Roles role;
-
-
     private long registeredBy;
+    private LocalDateTime registeredOn;
 
 
 

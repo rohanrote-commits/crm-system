@@ -12,7 +12,7 @@ public class UserSessionService implements IUserSessionService {
     private UserSessionRepo userSessionRepo;
     @Override
     public boolean findSessionByEmail(String email) {
-        return userSessionRepo.findByEmail(email);
+        return userSessionRepo.existsByEmail(email);
     }
 
 
