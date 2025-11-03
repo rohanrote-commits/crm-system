@@ -56,8 +56,8 @@ public class LeadService implements ILeadService {
     }
 
     @Override
-    public void bulkUpload() {
-
+    public void bulkUpload(List<Lead> leads) {
+        leadRepository.saveAll(leads);
     }
 
     public Optional<Lead> getLeadById(Long leadId) {

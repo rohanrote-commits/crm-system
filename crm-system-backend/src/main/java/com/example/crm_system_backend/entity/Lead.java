@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,13 +29,10 @@ public class Lead {
     private String gstin;
     @Column(length = 1000)
     private String description;
-
     private String businessAddress;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "lead_interested_modules",
@@ -42,5 +40,9 @@ public class Lead {
     )
     @Column(name = "module_name", unique = true)
     private Set<String> interestedModules = new HashSet<>();
+
+    private Date createdAt;
+
+    private Date updatedAt;
 }
 

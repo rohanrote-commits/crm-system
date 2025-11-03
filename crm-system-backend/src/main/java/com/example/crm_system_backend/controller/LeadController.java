@@ -53,7 +53,7 @@ public class LeadController {
 
     @PostMapping("/file")
     public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file) {
-        leadHandler.bulkUpload();
-        return new ResponseEntity<>(file, HttpStatus.OK);
+         leadHandler.bulkUpload(file);
+        return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 }

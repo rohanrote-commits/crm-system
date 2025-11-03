@@ -4,24 +4,32 @@ import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ErrorCode;
+import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.exception.UserException;
+import com.example.crm_system_backend.helper.LeadExcelHelper;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Component
 public class LeadHandler implements IHandler<LeadDto> {
 
     private final LeadService leadService;
     private final IUserRepo userRepo;
 
-    public LeadHandler(LeadService leadService, IUserRepo userRepo) {
+    private final LeadExcelHelper  leadExcelHelper;
+
+    public LeadHandler(LeadService leadService, IUserRepo userRepo, LeadExcelHelper leadExcelHelper) {
         this.leadService = leadService;
         this.userRepo = userRepo;
+        this.leadExcelHelper = leadExcelHelper;
     }
 
     @Override
@@ -82,7 +90,15 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
     @Override
-    public void bulkUpload() {
+    public void bulkUpload(MultipartFile file) {
+        try {
+            List<Lead> leadList = leadExcelHelper.processExcelData(file);
+            leadService.bulkUpload(leadList);
+        }
 
+        catch (Exception e){
+            log.error(e.getMessage());
+            throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
     }
 }
