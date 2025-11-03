@@ -1,8 +1,6 @@
 package com.example.crm_system_backend.exception;
 
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
@@ -16,7 +14,11 @@ public enum ErrorCode {
 
     AMOUNT_MUST_BE_POSITIVE("400","Amount must be positive", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_BALANCE("500","Insufficient Balance", HttpStatus.INTERNAL_SERVER_ERROR),
-    ANOTHER_THREAD_EXECTING("410","Another Thread Executing", HttpStatus.GONE),;
+    ANOTHER_THREAD_EXECTING("410","Another Thread Executing", HttpStatus.GONE),
+    LEAD_NOT_FOUND("LNF","Lead Not Found" ,HttpStatus.NOT_FOUND),
+    LEAD_ALREADY_EXISTS("LAE","Lead Already Exists", HttpStatus.CONFLICT),
+    USER_ALREADY_EXISTS("LAE","User Already Exists", HttpStatus.CONFLICT),
+    ;
 
     private final String code;
     private final String message;
