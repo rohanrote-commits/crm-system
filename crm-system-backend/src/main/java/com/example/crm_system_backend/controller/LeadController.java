@@ -56,4 +56,6 @@ public class LeadController {
          leadHandler.bulkUpload(file);
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
+
+
 }

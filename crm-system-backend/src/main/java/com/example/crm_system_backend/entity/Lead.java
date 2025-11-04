@@ -33,6 +33,8 @@ public class Lead {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @Enumerated(EnumType.STRING)
+    private LeadStatus leadStatus;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "lead_interested_modules",

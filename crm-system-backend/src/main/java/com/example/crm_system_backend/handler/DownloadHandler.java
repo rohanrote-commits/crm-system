@@ -32,4 +32,25 @@ public class DownloadHandler {
 
     return fileBytes;
     }
+
+    public byte[] downloadLeadTemplate() throws FileDownloadException {
+        ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
+
+        // Read the file into a ByteArrayOutputStream
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (InputStream inputStream = resource.getInputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+
+            }
+        } catch (IOException ex) {
+            throw new FileDownloadException(ErrorCode.ERROR_IN_FILE_DOWNLOAD);
+        }
+
+        byte[] fileBytes = outputStream.toByteArray();
+
+        return fileBytes;
+    }
 }
