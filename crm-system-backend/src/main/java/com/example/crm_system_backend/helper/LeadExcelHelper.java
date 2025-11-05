@@ -138,7 +138,7 @@ public class LeadExcelHelper {
                 }
 
 
-                if(!hasError && !hasLead) {
+                if(!hasError) {
                     leads.add(lead);
                 }
             }

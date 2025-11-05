@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -80,6 +81,13 @@ public class UserController {
         Long userId = (Long) request.getAttribute("userId");
         userHandler.deleteSubUser(userId,userDTO);
         return new ResponseEntity<>("Deleted Successfully ", HttpStatus.OK);
+    }
+
+    @PostMapping("/upload-user-file")
+    ResponseEntity<?> bulkUploadUserFile(@RequestParam MultipartFile file, HttpServletRequest request){
+        Long userId = (Long) request.getAttribute("userId");
+        userHandler.bulkUpload(file,userId);
+        return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 
     @GetMapping("/logout")

@@ -5,6 +5,7 @@ import com.example.crm_system_backend.entity.Roles;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
+import com.example.crm_system_backend.helper.UserExcelHelper;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.repository.UserSessionRepo;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
@@ -30,10 +31,7 @@ public class UserHandler implements IHandler<UserDTO> {
     @Autowired
     private AuthHandler authHandler;
     @Autowired
-    private UserSessionRepo userSessionRepo;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private UserExcelHelper userExcelHelper;
 
     @Override
     public UserDTO save(UserDTO userDTO) {
@@ -178,9 +176,17 @@ public class UserHandler implements IHandler<UserDTO> {
         }
 
     }
-
     @Override
     public void bulkUpload(MultipartFile file) {
+
+    }
+
+    public void bulkUpload(MultipartFile file, Long id){
+        List<User> users = userExcelHelper.processExcelData(file);
+        users.stream().forEach(user -> {
+            user.setRegisteredBy(id);
+            userService.registerUser(user);
+        });
 
     }
 }
