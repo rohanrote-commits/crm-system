@@ -25,7 +25,6 @@ public class UserService implements IUserService {
 
     @Override
     public User registerUser(User user) {
-        user.setRegisteredOn(LocalDateTime.now());
         return userRepo.save(user);
     }
 
@@ -53,7 +52,7 @@ public class UserService implements IUserService {
         log.info("users:{}",users);
         List<User> admins = users.stream()
                 .filter(user1 -> user1.getRole() == Roles.ADMIN)
-                .toList(); // Java 16+ List.copyOf style
+                .toList();
         log.info("admins:{}",admins,"Registered by ", id);
         admins.forEach(user1 -> {
             List<User> users2 = getAllUsersByAdmin(user1.getId());
