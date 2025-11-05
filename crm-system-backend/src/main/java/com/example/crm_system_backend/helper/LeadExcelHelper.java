@@ -226,11 +226,11 @@ public class LeadExcelHelper {
                 Workbook templateWorkbook = new XSSFWorkbook(templateFile.getAbsolutePath())
         ) {
             Sheet uploadedSheet = uploadedWorkbook.getSheetAt(0);
-            Sheet templateSheet = templateWorkbook.getSheetAt(0);
+            Sheet templateSheet = templateWorkbook.getSheetAt(1);
 
             // Read header row (assumed to be first row)
-            Row uploadedHeader = uploadedSheet.getRow(0);
-            Row templateHeader = templateSheet.getRow(0);
+            Row uploadedHeader = uploadedSheet.getRow(1);
+            Row templateHeader = templateSheet.getRow(1);
 
             if (uploadedHeader == null || templateHeader == null) {
                 return false;
@@ -250,7 +250,7 @@ public class LeadExcelHelper {
                 String uploadedHeaderValue = getCellValue(uploadedCell);
                 String templateHeaderValue = getCellValue(templateCell);
 
-                if (!uploadedHeaderValue.equalsIgnoreCase(templateHeaderValue)) {
+                if (!uploadedHeaderValue.equals(templateHeaderValue)) {
                     log.error("Header mismatch at column {}: expected '{}', found '{}'",
                             i, templateHeaderValue, uploadedHeaderValue);
                     return false;

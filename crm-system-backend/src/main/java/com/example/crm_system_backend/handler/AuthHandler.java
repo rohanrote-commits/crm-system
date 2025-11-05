@@ -64,4 +64,13 @@ public class AuthHandler {
         }
 
     }
+
+    public void logoutHandler(String email){
+        if(userSessionService.findSessionByEmail(email)){
+            userSessionService.deleteSessionByEmail(email);
+        }else{
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+
+    }
 }

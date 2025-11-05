@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -27,7 +28,10 @@ public class UserHandler implements IHandler<UserDTO> {
     @Autowired
     private UserService userService;
     @Autowired
+    private AuthHandler authHandler;
+    @Autowired
     private UserSessionRepo userSessionRepo;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -88,11 +92,90 @@ public class UserHandler implements IHandler<UserDTO> {
 
     @Override
     public UserDTO edit(Long Id, UserDTO entity) {
-        return null;
+        Optional<User> userOptional = userService.getUserById(Id);
+        if (userOptional.isPresent()) {
+            if (entity.getPassword() != null) {
+                userOptional.get().setPassword(entity.getPassword());
+            }
+            if(entity.getMobileNumber() != null){
+            userOptional.get().setMobileNumber(entity.getMobileNumber());}
+        }
+            if (entity.getAddress() != null) {
+                userOptional.get().setAddress(entity.getAddress());
+                userOptional.get().setCity(entity.getCity());
+                userOptional.get().setState(entity.getState());
+                userOptional.get().setCountry(entity.getCountry());
+                userOptional.get().setPinCode(entity.getPinCode());
+            }
+            userService.registerUser(userOptional.get());
+            return entity;
+
+
+        }
+
+
+
+    public User editSubUser(Long id, UserDTO userDTO){
+        List<UserDTO> users = getUsers(id);
+        UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
+                .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
+        Optional<User> user  = userService.getUser(userDTO1);
+        if (user.isPresent()) {
+            if (userDTO.getPassword() != null) {
+                user.get().setPassword(userDTO.getPassword());
+            }
+            if (userDTO.getMobileNumber() != null) {
+                user.get().setMobileNumber(userDTO.getMobileNumber());
+            }
+
+
+            if (userDTO.getAddress() != null) {
+                user.get().setAddress(userDTO.getAddress());
+                user.get().setCity(userDTO.getCity());
+                user.get().setState(userDTO.getState());
+                user.get().setCountry(userDTO.getCountry());
+                user.get().setPinCode(userDTO.getPinCode());
+            }
+            return userService.registerUser(user.get());
+        }else {
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+        }
+
     }
+
+
 
     @Override
     public void delete(Long leadId) {
+        Optional<User> user = userService.getUserById(leadId);
+        if(user.isPresent()){
+            if(user.get().getRole() == Roles.MASTER_ADMIN){
+                List<User> users = userService.getAllUserByMasterAdmin(leadId);
+                users.stream().forEach(user1 -> {
+                    userService.deleteUser(user1);
+                });
+            }else if(user.get().getRole() == Roles.ADMIN){
+                List<User> users = userService.getAllUsersByAdmin(leadId);
+                users.stream().forEach(user1 -> {
+                    userService.deleteUser(user1);
+                });
+            }
+            userService.deleteUser(user.get());
+            authHandler.logoutHandler(user.get().getEmail());
+        }
+
+    }
+
+    public void deleteSubUser(Long id, UserDTO userDTO){
+        List<UserDTO> users = getUsers(id);
+        UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
+                .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
+        Optional<User> user  = userService.getUser(userDTO1);
+        if (user.isPresent()) {
+            userService.deleteUser(user.get());
+        }else {
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+        }
 
     }
 
