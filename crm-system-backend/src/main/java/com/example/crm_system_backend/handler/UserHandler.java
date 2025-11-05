@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +43,7 @@ public class UserHandler implements IHandler<UserDTO> {
                 throw new UserException(ErrorCode.INVALID_ADDRESS);
             }
         }
-
-
+        user.setRegisteredOn(java.time.LocalDateTime.now());
         BeanUtils.copyProperties(userService.registerUser(user),userDTO);
         return userDTO;
     }
@@ -71,6 +69,20 @@ public class UserHandler implements IHandler<UserDTO> {
                 return userDTO;
             }).toList();
 
+    }
+
+    public UserDTO forgetPassword(UserDTO forgetPasswordDTO){
+        Optional<User> userOptional = userRepo.getUserByEmail(forgetPasswordDTO.getEmail());
+        if(userOptional.isPresent()){
+            if(userOptional.get().getPassword().equals(forgetPasswordDTO.getPassword())){
+                throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
+            }
+            userOptional.get().setPassword(forgetPasswordDTO.getPassword());
+            userService.registerUser(userOptional.get());
+            return forgetPasswordDTO;
+        }else {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
     }
 
 

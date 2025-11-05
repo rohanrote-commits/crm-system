@@ -14,6 +14,7 @@ import com.example.crm_system_backend.utils.JwtUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +42,7 @@ public class AuthHandler {
         User user = new User();
         BeanUtils.copyProperties(request, user);
         user.setRole(Roles.MASTER_ADMIN);
-
+        user.setRegisteredOn(LocalDateTime.now());
         return userService.registerUser(user);
     }
 
