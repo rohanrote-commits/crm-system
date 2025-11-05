@@ -31,32 +31,29 @@ body {
   margin-left: 10px;
 }
 
-.contact span {
-  margin: 0 5px;
-}
-
-/* Login Container */
-.login-container {
+/* Sign Up Container */
+.signup-container {
   display: flex;
   justify-content: center;
-
   align-items: center;
-  height: 80vh;
+  min-height: 80vh;
 }
 
-.login-box {
+.signup-box {
   background-color: #fff;
   padding: 40px;
-  width: 360px;
-  height: 400px;
+  width: 400px; /* Fixed width */
+  height: auto;
+  max-height: 700px; /* Optional: prevent extreme height */
+  overflow-y: auto; /* scroll if content exceeds box */
   box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
   border-radius: 10px;
   text-align: center;
+  position: relative; /* keeps box in place */
 }
 
-.login-box h2 {
-  margin-bottom: 10px;
-  margin-top: 5x;
+.signup-box h2 {
+  margin-bottom: 20px;
   color: #333;
 }
 
@@ -71,29 +68,16 @@ label {
   color: red;
 }
 
+input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+select {
   width: 100%;
   padding: 10px;
+  margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
-}
-
-.password-wrapper {
-  position: relative;
-}
-
-.remember-row {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
-}
-
-.remember-row input {
-  margin-right: 8px;
 }
 
 /* Buttons */
@@ -101,7 +85,7 @@ input[type="password"] {
   background-color: #f15623;
   color: white;
   border: none;
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border-radius: 5px;
   font-size: 15px;
@@ -113,41 +97,15 @@ input[type="password"] {
   background-color: #d84514;
 }
 
-.btn-blue {
-  background-color: #0b2a5b;
-  color: white;
-  border: none;
-  padding: 10px;
-  width: 100%;
-  border-radius: 5px;
-  font-size: 15px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.btn-blue:hover {
-  background-color: #0a1f45;
-}
-
-/* Links & Text */
-.forgot-link {
-  display: block;
-  margin-top: 10px;
-  color: #333;
-  text-decoration: none;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.agreement {
+/* Error Messages */
+.error-message {
+  color: red;
   font-size: 13px;
-  color: #777;
-  margin-top: 15px;
+  margin-top: -5px;
+  margin-bottom: 5px;
+  display: block;
 }
 
-hr {
-  margin: 25px 0;
-  border: 0.5px solid #ddd;
+.error {
+  border-color: red;
 }
