@@ -23,4 +23,12 @@ public class FileDownloadController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(downloadHandler.downloadUserTemplate());
     }
+
+    @GetMapping("/lead-template")
+    public ResponseEntity<byte[]> downloadLeadTemplate() throws FileDownloadException {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=lead-template.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(downloadHandler.downloadUserTemplate());
+    }
 }

@@ -9,10 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +28,6 @@ public class LeadExcelHelper {
     private static  final String DESCRIPTION_REGEX = "^[A-Za-z0-9 ,./#@!$%^&*()_\\-]{1,100}$";
 
     private static  final String GSTIN_REGEX = "^[A-Z0-9]{15}$";
-
-    List<String> headers = List.of("Sr No","First Name (M)","Last Name (M)","Mobile Number (M)","Email (M)","GSTIN (M)","Interested Modules (M)","Business Address (O)","Description (O)");
 
 
     public List<Lead> processExcelData(MultipartFile file)  {
@@ -102,26 +97,11 @@ public class LeadExcelHelper {
                     lead.setGstin(GSTIN);
                 }
 
-                // 6 Validate address
-                if (!businessAddress.matches(ADDRESS_REGEX)) {
-                    markError(row.getCell(6), "Address formate", errorStyle);
-                    hasError = true;
-                } else {
-                    lead.setBusinessAddress(businessAddress);
-                }
-
-
-                // 7 Validate description
-                if (!description.matches(DESCRIPTION_REGEX)) {
-                    markError(row.getCell(7), "Invalid Description ", errorStyle);
-                    hasError = true;
-                } else {
-                    lead.setDescription(description);
-                }
                 boolean hasLead = false;
+
                 //8 validate the modules
                 if (isEmpty(instreatedModules)) {
-                    markError(row.getCell(8), "Invalid Module Selected ", errorStyle);
+                    markError(row.getCell(6), "Invalid Module Selected ", errorStyle);
                     hasError = true;
                 } else {
 
@@ -130,7 +110,7 @@ public class LeadExcelHelper {
                     }))){
                         leads.stream().filter(
 
-                                lead1 -> lead1.getEmail().equals(lead.getEmail())).
+                                        lead1 -> lead1.getEmail().equals(lead.getEmail())).
                                 findFirst().ifPresent(lead1 -> {
                                     lead1.getInterestedModules().add(instreatedModules);
                                 });
@@ -140,9 +120,25 @@ public class LeadExcelHelper {
                         lead.getInterestedModules().add(instreatedModules);
                     }
                 }
+                // 6 Validate address
+                if (!businessAddress.matches(ADDRESS_REGEX)) {
+                    markError(row.getCell(7), "Address formate", errorStyle);
+                    hasError = true;
+                } else {
+                    lead.setBusinessAddress(businessAddress);
+                }
 
-                if
-                (!hasError && !hasLead) {
+
+                // 7 Validate description
+                if (!description.matches(DESCRIPTION_REGEX)) {
+                    markError(row.getCell(8), "Invalid Description ", errorStyle);
+                    hasError = true;
+                } else {
+                    lead.setDescription(description);
+                }
+
+
+                if(!hasError && !hasLead) {
                     leads.add(lead);
                 }
             }
@@ -199,25 +195,75 @@ public class LeadExcelHelper {
         cell.setCellComment(comment);
     }
 
-    private boolean validateExcelHeader(MultipartFile file)  {
-        try {
-            Workbook workbook = new XSSFWorkbook(file.getInputStream());
-            Sheet sheet = workbook.getSheetAt(1);
-            for (Row row : sheet) {
-                if (row.getRowNum() == 1) {
-                    for (Cell cell : row) {
-                        if (!cell.getCellType().toString().equals(headers.get(cell.getColumnIndex()))) {
-                            return false;
-                        }
-                    }
-                    return true;
+//    private boolean validateExcelHeader(MultipartFile file)  {
+//        File tempFile = new File("crm-system-backend\\src\\main\\resources\\Lead Template.xlsx");
+//        try (
+//            Workbook workbook = new XSSFWorkbook(file.getInputStream());
+//            Workbook tempWorkbook = new XSSFWorkbook(tempFile.getAbsolutePath())){
+//            Sheet sheet = workbook.getSheetAt(1);
+//            for (Row row : sheet) {
+//                if (row.getRowNum() == 1) {
+//                    for (Cell cell : row) {
+//                        if (!cell.getCellType().toString().equals(headers.get(cell.getColumnIndex()))) {
+//                            return false;
+//                        }
+//                    }
+//                    return true;
+//                }
+//            }
+//            return true;
+//        }
+//        catch (IOException ioException) {
+//            log.error(ioException.getMessage());
+//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+//        }
+//    }
+    private boolean validateExcelHeader(MultipartFile file) {
+        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+
+        try (
+                Workbook uploadedWorkbook = new XSSFWorkbook(file.getInputStream());
+                Workbook templateWorkbook = new XSSFWorkbook(templateFile.getAbsolutePath())
+        ) {
+            Sheet uploadedSheet = uploadedWorkbook.getSheetAt(0);
+            Sheet templateSheet = templateWorkbook.getSheetAt(0);
+
+            // Read header row (assumed to be first row)
+            Row uploadedHeader = uploadedSheet.getRow(0);
+            Row templateHeader = templateSheet.getRow(0);
+
+            if (uploadedHeader == null || templateHeader == null) {
+                return false;
+            }
+
+            int uploadedCells = uploadedHeader.getLastCellNum();
+            int templateCells = templateHeader.getLastCellNum();
+
+            if (uploadedCells != templateCells) {
+                return false; // Different number of columns
+            }
+
+            for (int i = 0; i < templateCells; i++) {
+                Cell uploadedCell = uploadedHeader.getCell(i);
+                Cell templateCell = templateHeader.getCell(i);
+
+                String uploadedHeaderValue = getCellValue(uploadedCell);
+                String templateHeaderValue = getCellValue(templateCell);
+
+                if (!uploadedHeaderValue.equalsIgnoreCase(templateHeaderValue)) {
+                    log.error("Header mismatch at column {}: expected '{}', found '{}'",
+                            i, templateHeaderValue, uploadedHeaderValue);
+                    return false;
                 }
             }
-            return true;
-        }
-        catch (IOException ioException) {
-            log.error(ioException.getMessage());
+
+            return true; // All headers match
+
+        } catch (IOException e) {
+            log.error("Excel header validation failed: {}", e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
+
+
 }

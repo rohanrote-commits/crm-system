@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.dto;
 
 
+import com.example.crm_system_backend.entity.LeadStatus;
 import com.example.crm_system_backend.entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,6 +24,7 @@ public class LeadDto {
     private String gstin;
     private String description;
     private String businessAddress;
+    private LeadStatus leadStatus;
     private User user;
     private Set<String> interestedModules = new HashSet<>();
 }
