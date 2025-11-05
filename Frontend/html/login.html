@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login | GSTHero Style</title>
-  
+  <link rel="stylesheet" href="/Frontend/css/login.css">
 </head>
 <body>
   <!-- Header -->
@@ -30,27 +30,18 @@
         <input type="password" id="loginPassword" placeholder="Enter your password" required>
       </div>
 
-      <!-- <div class="remember-row">
-        <input type="checkbox" id="rememberMe">
-        <label for="rememberMe">Remember my username.</label>
-      </div> -->
-
       <button id="loginButton" class="btn-orange">Continue</button>
-
-      <!-- <p class="agreement">
-        By clicking Sign In, you agree to our <a href="#">License Agreement</a>.
-      </p> -->
       <a href="#" class="forgot-link">I forgot my password</a>
 
       <hr>
 
       <p>Don't have an account yet?</p>
-      <button id="signupRedirectBtn" class="btn-blue">Register</button>
+      <button id="signupRedirectBtn" class="btn-blue" href = "/Frontend/html/signup.html">Register</button>
     </div>
   </div>
 
-  <script src="JS/jquery.js"></script>
-  <script src="JS/login.js"></script>
-  <link rel="stylesheet" href="css/login.css">
+  <!-- Load scripts at the end -->
+  <script src="/Frontend/javascript/jquery.js"></script>
+  <script src="/Frontend/javascript/login.js"></script>
 </body>
 </html>

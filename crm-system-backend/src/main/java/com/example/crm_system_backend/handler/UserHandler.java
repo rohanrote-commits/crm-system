@@ -184,6 +184,7 @@ public class UserHandler implements IHandler<UserDTO> {
     public void bulkUpload(MultipartFile file, Long id){
         List<User> users = userExcelHelper.processExcelData(file);
         users.stream().forEach(user -> {
+            if(userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
             user.setRegisteredBy(id);
             userService.registerUser(user);
         });

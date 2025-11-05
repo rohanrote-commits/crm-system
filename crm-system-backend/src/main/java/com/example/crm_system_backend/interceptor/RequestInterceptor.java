@@ -27,8 +27,20 @@ public class RequestInterceptor implements HandlerInterceptor {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }
+            token = token.substring(7).trim();
 
-            token = token.substring(7);
+            //check expiry of token
+            if(jwtUtil.isTokenExpired(token)){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return false;
+            }
+            //check  if session is already present
+            String email = jwtUtil.getEmail(token);
+            if (email == null || !userSessionService.findSessionByEmail(email)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return false;
+            }
+
             Long id = jwtUtil.getId(token);
             request.setAttribute("userId", id);
             request.setAttribute("email", jwtUtil.getEmail(token));

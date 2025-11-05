@@ -49,7 +49,7 @@ public class UserExcelHelper {
             for(Row row : sheet){
                 if(row.getRowNum() == 0 || row.getRowNum()==1) continue;
                 String srNo = getCellValue(row.getCell(0));
-                if(srNo == "") break;
+                if(isRowEmpty(row)) continue;
                 User user = new User();
                 String firstName = getCellValue(row.getCell(1));
                 String lastName = getCellValue(row.getCell(2));
@@ -272,6 +272,15 @@ public class UserExcelHelper {
         Comment comment = drawing.createCellComment(anchor);
         comment.setString(factory.createRichTextString(message));
         cell.setCellComment(comment);
+    }
+    private static boolean isRowEmpty(Row row) {
+        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
