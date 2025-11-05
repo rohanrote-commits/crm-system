@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Management Dashboard</title>
+  <link rel="stylesheet" href="/css/lead-style.css" />
+  <link rel="stylesheet" href="/css/add-lead-modal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="/javascript/modal.js"></script>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <ul class="nav-menu">
+        <li>Dashboard</li>
+        <li>Leads</li>
+        <li>Reports</li>
+        <li>Users</li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <i class="fa-solid fa-user-circle"></i>
+      <span class="username">Admin</span>
+    </div>
+  </nav>
+    <!-- Add Lead Button -->
+    <div class="add-lead-container">
+    <button id="openModalBtn">
+        <i class="fa fa-plus"></i> Add Lead
+    </button>
+    </div>
+
+    <!-- Add Lead Modal -->
+    <div id="leadModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h2>Add New Lead</h2>
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        </div>
+
+        <form id="leadForm" class="lead-form">
+        <div>
+            <label>First Name</label>
+            <input type="text" id="firstName" required>
+        </div>
+        <div>
+            <label>Last Name</label>
+            <input type="text" id="lastName" required>
+        </div>
+        <div>
+            <label>Email</label>
+            <input type="email" id="email" required>
+        </div>
+        <div>
+            <label>Mobile Number</label>
+            <input type="text" id="mobileNumber" required>
+        </div>
+        <div>
+            <label>GSTIN</label>
+            <input type="text" id="gstin" required>
+        </div>
+        <div>
+            <label>Lead Status</label>
+            <select id="leadStatus">
+            <option>Active</option>
+            <option>Pending</option>
+            <option>Closed</option>
+            </select>
+        </div>
+        <div class="full-width">
+            <label>Description</label>
+            <textarea id="description"></textarea>
+        </div>
+        <div class="full-width">
+            <label>Business Address</label>
+            <textarea id="businessAddress"></textarea>
+        </div>
+        <div class="full-width">
+            <label>Interested Modules</label>
+            <input type="text" id="modules" placeholder="Comma separated">
+        </div>
+
+        <div class="modal-footer full-width">
+            <button type="submit" class="save-btn">Save Lead</button>
+        </div>
+        </form>
+    </div>
+    </div>
+
+
+  <!-- Dashboard Container -->
+  <div class="dashboard">
+    <h2 class="section-title">Lead List</h2>
+
+    <div class="card">
+      <div class="table-controls">
+        <div class="entries">
+          Show 
+          <select>
+            <option>5</option>
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+          </select> 
+          entries
+        </div>
+        <div class="search">
+          <label>Search:</label>
+          <input type="text" placeholder="Search leads...">
+        </div>
+      </div>
+
+      <table class="leads-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>GSTIN</th>
+            <th>Description</th>
+            <th>Business Address</th>
+            <th>Lead Status</th>
+            <th>Interested Modules</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Rahul</td>
+            <td>Pise</td>
+            <td>rahul.pise@example.com</td>
+            <td>7720002043</td>
+            <td>27AFFPB3931B3ZR</td>
+            <td>Interested in GST module</td>
+            <td>Pune, Maharashtra</td>
+            <td><span class="status active">Active</span></td>
+            <td>Reconciliation, Invoice</td>
+            <td>
+              <button class="edit-btn"><i class="fa fa-pen"></i></button>
+              <button class="delete-btn"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Vishal</td>
+            <td>Ghaste</td>
+            <td>vishal.ghaste@example.com</td>
+            <td>9865326598</td>
+            <td>27GSPMH2102G1Z1</td>
+            <td>Follow-up pending</td>
+            <td>Mumbai, MH</td>
+            <td><span class="status pending">Pending</span></td>
+            <td>E-Way Bill</td>
+            <td>
+              <button class="edit-btn"><i class="fa fa-pen"></i></button>
+              <button class="delete-btn"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="table-footer">
+        <p>Showing 1 to 2 of 2 entries</p>
+        <div class="pagination">
+          <button disabled>Previous</button>
+          <button class="active">1</button>
+          <button>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

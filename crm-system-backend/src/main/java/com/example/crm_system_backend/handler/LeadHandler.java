@@ -95,7 +95,6 @@ public class LeadHandler implements IHandler<LeadDto> {
             List<Lead> leadList = leadExcelHelper.processExcelData(file);
             leadService.bulkUpload(leadList);
         }
-
         catch (Exception e){
             log.error(e.getMessage());
             throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);

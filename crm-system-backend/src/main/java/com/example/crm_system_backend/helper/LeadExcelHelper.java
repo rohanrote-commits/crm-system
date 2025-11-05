@@ -56,7 +56,9 @@ public class LeadExcelHelper {
                 String instreatedModules = getCellValue(row.getCell(6));
                 String businessAddress = getCellValue(row.getCell(7));
                 String description = getCellValue(row.getCell(8));
-
+                if(isRowEmpty(row)){
+                    continue;
+                }
                 // 1️ Validate first name
                 if (isEmpty(firstName) || !firstName.matches(NAME_REGEX)) {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
@@ -98,7 +100,6 @@ public class LeadExcelHelper {
                 }
 
                 boolean hasLead = false;
-
                 //8 validate the modules
                 if (isEmpty(instreatedModules)) {
                     markError(row.getCell(6), "Invalid Module Selected ", errorStyle);
@@ -175,6 +176,17 @@ public class LeadExcelHelper {
             return String.valueOf((long) cell.getNumericCellValue());
         }
         return cell.getStringCellValue().trim();
+    }
+
+
+    private static boolean isRowEmpty(Row row) {
+        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isEmpty(String value) {
