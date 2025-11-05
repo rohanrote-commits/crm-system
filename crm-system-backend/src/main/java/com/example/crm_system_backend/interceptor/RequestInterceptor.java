@@ -31,6 +31,7 @@ public class RequestInterceptor implements HandlerInterceptor {
             token = token.substring(7);
             Long id = jwtUtil.getId(token);
             request.setAttribute("userId", id);
+            request.setAttribute("email", jwtUtil.getEmail(token));
         }
 
         return true;

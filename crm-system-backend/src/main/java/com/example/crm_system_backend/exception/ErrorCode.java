@@ -22,7 +22,8 @@ public enum ErrorCode {
     WRONG_HEADERS("WH","Wrong Headers", HttpStatus.NOT_ACCEPTABLE),
     FILE_PROCESSING_EXCEPTION("FPE","File Processing Exception", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_NOT_FOUND_EXCEPTION("FNF","File Not Found", HttpStatus.NOT_FOUND),
-    ;
+    USER_NOT_PRESENT_WITH_EMAIL("UNPE","User Not Present With Email", HttpStatus.NOT_FOUND);
+
 
     private final String code;
     private final String message;

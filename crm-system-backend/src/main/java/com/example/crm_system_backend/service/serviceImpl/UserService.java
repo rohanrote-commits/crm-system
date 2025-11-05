@@ -34,8 +34,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void deleteUser() {
+    public void deleteUser(User user) {
 
+        userRepo.delete(user);
     }
 
     @Override
@@ -85,6 +86,11 @@ public class UserService implements IUserService {
 
         return userRepo.existsByMobileNumber(number);
     }
+
+    public Optional<User> getUserById(Long id){
+        return userRepo.findById(id);
+    }
+
 
     @Override
     public void getAllUser() {

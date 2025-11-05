@@ -16,6 +16,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestInterceptor)
                 .addPathPatterns("/crm/user/**")
-                .excludePathPatterns("/crm/sign-in", "/crm/sign-up"); // exclude login/signup/static
+                .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up"); // exclude login/signup/static
     }
 }

@@ -13,7 +13,7 @@ public interface IUserService {
 
     public User registerUser(User user);
     public void updateUser();
-    public void deleteUser();
+    public void deleteUser(User user);
   //  public<T> Optional<User> getUser(T t);
 
     //void getUser();
