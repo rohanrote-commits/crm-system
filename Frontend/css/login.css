@@ -1,65 +1,44 @@
-/* General Page Style */
+/* ------- GENERAL & LAYOUT ------- */
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
   margin: 0;
-  padding: 0;
 }
 
-/* Header */
 .top-bar {
-  background-color: #0b2a5b;
+  background: #0b2a5b;
   color: white;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 12px 40px;
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: bold;
-}
+.logo { font-size: 22px; font-weight: bold; }
+.logo span { color: #f15623; }
 
-.logo span {
-  color: #f15623;
-}
-
-.contact a {
-  color: white;
-  text-decoration: none;
-  margin-left: 10px;
-}
-
-.contact span {
-  margin: 0 5px;
-}
-
-/* Login Container */
 .login-container {
   display: flex;
   justify-content: center;
-
   align-items: center;
   height: 80vh;
+  margin-top: 50px;
 }
 
 .login-box {
-  background-color: #fff;
+  background: #fff;
   padding: 40px;
   width: 360px;
-  height: 400px;
-  box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0px 3px 10px rgba(0,0,0,.1);
   border-radius: 10px;
   text-align: center;
 }
-
-.login-box h2 {
-  margin-bottom: 10px;
-  margin-top: 5x;
-  color: #333;
+.login-box h2{
+  padding-bottom: 7px;
+  margin-top: 2px;
 }
-
+.login-box a{
+  margin-top: 50px;
+}
 label {
   display: block;
   text-align: left;
@@ -67,87 +46,60 @@ label {
   font-weight: 500;
 }
 
-.required {
-  color: red;
-}
+.required { color: red; }
 
-input[type="email"],
-input[type="password"] {
+input[type="email"], input[type="password"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 14px;
-}
-
-.password-wrapper {
-  position: relative;
-}
-
-.remember-row {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
-}
-
-.remember-row input {
-  margin-right: 8px;
 }
 
 /* Buttons */
 .btn-orange {
-  background-color: #f15623;
-  color: white;
+  background: #f15623;
+  color: #fff;
   border: none;
   padding: 10px;
   width: 100%;
-  border-radius: 5px;
-  font-size: 15px;
-  cursor: pointer;
   margin-top: 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
-
-.btn-orange:hover {
-  background-color: #d84514;
-}
+.btn-orange:hover { background: #d84514; }
 
 .btn-blue {
-  background-color: #0b2a5b;
-  color: white;
+  background: #0b2a5b;
+  color: #fff;
   border: none;
   padding: 10px;
   width: 100%;
   border-radius: 5px;
-  font-size: 15px;
-  cursor: pointer;
-  margin-top: 10px;
+}
+.btn-blue:hover { background: #0a1f45; }
+
+/* Error style */
+.error {
+  border: 1px solid red !important;
+}
+.error-message {
+  color: red;
+  font-size: 13px;
+  text-align: left;
 }
 
-.btn-blue:hover {
-  background-color: #0a1f45;
-}
-
-/* Links & Text */
 .forgot-link {
-  display: block;
-  margin-top: 10px;
+  margin-top: 5px;   /* small space above the link */
   color: #333;
-  text-decoration: none;
+ 
 }
 
 .forgot-link:hover {
   text-decoration: underline;
 }
 
-.agreement {
-  font-size: 13px;
-  color: #777;
-  margin-top: 15px;
-}
 
 hr {
-  margin: 25px 0;
+  margin: 25px 0; /* Keeps space above & below */
   border: 0.5px solid #ddd;
 }

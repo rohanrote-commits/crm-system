@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | CRM Lead Management</title>
+  <link rel="stylesheet" href="/Frontend/css/dashboard-test.css">
+  <script src="/Frontend/javascript/jquery.js"></script>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo">CRM <span>Lead Management</span></div>
+  <!-- <div class="contact">
+    <a href="mailto:rohan.rote@perennialsys.com">rohan.rote@perennialsys.com</a>
+    <span>|</span>
+    <a href="tel:+918007700800">+91 705 7058 631</a>
+  </div> -->
+<div class="nav-right">
+    <div class="profile-menu">
+        <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
+        
+        <div class="dropdown" id="profileDropdown">
+            <button class="drop-item">View Users</button>
+            <button class="drop-item">Update User</button>
+            <button class="drop-item">Delete User</button>
+            <button class="drop-item">Logout</button>
+            <button class="drop-item">Help Desk</button>
+        </div>
+    </div>
+</div>
+
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-target="leads">Leads</button>
+  <button class="tab-btn" data-target="users">Users</button>
+  <button class="tab-btn" data-target="reports">Reports</button>
+</div>
+
+<div class="dashboard-container">
+  
+  <!-- Leads Section -->
+  <div class="dashboard-section" id="leads">
+    <h3>Leads</h3>
+    <div class="section-buttons">
+      <button class="btn-section">Add Lead</button>
+      <button class="btn-section">View Leads</button>
+      <button class="btn-section">Export Leads</button>
+    </div>
+  </div>
+
+  <!-- Users Section -->
+  <div class="dashboard-section" id="users" style="display:none;">
+    <h3>Users</h3>
+    <div class="section-buttons">
+      <button class="btn-section">Add User</button>
+      <button class="btn-section">Add Bulk Users</button>
+      <button class="btn-section">Update User</button>
+      <button id ="getUsersBtn" class ="btn-section">Get Registered Users</button>
+      <button class ="btn-section">Delete User</button>
+
+    </div>
+  </div>
+
+  <!-- Reports Section -->
+  <div class="dashboard-section" id="reports" style="display:none;">
+    <h3>Reports</h3>
+    <div class="section-buttons">
+      <button class="btn-section">Generate Report</button>
+      <button class="btn-section">View Reports</button>
+      <button class="btn-section">Download Report</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="/Frontend/javascript/dashboard.js"></script>
+</body>
+</html>

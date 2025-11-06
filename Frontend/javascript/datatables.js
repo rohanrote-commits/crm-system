@@ -1,18 +1,4 @@
-/*
- * This combined file was created by the DataTables downloader builder:
- *   https://datatables.net/download
- *
- * To rebuild or modify this file with the latest versions of the included
- * software please visit:
- *   https://datatables.net/download/#dt/dt-2.3.4
- *
- * Included libraries:
- *   DataTables 2.3.4
- */
 
-/*! DataTables 2.3.4
- * © SpryMedia Ltd - datatables.net/license
- */
 
 (function( factory ) {
 	"use strict";

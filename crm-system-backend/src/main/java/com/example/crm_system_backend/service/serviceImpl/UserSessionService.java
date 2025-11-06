@@ -5,6 +5,7 @@ import com.example.crm_system_backend.repository.UserSessionRepo;
 import com.example.crm_system_backend.service.IUserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserSessionService implements IUserSessionService {
@@ -18,6 +19,7 @@ public class UserSessionService implements IUserSessionService {
 
 
     @Override
+    @Transactional
     public void deleteSessionByEmail(String email) {
            userSessionRepo.deleteByEmail(email);
     }

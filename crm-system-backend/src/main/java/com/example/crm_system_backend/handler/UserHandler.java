@@ -54,6 +54,9 @@ public class UserHandler implements IHandler<UserDTO> {
     public List<UserDTO> getAll() {
         return List.of();
     }
+    public User getById(Long id){
+       return userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
 
     public List<UserDTO> getUsers(Long id) {
         log.info("Request for getting users is in user Handler for user id" + id);
