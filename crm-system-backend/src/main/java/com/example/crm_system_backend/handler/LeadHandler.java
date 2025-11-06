@@ -2,6 +2,7 @@ package com.example.crm_system_backend.handler;
 
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.LeadStatus;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -10,11 +11,13 @@ import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.helper.LeadExcelHelper;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
+import com.example.crm_system_backend.service.serviceImpl.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -22,13 +25,13 @@ import java.util.List;
 public class LeadHandler implements IHandler<LeadDto> {
 
     private final LeadService leadService;
-    private final IUserRepo userRepo;
+    private final UserService userService;
 
     private final LeadExcelHelper  leadExcelHelper;
 
-    public LeadHandler(LeadService leadService, IUserRepo userRepo, LeadExcelHelper leadExcelHelper) {
+    public LeadHandler(LeadService leadService, UserService userRepo, LeadExcelHelper leadExcelHelper) {
         this.leadService = leadService;
-        this.userRepo = userRepo;
+        this.userService = userRepo;
         this.leadExcelHelper = leadExcelHelper;
     }
 
@@ -48,7 +51,7 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
     public List<LeadDto> getLeadsByUser(Long userId) {
-        User user = userRepo.getUserById(userId).orElseThrow(
+        User user = userService.getUserById(userId).orElseThrow(
                 ()-> new UserException(ErrorCode.USER_NOT_FOUND)
         );
         List<LeadDto> leadList =  leadService.getLeadsByUser(user).orElseThrow(
@@ -90,13 +93,23 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
     @Override
-    public void bulkUpload(MultipartFile file) {
+    public void bulkUpload(MultipartFile file,Long userId) {
         try {
+            User user = userService.getUserById(userId).orElseThrow(
+                    ()->   new UserException(ErrorCode.USER_NOT_FOUND)
+            );
             List<Lead> leadList = leadExcelHelper.processExcelData(file);
+            leadList.stream().forEach(lead -> {
+                lead.setCreatedAt(new Date());
+                lead.setUpdatedAt(new Date());
+                lead.setLeadStatus(LeadStatus.ADDED);
+                lead.setUser(user);
+            });
             leadService.bulkUpload(leadList);
         }
         catch (Exception e){
             log.error(e.getMessage());
+            e.getStackTrace();
             throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }

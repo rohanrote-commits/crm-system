@@ -139,7 +139,7 @@ public class LeadExcelHelper {
                 }
 
 
-                if(!hasError) {
+                if(!hasError || !hasLead) {
                     leads.add(lead);
                 }
             }
@@ -237,7 +237,7 @@ public class LeadExcelHelper {
                 Workbook uploadedWorkbook = new XSSFWorkbook(file.getInputStream());
                 Workbook templateWorkbook = new XSSFWorkbook(templateFile.getAbsolutePath())
         ) {
-            Sheet uploadedSheet = uploadedWorkbook.getSheetAt(0);
+            Sheet uploadedSheet = uploadedWorkbook.getSheetAt(1);
             Sheet templateSheet = templateWorkbook.getSheetAt(1);
 
             // Read header row (assumed to be first row)
@@ -251,9 +251,9 @@ public class LeadExcelHelper {
             int uploadedCells = uploadedHeader.getLastCellNum();
             int templateCells = templateHeader.getLastCellNum();
 
-            if (uploadedCells != templateCells) {
-                return false; // Different number of columns
-            }
+//            if (uploadedCells != templateCells) {
+//                return false; // Different number of columns
+//            }
 
             for (int i = 0; i < templateCells; i++) {
                 Cell uploadedCell = uploadedHeader.getCell(i);
