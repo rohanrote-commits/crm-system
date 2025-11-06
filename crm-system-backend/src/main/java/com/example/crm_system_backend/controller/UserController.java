@@ -1,7 +1,9 @@
 package com.example.crm_system_backend.controller;
 
 
+import com.example.crm_system_backend.annotations.RoleRequired;
 import com.example.crm_system_backend.dto.UserDTO;
+import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.handler.AuthHandler;
 import com.example.crm_system_backend.handler.UserHandler;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +27,7 @@ public class UserController {
     private AuthHandler authHandler;
 
 
-
+    @RoleRequired({"ADMIN","MASTER_ADMIN"})
     @PostMapping("/register")
     public ResponseEntity<UserDTO> user(@RequestBody UserDTO userDTO,HttpServletRequest request){
         Object registeredById = request.getAttribute("userId");
@@ -33,6 +35,12 @@ public class UserController {
             userDTO.setRegisteredBy((Long) registeredById);
         }
         return new ResponseEntity<>(userHandler.save(userDTO), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/get-user")
+    public ResponseEntity<User> getUserById(Long id, HttpServletRequest request){
+        Long userId = (Long) request.getAttribute("userId");
+        return new ResponseEntity<>(userHandler.getById(userId),HttpStatus.OK);
     }
 
     @PostMapping("/sign-up")
@@ -45,6 +53,7 @@ public class UserController {
         return new ResponseEntity<>(authHandler.loginRequest(request), HttpStatus.OK);
     }
 
+    @RoleRequired("MASTER_ADMIN")
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getAllUsers(HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
@@ -64,6 +73,7 @@ public class UserController {
         return new ResponseEntity<>(userHandler.edit(userId,userDTO), HttpStatus.OK);
     }
 
+    @RoleRequired({"ADMIN","MASTER_ADMIN"})
     @PostMapping("/update-sub_user")
     ResponseEntity<?> updateSubUser(@RequestBody UserDTO userDTO, HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
@@ -76,6 +86,7 @@ public class UserController {
         return new ResponseEntity<>("Deleted and Logged out Successfully ", HttpStatus.OK);
     }
 
+    @RoleRequired({"ADMIN","MASTER_ADMIN"})
     @DeleteMapping("/delete-sub_user")
     ResponseEntity<?> deleteSubUser(UserDTO userDTO,HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");

@@ -5,10 +5,12 @@ import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
 import com.example.crm_system_backend.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+@Slf4j
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
     @Autowired
@@ -21,8 +23,14 @@ public class RequestInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
         if (uri.startsWith("/crm/")) {
+            log.info("Request URI: {}", uri);
+
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                return true; // allow CORS preflight to pass
+            }
 
             String token = request.getHeader("Authorization");
+            log.info("Token: {}", token);
             if (token == null || !token.startsWith("Bearer ")) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
@@ -31,6 +39,7 @@ public class RequestInterceptor implements HandlerInterceptor {
 
             //check expiry of token
             if(jwtUtil.isTokenExpired(token)){
+                userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }
@@ -40,8 +49,13 @@ public class RequestInterceptor implements HandlerInterceptor {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }
-
+            String role = jwtUtil.getRole(token);
+            if(role == null){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return false;
+            }
             Long id = jwtUtil.getId(token);
+            request.setAttribute("role", role);
             request.setAttribute("userId", id);
             request.setAttribute("email", jwtUtil.getEmail(token));
         }

@@ -1,0 +1,165 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+}
+
+/* Header */
+.top-bar {
+  background: #0b2a5b;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+  position: relative;
+}
+
+.logo {
+  display: relative;
+   font-size: 22px; 
+   font-weight: bold;
+   justify-content: center;
+   /* align-items: center ;
+   align-self: center; */
+   text-align: center;
+   /* padding-left: 460px; */
+ }
+.logo span {
+  
+   color: #f15623; }
+
+/* .contact a {
+  color: white;
+  text-decoration: none;
+  margin-left: 10px;
+} */
+
+.btn-profile {
+  background: #f15623;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-profile:hover { background: #d84514; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: left;
+  background: #fff;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+}
+
+.tab-btn {
+  padding: 12px 30px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0b2a5b;
+  border-bottom: 3px solid transparent;
+}
+.tab-btn:hover { background: #f5f5f5; }
+.tab-btn.active { border-bottom: 3px solid #f15623; font-weight: 600; }
+
+/* Profile & Dropdown */
+
+.nav-right {
+  position: relative;
+  margin-right: 20px;
+}
+
+.profile-menu {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  background: white;
+  width: 150px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+  /* z-index: 10; */
+}
+
+.drop-item {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+}
+
+.drop-item:hover {
+  background: #f0f0f0;
+}
+
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  justify-content: center;
+  padding: 30px 40px;
+}
+
+/* Section */
+.dashboard-section {
+  background: #fff;
+  padding: 20px;
+  flex: 1;                  /* Make each section stretch equally */
+  margin: 0 10px;           /* Gap between sections */
+  border-radius: 10px;
+  box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+}
+
+.dashboard-section h3 {
+  margin-bottom: 20px;
+  color: #0b2a5b;
+}
+
+/* Buttons inside sections */
+.section-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Evenly space buttons */
+}
+
+.btn-section {
+  padding: 12px;
+  background: #f15623;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.btn-section:hover { background: #d84514; }
+
+/* Responsive: Stack sections on small screens */
+@media (max-width: 1200px) {
+  .dashboard-container { flex-direction: column; align-items: center; }
+  .dashboard-section { margin: 0px; width: 100%; max-width: 2000px; }
+}
