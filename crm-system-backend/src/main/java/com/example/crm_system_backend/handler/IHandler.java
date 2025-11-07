@@ -10,5 +10,5 @@ public interface IHandler<T> {
     List<T> getAll();
     T edit(Long Id,T entity);
     void delete(Long leadId);
-    void bulkUpload(MultipartFile file);
+    void bulkUpload(MultipartFile file, Long id);
 }

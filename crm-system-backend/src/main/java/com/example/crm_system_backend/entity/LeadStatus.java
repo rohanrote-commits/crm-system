@@ -1,9 +1,8 @@
 package com.example.crm_system_backend.entity;
 
 public enum LeadStatus {
-    NOT_PROCESSED,
-    IN_PROCESS,
-    PROCESSED,
+    ADDED,
+    CONTACTED,
     CONVERTED,
     NOT_CONVERTED,
 }
