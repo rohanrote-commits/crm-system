@@ -35,6 +35,8 @@ public class UserHandler implements IHandler<UserDTO> {
 
     @Override
     public UserDTO save(UserDTO userDTO) {
+        if(userService.checkUserByEmail(userDTO.getEmail())) throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        if(userService.checkUserByMobileNumber(userDTO.getMobileNumber())) throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
         if(user.getAddress() == null){
@@ -114,28 +116,32 @@ public class UserHandler implements IHandler<UserDTO> {
 
         }
 
-
-
     public User editSubUser(Long id, UserDTO userDTO){
         List<UserDTO> users = getUsers(id);
         UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
                 .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
         Optional<User> user  = userService.getUser(userDTO1);
+        boolean flag = false;
         if (user.isPresent()) {
-            if (userDTO.getPassword() != null) {
-                user.get().setPassword(userDTO.getPassword());
-            }
-            if (userDTO.getMobileNumber() != null) {
+
+
+            if (!userDTO.getMobileNumber().isEmpty() && !userDTO.getMobileNumber().equals(user.get().getMobileNumber())) {
                 user.get().setMobileNumber(userDTO.getMobileNumber());
+                flag = true;
             }
+            log.info("Mobile Number is " +userDTO.getMobileNumber());
 
 
-            if (userDTO.getAddress() != null) {
+            if (!userDTO.getAddress().isEmpty() && !userDTO.getAddress().equals(user.get().getAddress())) {
+                flag = true;
                 user.get().setAddress(userDTO.getAddress());
                 user.get().setCity(userDTO.getCity());
                 user.get().setState(userDTO.getState());
                 user.get().setCountry(userDTO.getCountry());
                 user.get().setPinCode(userDTO.getPinCode());
+            }
+            if(!flag){
+                throw new UserException(ErrorCode.USER_DATA_NOT_UPDATABLE);
             }
             return userService.registerUser(user.get());
         }else {
@@ -185,6 +191,7 @@ public class UserHandler implements IHandler<UserDTO> {
         users.stream().forEach(user -> {
             if(userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
             user.setRegisteredBy(id);
+            user.setRegisteredOn(java.time.LocalDateTime.now());
             userService.registerUser(user);
         });
     }

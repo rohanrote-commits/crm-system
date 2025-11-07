@@ -4,6 +4,7 @@ import com.example.crm_system_backend.entity.Roles;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.exception.ExcelProcessingError;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,28 +30,37 @@ public class UserExcelHelper {
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,16}$";
 
     private static final String PIN_CODE_REGEX = "^[0-9]{6}$";
+    public List<User> processExcelData(MultipartFile file, String userRole) {
+        int countDown = 5;
+        boolean isThereError = false;
 
-    public List<User> processExcelData(MultipartFile file)  {
-
-        if(!this.validateExcelHeader(file)){
+        if (!this.validateExcelHeader(file)) {
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
         List<User> users = new ArrayList<>();
-        try(InputStream is = file.getInputStream();Workbook workbook = new XSSFWorkbook(is)){
+
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(is)) {
+
             Sheet sheet = workbook.getSheetAt(1);
 
-            // Error style (red background)
             CellStyle errorStyle = workbook.createCellStyle();
             errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            boolean hasError = false;
-            for(Row row : sheet){
-                if(row.getRowNum() == 0 || row.getRowNum()==1) continue;
-                String srNo = getCellValue(row.getCell(0));
-                if(isRowEmpty(row)) continue;
+            for (Row row : sheet) {
+                boolean hasError = false;
+
+                if (row.getRowNum() <= 1) continue;
+                if (isRowEmpty(row)) {
+                    countDown--;
+                    if (countDown == 0) break;
+                    continue;
+                }
+
                 User user = new User();
+
                 String firstName = getCellValue(row.getCell(1));
                 String lastName = getCellValue(row.getCell(2));
                 String mobileNumber = getCellValue(row.getCell(3));
@@ -64,136 +74,86 @@ public class UserExcelHelper {
                 String password = getCellValue(row.getCell(11));
                 String confirmPassword = getCellValue(row.getCell(12));
 
-                //validate first name
-                if(isEmpty(firstName) || !firstName.matches(NAME_REGEX)){
+
+                if (isEmpty(firstName) || !firstName.matches(NAME_REGEX)) {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
                     hasError = true;
-                }else{
+                } else {
                     user.setFirstName(firstName);
                 }
 
-                //validate last name
-                if(isEmpty(lastName) || !lastName.matches(NAME_REGEX)){
+                if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
                     markError(row.getCell(2), "Invalid Last Name", errorStyle);
                     hasError = true;
-                }else{
+                } else {
                     user.setLastName(lastName);
                 }
 
-                //validate mobile number
-                if(isEmpty(mobileNumber) || !mobileNumber.matches(MOBILE_REGEX)){
+                if (isEmpty(mobileNumber) || !mobileNumber.matches(MOBILE_REGEX)) {
                     markError(row.getCell(3), "Invalid mobile number", errorStyle);
                     hasError = true;
-                }else{
+                } else {
                     user.setMobileNumber(mobileNumber);
                 }
 
-                //validate email
-                if(isEmpty(email) || !email.matches(EMAIL_REGEX)){
+                if (isEmpty(email) || !email.matches(EMAIL_REGEX)) {
                     markError(row.getCell(4), "Invalid email", errorStyle);
                     hasError = true;
-                }else{
+                } else {
                     user.setEmail(email);
                 }
 
-                // ✅ If address is empty → no validation needed, accept as blank
-                if (isEmpty(address)) {
-                    user.setAddress(null);
-                    user.setCity(null);
-                    user.setState(null);
-                    user.setCountry(null);
-                    user.setPinCode(null);
-
-                    // no further checks on city/state/country/pin
-                } else {
-
-                    // ✅ If address exists, validate address format
-                    if (!address.matches(ADDRESS_REGEX)) {
-                        markError(row.getCell(5), "Invalid Address format", errorStyle);
-                        hasError = true;
-                    }
-
-                    // ✅ Now city/state/country/pincode become compulsory
-                    if (isEmpty(city) || !city.matches("^[A-Za-z ]{2,50}$")) {
-                        markError(row.getCell(6), "Invalid or Missing City", errorStyle);
-                        hasError = true;
-                    }
-
-                    if (isEmpty(state)) {
-                        markError(row.getCell(7), "Invalid or Missing State", errorStyle);
-                        hasError = true;
-                    }
-
-                    if (isEmpty(country)) {
-                        markError(row.getCell(8), "Invalid or Missing Country", errorStyle);
-                        hasError = true;
-                    }
-
-                    if (isEmpty(pinCode) || !pinCode.matches(PIN_CODE_REGEX)) {
-                        markError(row.getCell(9), "Invalid or Missing Pin Code", errorStyle);
-                        hasError = true;
-                    }
-
-                    if (hasError) continue;  // ✅ Do not save if any field invalid
-
-                    // ✅ All valid, save
-                    user.setAddress(address);
-                    user.setCity(city);
-                    user.setState(state);
-                    user.setCountry(country);
-                    user.setPinCode(pinCode);
-                }
-
-                //validate role
-                if(isEmpty(role)){
+                if (isEmpty(role) || ("ADMIN".equals(userRole) && !"Basic".equals(role))) {
                     markError(row.getCell(10), "Invalid Role", errorStyle);
                     hasError = true;
-
-                }else{
-                    //String roleOfUser = getCellValue(row.getCell(10));
-                    if(role == "Basic"){
+                } else {
+                    if ("Basic".equals(role)) {
                         user.setRole(Roles.USER);
-                    }else{
+                    } else {
                         user.setRole(Roles.ADMIN);
                     }
                 }
 
-                //validate password
-                if((isEmpty(password) || !password.matches(PASSWORD_REGEX)) &&
-                        (isEmpty(confirmPassword) || !confirmPassword.matches(PASSWORD_REGEX))
-                && (!password.equals(confirmPassword))){
+                if ((isEmpty(password) || !password.matches(PASSWORD_REGEX))
+                        || (isEmpty(confirmPassword) || !confirmPassword.matches(PASSWORD_REGEX))
+                        || (!password.equals(confirmPassword))) {
+
                     markError(row.getCell(11), "Invalid Password", errorStyle);
                     markError(row.getCell(12), "Confirm Password does not match", errorStyle);
                     hasError = true;
-
-                }else{
+                } else {
                     user.setPassword(password);
                 }
-                if(!hasError){
+
+
+                if (!hasError) {
                     users.add(user);
-                }else{
-                    String errorFilePath = "Error_File.xlsx";
-                    try(FileOutputStream out = new FileOutputStream(errorFilePath)){
-                        workbook.write(out);
-
-                    }catch (FileNotFoundException e){
-                        log.error(e.getMessage());
-                        throw new ExcelException(ErrorCode.FILE_NOT_FOUND_EXCEPTION);
-                    }catch (IOException e){
-                        log.error(e.getMessage());
-                        throw new RuntimeException(e);
-                    }
-
+                } else {
+                    isThereError = true;
                 }
-
             }
+
+            if (isThereError) {
+                log.error("Error in file processing");
+                throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-
         return users;
     }
+
+    private byte[] getErrorFileAsBytes(Workbook workbook) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
+
 
 
     private boolean validateExcelHeader(MultipartFile file) {

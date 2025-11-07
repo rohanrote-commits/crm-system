@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk User Upload</title>
+    <link rel="stylesheet" href="/Frontend/css/bulk-upload.css">
+    <script src="/Frontend/javascript/jquery.js"></script>
+</head>
+<body>
+     <header class="top-bar">
+  <div class="logo">CRM <span>Lead Management</span></div>
+
+</header>
+
+<div class="form-container">
+    <h2>Bulk User Upload</h2>
+
+    <div class="form-group">
+        <button id="downloadTemplate" class="btn-submit">Download User Template</button>
+    </div>
+
+    <form id="bulkUploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="userFile">Upload Filled Template (Excel)</label>
+            <input type="file" id="userFile" name="userFile" accept=".xlsx,.xls" required>
+        </div>
+
+        <button type="submit" id="btn-submit" class="btn-submit">Upload Users</button>
+    </form>
+</div>
+
+<script src ="/Frontend/javascript/bulk-upload.js"></script>
+</body>
+</html>

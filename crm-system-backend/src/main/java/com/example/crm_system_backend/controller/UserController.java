@@ -74,7 +74,7 @@ public class UserController {
     }
 
     @RoleRequired({"ADMIN","MASTER_ADMIN"})
-    @PostMapping("/update-sub_user")
+    @PutMapping("/update-sub_user")
     ResponseEntity<?> updateSubUser(@RequestBody UserDTO userDTO, HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
      return new ResponseEntity<>(userHandler.editSubUser(userId,userDTO), HttpStatus.OK);
@@ -94,10 +94,12 @@ public class UserController {
         return new ResponseEntity<>("Deleted Successfully ", HttpStatus.OK);
     }
 
+    @RoleRequired({"ADMIN","MASTER_ADMIN"})
     @PostMapping("/upload-user-file")
     ResponseEntity<?> bulkUploadUserFile(@RequestParam MultipartFile file, HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
-        userHandler.bulkUpload(file,userId);
+        String role = (String) request.getAttribute("role");
+        userHandler.    bulkUpload(file,userId, role);
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 

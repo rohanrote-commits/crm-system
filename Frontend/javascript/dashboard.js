@@ -25,6 +25,7 @@ $(document).ready(function() {
     const payload = parseJwt(token);
     const userRole = payload?.role?.trim();
     console.log(userRole);
+    
 
     // Hide Users tab for non-admins
     if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
@@ -66,5 +67,20 @@ $(document).ready(function() {
 
 });
 
+    $("#addUser").click(function () {
+    window.location.href = "/Frontend/html/add-single-user.html";
 
+});
+    $("#bulkUpload").click(function () {
+    window.location.href = "/Frontend/html/bulk-upload.html";
+
+});
+    $("#updateUsers").click(function () {
+    window.location.href = "/Frontend/html/update-user.html";
+
+});
+    $("#deleteUser").click(function () {
+    window.location.href = "/Frontend/html/delete-user.html";
+
+});
 });
