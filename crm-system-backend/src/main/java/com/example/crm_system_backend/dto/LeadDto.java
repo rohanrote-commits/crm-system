@@ -13,7 +13,6 @@ import java.util.Set;
 
 @Data
 public class LeadDto {
-    private Long id;
     private String firstName;
     private String lastName;
     @Email(message = "Email should be valid")
@@ -24,7 +23,7 @@ public class LeadDto {
     private String gstin;
     private String description;
     private String businessAddress;
+    private String user;
     private LeadStatus leadStatus;
-    private User user;
     private Set<String> interestedModules = new HashSet<>();
 }

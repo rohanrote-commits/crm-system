@@ -3,16 +3,12 @@ package com.example.crm_system_backend.service.serviceImpl;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.entity.Roles;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ErrorCode;
-import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -97,5 +93,9 @@ public class UserService implements IUserService {
     @Override
     public void getAllUser() {
 
+    }
+
+    public Optional<User>  getUserByEmail(String email) {
+        return userRepo.getUserByEmail(email);
     }
 }

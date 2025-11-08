@@ -42,8 +42,15 @@ public class LeadHandler implements IHandler<LeadDto> {
                      throw new LeadException(ErrorCode.LEAD_ALREADY_EXISTS);
                  }
          );
+         User user = userService.getUserByEmail(leadDto.getUser()).orElseThrow(
+                 ()-> new UserException(ErrorCode.USER_NOT_FOUND)
+         );
         Lead lead = new Lead();
         BeanUtils.copyProperties(leadDto, lead);
+        lead.setUser(user);
+        lead.setCreatedAt(new Date());
+        lead.setUpdatedAt(new Date());
+        lead.setLeadStatus(LeadStatus.ADDED);
         Lead savedLead =  leadService.save(lead);
         LeadDto savedLeadDto = new LeadDto();
         BeanUtils.copyProperties(savedLead, savedLeadDto);
@@ -62,6 +69,12 @@ public class LeadHandler implements IHandler<LeadDto> {
             return leadDto;
         }).toList();
         return leadList;
+    }
+
+    public Lead getLeadByEmail(String email){
+        return leadService.getLeadByEmail(email).orElseThrow(
+                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
+        );
     }
 
     @Override
@@ -112,5 +125,19 @@ public class LeadHandler implements IHandler<LeadDto> {
             e.getStackTrace();
             throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+    }
+
+    public List<LeadDto> getLeadsByUserEmail(String email) {
+        User user = userService.getUserByEmail(email).orElseThrow(
+                ()-> new UserException(ErrorCode.USER_NOT_FOUND)
+        );
+        List<LeadDto> leadList =  leadService.getLeadsByUser(user).orElseThrow(
+                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
+        ).stream().map(lead -> {
+            LeadDto leadDto = new LeadDto();
+            BeanUtils.copyProperties(lead, leadDto);
+            return leadDto;
+        }).toList();
+        return leadList;
     }
 }
