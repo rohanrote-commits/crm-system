@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/crm/lead")
+@RequestMapping("/crm/lead")
 public class LeadController {
 
     private final LeadHandler  leadHandler;

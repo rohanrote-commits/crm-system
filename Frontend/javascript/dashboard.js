@@ -26,7 +26,7 @@ $(document).ready(function () {
     const userRole = payload?.role?.trim();
     console.log(payload);
     
-    loadLeads(payload?.email,token);
+    loadLeads(payload,token);
 
     // Hide Users tab for non-admins
     if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
@@ -45,12 +45,12 @@ $(document).ready(function () {
     console.log(target);
 
     if(target === "leads"){
-        loadLeads(payload?.email,token);
+        loadLeads(payload,token);
     }
     else if(target === "users"){
         loadUsers(token)
     }
-    
+
   });
 
   // Profile dropdown
@@ -71,7 +71,7 @@ $(document).ready(function () {
 
         if (confirm("Are you sure you want to delete this lead?")) {
             $.ajax({
-                url: `http://localhost:8080/api/crm/lead/`,
+                url: `http://localhost:8080/crm/lead/`,
                 type: 'DELETE',
                 data :{
                     email : email
@@ -79,7 +79,7 @@ $(document).ready(function () {
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
                     alert("Lead deleted successfully.");
-                    $('#lead-table').DataTable().ajax.reload();
+                    $('#lead-table').DataTable().reload();
                 },
                 error: function() {
                     alert("Error deleting lead.");
@@ -92,9 +92,9 @@ $(document).ready(function () {
         const user = {
             email : $(this).data('email')
         };
-     
-      
-  
+
+
+
         if (confirm("Are you sure you want to delete this User?")) {
             $.ajax({
                 url: `http://localhost:8080/crm/user/delete-sub_user`,
@@ -156,29 +156,21 @@ function loadUsers(token){
                 ],
                 pageLength: 5
             });
-
-        },
-        error: function (xhr) {
-            if (xhr.status == 401) {
-                alert("Session expired. Login again.");
-                sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.html";
-            } else {
-                alert("Error loading users.");
-            }
         }
-    });
-}
+    })
+};
+        
 
-function loadLeads(email, token) {
+// Function: Load Leads from API
+function loadLeads(payload, token) {
     $.ajax({
-        url: `http://localhost:8080/api/crm/lead/by/email/${email}`,
+        url: `http://localhost:8080/crm/lead/by/${payload.sub}`,
         type: "GET",
         headers: {
             "Authorization": "Bearer " + token
         },
         success: function (response) {
-            console.log("Leads fetched:", response);
+            console.log(" Leads fetched:", response);
             initializeLeadTable(response);
         },
         error: function (xhr) {
@@ -195,6 +187,7 @@ function loadLeads(email, token) {
 }
 
 
+// Initialize DataTable with dynamic data
 function initializeLeadTable(data) {
     if ($.fn.DataTable.isDataTable("#lead-table")) {
         $("#lead-table").DataTable().clear().rows.add(data).draw();

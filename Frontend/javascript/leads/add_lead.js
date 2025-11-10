@@ -50,7 +50,7 @@ $(document).ready(function (params) {
     $("#saveLeadBtn").text("Update Lead");
 
     // Fill data
-   // $("#leadId").val(rowData.id);
+    $("#leadId").val(rowData.id);
     $("#firstName").val(rowData.firstName);
     $("#lastName").val(rowData.lastName);
     $("#email").val(rowData.email);
@@ -60,49 +60,112 @@ $(document).ready(function (params) {
     $("#businessAddress").val(rowData.businessAddress);
     $("#description").val(rowData.description);
 
+    if (rowData.id != null) {
+      $("#email").prop("readOnly", true);
+      $("#gstin").prop("readOnly", true);
+    }
+
     $("#leadModal").modal("show");
   });
 
-
   // Add Lead or edit lead call
-  $('#saveLeadBtn').click(function () {
-  //const leadId = $('#leadId').val();
-  const leadData = {
-    firstName: $('#firstName').val(),
-    lastName: $('#lastName').val(),
-    email: $('#email').val(),
-    mobileNumber: $('#mobileNumber').val(),
-    gstin: $('#gstin').val(),
-    description: $('#description').val(),
-    businessAddress: $('#businessAddress').val(),
-    leadStatus: $('#leadStatus').val(),
-    user : payload?.email,
-   interestedModules: $("#interestedModules").val() || []
-  };
+  $("#saveLeadBtn").click(function () {
+    const leadId = $('#leadId').val();
+    const leadData = {
+      firstName: $("#firstName").val(),
+      lastName: $("#lastName").val(),
+      email: $("#email").val(),
+      mobileNumber: $("#mobileNumber").val(),
+      gstin: $("#gstin").val(),
+      description: $("#description").val(),
+      businessAddress: $("#businessAddress").val(),
+      leadStatus: $("#leadStatus").val(),
+      user: payload?.email,
+      interestedModules: $("#interestedModules").val() || [],
+    };
 
-  //Add Lead
-  const method = isEdit ? 'PUT' : 'POST';
-  const url = isEdit
-    ? `http://localhost:8080/api/crm/lead/${leadData.email}`
-    : `http://localhost:8080/api/crm/lead/`;
+    //Add Lead
+    const method = isEdit ? "PUT" : "POST";
+    const url = isEdit
+      ? `http://localhost:8080/crm/lead/by/email/${leadData.email}`
+      : `http://localhost:8080/crm/lead/`;
 
     $.ajax({
       url,
       type: method,
-      contentType: 'application/json',
-      headers: { "Authorization": "Bearer " + token },
+      contentType: "application/json",
+      headers: { Authorization: "Bearer " + token },
       data: JSON.stringify(leadData),
       success: function () {
-        alert(isEdit ? 'Lead updated successfully!' : 'Lead added successfully!');
-        $('#leadModal').modal('hide');
-        $('#lead-table').DataTable().ajax.reload();
+        alert(
+          isEdit ? "Lead updated successfully!" : "Lead added successfully!"
+        );
+        $("#leadModal").modal("hide");
+        $("#lead-table").DataTable().ajax.reload();
       },
-      error: function () {
-        alert('Something went wrong. Please try again.');
-      }
+      error: function (err) {
+        console.log(err);
+        
+        alert("Something went wrong. Please try again.");
+      },
     });
-
   });
 
+  //Validation methods
+  $.validator.addMethod(
+    "namePattern",
+    (value) => /^[A-Za-z ]{1,50}$/.test(value),
+    "Only alphabets and spaces allowed (1–50 chars)"
+  );
 
+  $.validator.addMethod(
+    "emailPattern",
+    (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
+    "Enter a valid email"
+  );
+
+  $.validator.addMethod(
+    "mobilePattern",
+    (value) => /^[789]\d{9}$/.test(value),
+    "Mobile must start with 7/8/9 and be 10 digits"
+  );
+
+  $.validator.addMethod(
+    "gstinPattern",
+    (value) => /^[A-Z0-9]{15}$/.test(value),
+    "GSTIN must be 15 uppercase alphanumeric characters"
+  );
+
+  $.validator.addMethod(
+    "addressPattern",
+    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    "Address can include letters, numbers & special chars (max 100 chars)"
+  );
+
+  $.validator.addMethod(
+    "descriptionPattern",
+    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    "Description can include letters, numbers & special chars (max 100 chars)"
+  );
+
+  $("#leadForm").validate({
+    rules: {
+      firstName: { required: true, namePattern: true },
+      lastName: { required: true, namePattern: true },
+      email: { required: true, emailPattern: true },
+      mobileNumber: { required: true, mobilePattern: true },
+      gstin: { required: true, gstinPattern: true },
+      businessAddress: { addressPattern: true },
+      description: { descriptionPattern: true },
+    },
+    messages: {
+      firstName: { required: "Please enter first name" },
+      lastName: { required: "Please enter last name" },
+      email: { required: "Please enter email" },
+      mobileNumber: { required: "Please enter mobile number" },
+      gstin: { required: "Please enter GSTIN" },
+    },
+    errorElement: "span",
+    errorClass: "text-danger",
+  });
 });

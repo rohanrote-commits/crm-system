@@ -37,6 +37,7 @@ $(document).ready(function () {
                 },
                 error: function (xhr) {
                     if(xhr.status == 404){
+                        console.log(xhr)
                         alert("Invalid Credentials");
                     }else{
                         alert("Server Side Error");
