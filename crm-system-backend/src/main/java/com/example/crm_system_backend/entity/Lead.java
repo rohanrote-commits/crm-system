@@ -40,7 +40,7 @@ public class Lead {
             name = "lead_interested_modules",
             joinColumns = @JoinColumn(name = "lead_id")
     )
-    @Column(name = "module_name", unique = true)
+    @Column(name = "module_name")
     private Set<String> interestedModules = new HashSet<>();
 
     private Date createdAt;

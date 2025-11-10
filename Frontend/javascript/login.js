@@ -25,7 +25,7 @@ $(document).ready(function () {
             };
 
             $.ajax({
-                url: 'http://localhost:8080/crm/user/sign-in',
+                url: 'http://localhost:8080/api/crm/user/sign-in',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(user),
