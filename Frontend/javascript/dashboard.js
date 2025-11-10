@@ -1,6 +1,6 @@
-$(document).ready(function() {
 
-    // Parse JWT
+$(document).ready(function () {
+        // Parse JWT
     function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -24,63 +24,157 @@ $(document).ready(function() {
 
     const payload = parseJwt(token);
     const userRole = payload?.role?.trim();
-    console.log(userRole);
+    console.log(payload);
     
+    loadLeads(payload?.email,token);
 
     // Hide Users tab for non-admins
     if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
-        $(".tab-btn[data-target='users']").remove();
+        $(".sidebar-bt[data-target='users']").remove();
     }
 
-    // Show default tab: Leads
+  // Sidebar navigation
+  $(".sidebar-btn").click(function () {
+    const target = $(this).data("target");
+
+    $(".sidebar-btn").removeClass("active");
+    $(this).addClass("active");
+
     $(".dashboard-section").hide();
-    $("#leads").show();
-    $(".tab-btn[data-target='leads']").addClass("active");
+    $("#" + target).show();
+    console.log(target);
 
-    // Tab click handler
-    $(".tab-btn").click(function () {
-        const target = $(this).data("target");
+    if(target === "leads"){
+        loadLeads(payload?.email,token);
+    }
+    
+  });
 
-        // Show target section, hide others
-        $(".dashboard-section").hide();
-        $("#" + target).show();
+  // Profile dropdown
+  $("#profilePic").click(function () {
+    $("#profileDropdown").toggle();
+  });
 
-        // Active tab styling
-        $(".tab-btn").removeClass("active");
-        $(this).addClass("active");
-    });
+  // Close dropdown when clicked outside
+  $(document).click(function (event) {
+    if (!$(event.target).closest(".profile-menu").length) {
+      $("#profileDropdown").hide();
+    }
+  });
 
-    $("#profilePic").click(function(){
-        $("#profileDropdown").toggle();
-    });
+    // Delete button click
+    $('#lead-table').on('click', '.delete-lead', function() {
+        const email = $(this).data('email');
 
-    // Hide dropdown when clicked outside
-    $(document).click(function(event) {
-        if (!$(event.target).closest('.profile-menu').length) {
-            $("#profileDropdown").hide();
+        if (confirm("Are you sure you want to delete this lead?")) {
+            $.ajax({
+                url: `http://localhost:8080/api/crm/lead/`,
+                type: 'DELETE',
+                data :{
+                    email : email
+                },
+                headers: { "Authorization": "Bearer " + token },
+                success: function() {
+                    alert("Lead deleted successfully.");
+                    $('#lead-table').DataTable().ajax.reload();
+                },
+                error: function() {
+                    alert("Error deleting lead.");
+                }
+            });
         }
-    })
-
-    //get users button
-    $("#getUsersBtn").click(function () {
-    window.location.href = "/Frontend/html/all-users.html";
+    });
 
 });
 
-    $("#addUser").click(function () {
-    window.location.href = "/Frontend/html/add-single-user.html";
+// ✅ Function: Load Leads from API
+function loadLeads(email, token) {
+    $.ajax({
+        url: `http://localhost:8080/api/crm/lead/by/email/${email}`,
+        type: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        success: function (response) {
+            console.log("✅ Leads fetched:", response);
+            initializeLeadTable(response);
+        },
+        error: function (xhr) {
+                if (xhr.status === 401) {
+                    alert("Session expired. Login again.");
+                    sessionStorage.clear();
+                    window.location.href = "/Frontend/html/login.html";
+                } else {
+                    console.error("token is : " + token);
+                    alert("Error loading leads.");
+        }
+        }
+    });
+}
 
-});
-    $("#bulkUpload").click(function () {
-    window.location.href = "/Frontend/html/bulk-upload.html";
 
-});
-    $("#updateUsers").click(function () {
-    window.location.href = "/Frontend/html/update-user.html";
+// ✅ Function: Initialize DataTable with dynamic data
+function initializeLeadTable(data) {
+    if ($.fn.DataTable.isDataTable("#lead-table")) {
+        $("#lead-table").DataTable().clear().rows.add(data).draw();
+        return;
+    }
 
-});
-    $("#deleteUser").click(function () {
-    window.location.href = "/Frontend/html/delete-user.html";
-
-});
-});
+    $("#lead-table").DataTable({
+        data: data,
+        columns: [
+            { data: "firstName", title: "First Name" },
+            { data: "lastName", title: "Last Name" },
+            { data: "email", title: "Email" },
+            { data: "mobileNumber", title: "Mobile" },
+            { data: "gstin", title: "GSTIN" },
+            { data: "description", title: "Description" },
+            { data: "businessAddress", title: "Address" },
+            {
+                data: "leadStatus",
+                title: "Status",
+                render: function (data) {
+                    let badgeClass = "";
+                    switch (data) {
+                        case "ADDED": badgeClass = "bg-primary"; break;
+                        case "CONTACTED": badgeClass = "bg-warning"; break;
+                        case "CONVERTED": badgeClass = "bg-success"; break;
+                        case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
+                        default: badgeClass = "bg-secondary";
+                    }
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            {
+                data: "interestedModules",
+                title: "Interested Modules",
+                render: function (data) {
+                    return data && data.length ? data.join(", ") : "-";
+                }
+            },
+            {
+            data: null,
+            title: "Action",
+            orderable: false, // Prevent sorting on this column
+            render: function (data, type, row) {
+                return `
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            }
+        ],
+        destroy: true,
+        responsive: true,
+        searching: true,
+        paging: true,
+        ordering: true,
+        info: true
+    });
+}

@@ -2,14 +2,11 @@ package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.handler.IHandler;
 import com.example.crm_system_backend.handler.LeadHandler;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,14 +37,20 @@ public class LeadController {
         return new ResponseEntity<>(leadHandler.getLeadsByUser(userId), HttpStatus.OK);
     }
 
+    @GetMapping("/by/email/{email}")
+    public ResponseEntity<List<LeadDto>> getAllLeadsByUserByEmail(@PathVariable String email) {
+        return new ResponseEntity<>(leadHandler.getLeadsByUserEmail(email), HttpStatus.OK);
+    }
+
     @PutMapping("/{leadId}")
     public ResponseEntity<LeadDto> updateLead(@PathVariable Long leadId ,@Valid @RequestBody LeadDto leadDto) {
         return new ResponseEntity<>(leadHandler.edit(leadId,leadDto), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{leadId}")
-    public ResponseEntity<?>  deleteLead(@PathVariable Long leadId) {
-        leadHandler.delete(leadId);
+    @DeleteMapping("/")
+    public ResponseEntity<?>  deleteLead(@RequestParam String email) {
+        Lead lead = leadHandler.getLeadByEmail(email);
+        leadHandler.delete(lead.getId());
         return new ResponseEntity<>("Lead Deleted Successfully",HttpStatus.OK);
     }
 

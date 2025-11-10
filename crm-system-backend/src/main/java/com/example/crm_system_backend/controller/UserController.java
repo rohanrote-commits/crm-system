@@ -99,7 +99,7 @@ public class UserController {
     ResponseEntity<?> bulkUploadUserFile(@RequestParam MultipartFile file, HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
-        userHandler.    bulkUpload(file,userId, role);
+        userHandler.    bulkUpload(file,userId);
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 

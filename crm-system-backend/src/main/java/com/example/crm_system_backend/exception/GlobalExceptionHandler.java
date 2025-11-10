@@ -36,4 +36,13 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
     }
+
+    @ExceptionHandler(LeadException.class)
+    public ResponseEntity<ErrorResponse> handleLeadException(LeadException exception){
+        ErrorResponse errorResponse = new ErrorResponse(
+                exception.errorCode.getMessage(),
+                exception.errorCode.getStatus()
+        );
+        return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
 }
