@@ -1,5 +1,7 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.ReportType;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.service.Report.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,19 +18,20 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
+@CrossOrigin("*")
 public class ReportController {
 
     @Autowired
     private ReportService service;
 
-    @GetMapping("/getReport")
-    public ResponseEntity<byte[]> getExcelReport(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) throws IOException {
+    @GetMapping("/getSummaryReport")
+    public ResponseEntity<byte[]> getSummaryReport(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) throws IOException {
 
         // 1. Fetch Data
-        List<User> userList = service.getList(start, end);
+        List<User> userList = service.getUserList(start, end);
 
         // 2. Generate file bytes
-        byte[] excelBytes = service.listToExcel(userList, start, end);
+        byte[] excelBytes = service.ListToExcel(userList, start, end, null);
 
         // 3. Set headers and return file
         HttpHeaders headers = new HttpHeaders();
@@ -44,6 +48,22 @@ public class ReportController {
 
         // When the browser receives this response, it reads the headers, sees the Content-Disposition: attachment, and automatically
         // prompts the user to save the included excelBytes data as a file named Report.xlsx
+        return ResponseEntity.ok().headers(headers).body(excelBytes);
+    }
+
+    @GetMapping("/getReport")
+    public ResponseEntity<byte[]> getPerUserReport(@RequestParam String email) throws IOException {
+
+        List<Lead> leads = service.getLeadList(email);
+
+        byte[] excelBytes = service.ListToExcel(null, null, null, leads);
+
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(
+                MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", "Report.xlsx");
+
         return ResponseEntity.ok().headers(headers).body(excelBytes);
     }
 }

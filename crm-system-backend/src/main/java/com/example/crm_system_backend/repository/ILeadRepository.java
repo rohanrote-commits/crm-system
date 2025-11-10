@@ -15,6 +15,8 @@ public interface ILeadRepository extends JpaRepository<Lead,Integer> {
     Optional<Lead> getLeadsById(Long leadId);
     Optional<Lead> getLeadsByEmail(String email);
 
+    Optional<List<Lead>> getLeadsByUser(Optional<User> user);
+
     @Query("Select l.user from Lead l where l.createdAt = :date")
     Optional<User> getLeadsByDate(@Param("date") Date date);
 
@@ -23,4 +25,7 @@ public interface ILeadRepository extends JpaRepository<Lead,Integer> {
 
     @Query("Select l.leadStatus from Lead l where l.user.id = :userid")
     List<String> getLeadStatusByUserId(@Param("userid") Long userid);
+
+//    @Query("Select l from Lead l where l.user.id= :userId")
+//    List<Lead> getLeadsByUserId(@Param("userId") Long userId);
 }
