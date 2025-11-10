@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="summary-report" action="/submit" method="get">
+        <div id="get">
+            Start Date: <input type="date" name="startDate"><br/>
+            End Date: <input type="date" name="endDate"><br/><br/>
+            <button type="submit" class="btn">Get Report</button>
+        </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src = "summaryReport.js"></script>
+</body>
+</html>

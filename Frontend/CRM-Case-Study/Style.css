@@ -1,0 +1,30 @@
+#get {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: 40%;
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    margin: 0;
+    background-color: burlywood;
+}
+
+.btn {
+    display: block;
+    width: 50%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1.2rem;
+    color:black;
+    background-color:palevioletred;
+    align-items: center;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer; 
+}
+
