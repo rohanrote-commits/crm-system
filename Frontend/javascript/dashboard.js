@@ -47,6 +47,9 @@ $(document).ready(function () {
     if(target === "leads"){
         loadLeads(payload?.email,token);
     }
+    else if(target === "users"){
+        loadUsers(token)
+    }
     
   });
 
@@ -85,9 +88,88 @@ $(document).ready(function () {
         }
     });
 
+      $('#user-table').on('click', '.delete-user', function() {
+        const user = {
+            email : $(this).data('email')
+        };
+     
+      
+  
+        if (confirm("Are you sure you want to delete this User?")) {
+            $.ajax({
+                url: `http://localhost:8080/crm/user/delete-sub_user`,
+                type: 'DELETE',
+                contentType: "application/json",
+                data : JSON.stringify(user),
+                headers: { "Authorization": "Bearer " + token },
+                success: function() {
+                    alert("User deleted successfully.");
+                    $('#user-table').DataTable().ajax.reload();
+                },
+                error: function() {
+                    alert("Error deleting lead.");
+                }
+            });
+        }
+    });
+
+
 });
 
-// ✅ Function: Load Leads from API
+function loadUsers(token){
+    console.log(token);
+        $.ajax({
+        url: "http://localhost:8080/crm/user/users",
+        type: "GET",
+        headers: {
+            "Authorization":"Bearer "+ token
+        },
+        success: function (userList) {
+
+            $("#user-table").DataTable({
+                data: userList,
+                columns: [
+                    { data: "id" },
+                    { data: "firstName" },
+                    { data: "lastName" },
+                    { data: "email" },
+                    { data: "mobileNumber" },
+                    { data: "role" },
+                    {data : "emailOfAdminRegistered"},
+                    {
+                    data: null,
+                    title: "Action",
+                    orderable: false, // Prevent sorting on this column
+                    render: function (data, type, row) {
+                        return `
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-user" data-email="${row.email}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                    }
+                ],
+                pageLength: 5
+            });
+
+        },
+        error: function (xhr) {
+            if (xhr.status == 401) {
+                alert("Session expired. Login again.");
+                sessionStorage.clear();
+                window.location.href = "/Frontend/html/login.html";
+            } else {
+                alert("Error loading users.");
+            }
+        }
+    });
+}
+
 function loadLeads(email, token) {
     $.ajax({
         url: `http://localhost:8080/api/crm/lead/by/email/${email}`,
@@ -96,7 +178,7 @@ function loadLeads(email, token) {
             "Authorization": "Bearer " + token
         },
         success: function (response) {
-            console.log("✅ Leads fetched:", response);
+            console.log("Leads fetched:", response);
             initializeLeadTable(response);
         },
         error: function (xhr) {
@@ -113,7 +195,6 @@ function loadLeads(email, token) {
 }
 
 
-// ✅ Function: Initialize DataTable with dynamic data
 function initializeLeadTable(data) {
     if ($.fn.DataTable.isDataTable("#lead-table")) {
         $("#lead-table").DataTable().clear().rows.add(data).draw();

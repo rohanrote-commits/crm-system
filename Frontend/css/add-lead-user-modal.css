@@ -138,3 +138,90 @@ body {
 .full-width {
   grid-column: 1 / span 2;
 }
+
+/* Modal Background */
+#userModal .modal-content {
+    border-radius: 10px;
+    border: none;
+    animation: slideDown 0.3s ease;
+    padding: 20px 25px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Modal Header */
+#userModal .modal-header {
+    background-color: #0b3c61;
+    color: #fff;
+    border-bottom: none;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Close button */
+#userModal .btn-close-white {
+    filter: brightness(0) invert(1);
+}
+
+/* Form Grid */
+#userForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Each Input */
+#userForm .form-group label {
+    font-weight: 500;
+    color: #333;
+}
+
+#userForm .form-group input,
+#userForm .form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Address Optional Section (full width) */
+#address {
+    grid-column: 1 / span 2;
+}
+
+#addressFields {
+    display: none;
+    grid-column: 1 / span 2;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Buttons */
+#userModal .modal-footer .btn-secondary {
+    border-radius: 6px;
+}
+
+#saveUserdBtn {
+    background-color: #0b3c61;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    transition: 0.2s;
+}
+
+#saveUserdBtn:hover {
+    background-color: #094067;
+}
+
+/* Popup Animations */
+@keyframes slideDown {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

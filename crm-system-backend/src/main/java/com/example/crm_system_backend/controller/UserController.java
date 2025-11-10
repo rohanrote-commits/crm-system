@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/crm/user")
+@RequestMapping("/crm/user")
 public class UserController {
     @Autowired
     private UserHandler userHandler;
@@ -88,7 +88,7 @@ public class UserController {
 
     @RoleRequired({"ADMIN","MASTER_ADMIN"})
     @DeleteMapping("/delete-sub_user")
-    ResponseEntity<?> deleteSubUser(UserDTO userDTO,HttpServletRequest request){
+    ResponseEntity<?> deleteSubUser(@RequestBody UserDTO userDTO,HttpServletRequest request){
         Long userId = (Long) request.getAttribute("userId");
         userHandler.deleteSubUser(userId,userDTO);
         return new ResponseEntity<>("Deleted Successfully ", HttpStatus.OK);

@@ -135,6 +135,7 @@ public class UserExcelHelper {
 
             if (isThereError) {
                 log.error("Error in file processing");
+
                 throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
             }
 

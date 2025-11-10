@@ -26,7 +26,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS("EAE","Email Already Exists", HttpStatus.CONFLICT),
     MOBILE_NUMBER_ALREADY_EXISTS("MNAE","Mobile Number Already Exists", HttpStatus.CONFLICT),
     USER_DATA_NOT_UPDATABLE("UDNU","User Data Not Updatable", HttpStatus.NOT_ACCEPTABLE),
+    SESSION_EXPIRED("SE","Session Expired", HttpStatus.UNAUTHORIZED),
     ERROR_IN_FILE_PROCESSING("EFP","Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR);
+
 
 
     private final String code;
