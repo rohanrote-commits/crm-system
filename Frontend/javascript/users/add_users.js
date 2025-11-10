@@ -54,10 +54,9 @@ $(document).ready(function () {
             return;
         }
 
-        editUserId = rowData.id; // store user id for update
+        editUserId = rowData.id; 
         console.log("Editing user:", rowData);
 
-        // Set modal title and button
         $("#userModalLabel").text("Edit User");
         $("#saveUserBtn").text("Update User");
 
@@ -153,7 +152,7 @@ $(document).ready(function () {
                 url = `http://localhost:8080/crm/user/update-sub_user`;
                 method = "PUT";
             } else {
-                // Add mode → send full DTO
+            
                 payload = {
                     firstName: $("#userFirstName").val(),
                     lastName: $("#userLastName").val(),
@@ -178,7 +177,7 @@ $(document).ready(function () {
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: () => {
-                    alert(editUserId ? "✅ User Updated Successfully" : "✅ User Created Successfully");
+                    alert(editUserId ? "User Updated Successfully" : "User Created Successfully");
                     location.reload();
                 },
                 error: xhr => {
