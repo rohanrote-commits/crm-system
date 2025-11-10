@@ -12,6 +12,31 @@ $(document).ready(function () {
         }
     }
 
+    // Editing 
+     $("#user-table").on("click", ".edit-user", function () {
+    isEdit = true;
+    const rowData = $("#user-table")
+      .DataTable()
+      .row($(this).parents("tr"))
+      .data();
+
+    $("#leadModalLabel").text("Edit Lead");
+    $("#saveLeadBtn").text("Update Lead");
+
+    // Fill data
+   // $("#leadId").val(rowData.id);
+    $("#firstName").val(rowData.firstName);
+    $("#lastName").val(rowData.lastName);
+    $("#email").val(rowData.email);
+    $("#mobileNumber").val(rowData.mobileNumber);
+    $("#gstin").val(rowData.gstin);
+    $("#leadStatus").val(rowData.leadStatus);
+    $("#businessAddress").val(rowData.businessAddress);
+    $("#description").val(rowData.description);
+
+    $("#leadModal").modal("show");
+  });
+
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {

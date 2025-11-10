@@ -19,6 +19,7 @@
   <link rel="stylesheet" 
         href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+ 
 
 </head>
 
@@ -57,6 +58,7 @@
 
     <!-- Main Content -->
     <main class="dashboard-container">
+
       <!-- Leads Section -->
       <div class="dashboard-section" id="leads">
         <h3>Leads</h3>
@@ -95,10 +97,29 @@
         <div class="section-buttons">
           <button id="addUser" class="btn-section">Add User</button>
           <button id="bulkUpload" class="btn-section">Add Bulk Users</button>
-          <button id="updateUsers" class="btn-section">Update User</button>
-          <button id="getUsersBtn" class="btn-section">Get Registered Users</button>
-          <button id="deleteUser" class="btn-section">Delete User</button>
+
         </div>
+                <div class="lead-table-container">
+          <table id="user-table" class="table table-bordered table-hover "  style="width:100%; margin: 20px auto;">
+               <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Role</th>
+            <th>Registered By</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+            <tbody>
+              <tr>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        
       </div>
 
       <!-- Reports Section -->
@@ -191,6 +212,97 @@
 </div>
 
 
+<!-- Add User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="userModalLabel">Add User</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="userForm">
+          <input type="hidden" id="userId" name="userId">
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="userFirstName" class="form-label">First Name</label>
+              <input type="text" id="userFirstName" name="firstName" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="userLastName" class="form-label">Last Name</label>
+              <input type="text" id="userLastName" name="lastName" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="userEmail" class="form-label">Email</label>
+              <input type="email" id="userEmail" name="email" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="userMobileNumber" class="form-label">Mobile</label>
+              <input type="text" id="userMobileNumber" name="mobileNumber" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="userPassword" class="form-label">Password</label>
+              <input type="password" id="userPassword" name="password" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="userConfirmPassword" class="form-label">Confirm Password</label>
+              <input type="password" id="userConfirmPassword" name="confirmPassword" class="form-control" required>
+            </div>
+            <div class="col-12">
+              <label for="userAddress" class="form-label">Address (Optional)</label>
+              <input type="text" id="userAddress" name="address" class="form-control">
+            </div>
+
+            <div id="addressFields" class="row g-3 d-none">
+              <div class="col-md-6">
+                <label for="userCity" class="form-label">City</label>
+                <input type="text" id="userCity" name="city" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label for="userState" class="form-label">State</label>
+                <select id="userState" name="state" class="form-select">
+                  <option value="">Select State</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Delhi">Delhi</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="userCountry" class="form-label">Country</label>
+                <select id="userCountry" name="country" class="form-select">
+                  <option value="">Select Country</option>
+                  <option value="India">India</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="userPinCode" class="form-label">Pin Code</label>
+                <input type="text" id="userPinCode" name="pinCode" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="userRole" class="form-label">Role</label>
+              <select id="userRole" name="role" class="form-select" required>
+                <option value="">Select Role</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Modal footer must be inside form for submit button to work -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="saveUserBtn" class="btn btn-primary text-white">Save User</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- Import Leads Modal -->
 <div class="modal fade" id="importLeadsModal" tabindex="-1" aria-labelledby="importLeadsLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -219,14 +331,46 @@
   </div>
 </div>
 
+
+<!-- Import Users Modal -->
+<div class="modal fade" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importUsersLabel">Import Users from Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="importUsersForm" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="userFile" class="form-label">Upload Excel File (.xlsx / .xls)</label>
+            <input type="file" class="form-control" id="userFile" name="file" accept=".xlsx,.xls" required />
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-success">Upload & Import</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Custom JS -->
-  <script src="/Frontend/javascript/dashboard.js"></script>
-  <script src="/Frontend/javascript/leads/add_lead.js"></script>
-  
-  <script src="/Frontend/javascript/leads/upload_lead.js"></script>
+<script src="/Frontend/javascript/jquery.validate.min.js"></script> <!-- FIRST -->
+<script src="/Frontend/javascript/dashboard.js"></script>
+<script src="/Frontend/javascript/leads/add_lead.js"></script>
+<script src="/Frontend/javascript/users/add_users.js"></script>
+<script src="/Frontend/javascript/leads/upload_lead.js"></script>
+<script src = "/Frontend/javascript/users/upload-users.js"></script>
+
 </body>
 
 </html>
