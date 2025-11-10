@@ -13,6 +13,7 @@ import java.util.Set;
 
 @Data
 public class LeadDto {
+    private Long id;
     private String firstName;
     private String lastName;
     @Email(message = "Email should be valid")

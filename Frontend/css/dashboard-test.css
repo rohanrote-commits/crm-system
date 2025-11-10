@@ -205,3 +205,16 @@ body {
 .btn-orange:hover {
   background-color: #ff854f;
 }
+
+.template-menu {
+  position: relative;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+}
+
+.template-menu a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+}
