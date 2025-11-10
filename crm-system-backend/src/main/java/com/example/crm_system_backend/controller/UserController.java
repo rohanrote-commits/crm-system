@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/crm/user")
+@RequestMapping("/api/crm/user")
 public class UserController {
     @Autowired
     private UserHandler userHandler;

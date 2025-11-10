@@ -42,9 +42,10 @@ public class LeadController {
         return new ResponseEntity<>(leadHandler.getLeadsByUserEmail(email), HttpStatus.OK);
     }
 
-    @PutMapping("/{leadId}")
-    public ResponseEntity<LeadDto> updateLead(@PathVariable Long leadId ,@Valid @RequestBody LeadDto leadDto) {
-        return new ResponseEntity<>(leadHandler.edit(leadId,leadDto), HttpStatus.OK);
+    @PutMapping("/{email}")
+    public ResponseEntity<LeadDto> updateLead(@PathVariable String email ,@Valid @RequestBody LeadDto leadDto) {
+        Lead lead = leadHandler.getLeadByEmail(email);
+        return new ResponseEntity<>(leadHandler.edit(lead.getId(),leadDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/")
