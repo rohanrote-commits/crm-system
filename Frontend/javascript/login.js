@@ -16,6 +16,14 @@ $(document).ready(function () {
         errorClass: "error-message",
         highlight: function (element) { $(element).addClass("error"); },
         unhighlight: function (element) { $(element).removeClass("error"); },
+        errorPlacement: function (error, element) {
+            if (element.attr("name") === "loginPassword") {
+                // Place error after the wrapper div
+                error.insertAfter(element.closest(".password-wrapper"));
+            } else {
+                error.insertAfter(element);
+            }
+        },
 
         submitHandler: function () {
 
@@ -32,12 +40,12 @@ $(document).ready(function () {
                 success: function (token) {
                     alert(" Login Successful");
                     sessionStorage.setItem("Authorization", token);
-                    window.location.href = "dashboard-test.html";
+                    window.location.href = "dashboard.html";
                     
                 },
                 error: function (xhr) {
-                    if(xhr.status == 404){
-                        console.log(xhr)
+                    if(xhr.status === 404){
+                        console.log(xhr);
                         alert("Invalid Credentials");
                     }else{
                         alert("Server Side Error");
@@ -48,5 +56,18 @@ $(document).ready(function () {
             });
         }
     });
+
+$(document).ready(function() {
+  $('.pw-toggle').on('click', function() {
+    const input = $('#loginPassword');
+    const isHidden = input.attr('type') === 'password';
+    input.attr('type', isHidden ? 'text' : 'password');
+    
+    // Update aria attributes for accessibility
+    $(this).attr('aria-pressed', isHidden);
+    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+  });
+});
+
 
 });

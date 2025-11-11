@@ -27,6 +27,7 @@ public enum ErrorCode {
     MOBILE_NUMBER_ALREADY_EXISTS("MNAE","Mobile Number Already Exists", HttpStatus.CONFLICT),
     USER_DATA_NOT_UPDATABLE("UDNU","User Data Not Updatable", HttpStatus.NOT_ACCEPTABLE),
     SESSION_EXPIRED("SE","Session Expired", HttpStatus.UNAUTHORIZED),
+    ANOTHER_SESSION_ACTIVE("ASA","Another Session Active", HttpStatus.CONFLICT),
     ERROR_IN_FILE_PROCESSING("EFP","Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR);
 
 

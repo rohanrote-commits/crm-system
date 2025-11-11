@@ -10,6 +10,19 @@ $(document).ready(function() {
             $("#city, #state, #country, #pinCode").prop('required', false);
         }
     });
+      $('#clearAllBtn').click(function() {
+    $('#signUpForm')[0].reset(); 
+    $('#addressFields').slideUp(); 
+  });
+
+    $('.pw-toggle').on('click', function() {
+    const input = $(this).siblings('input'); // input inside same wrapper
+    const isHidden = input.attr('type') === 'password';
+    input.attr('type', isHidden ? 'text' : 'password');
+
+    $(this).attr('aria-pressed', isHidden);
+    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+  });
 
     // Custom regex validation methods
     $.validator.addMethod("namePattern", function(value, element) {
@@ -20,16 +33,16 @@ $(document).ready(function() {
         return this.optional(element) || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value);
     }, "Enter a valid email");
 
-    $.validator.addMethod("passwordPattern", function(value, element) {
-        return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,16}$/.test(value);
-    }, "Password must be 8-16 chars with upper, lower, number, special char");
+$.validator.addMethod("passwordPattern", function (value) {
+    return value.length >= 8 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/.test(value);
+}, "Password should have at least one upper case, one lower case, one number and one special char");
 
     $.validator.addMethod("mobilePattern", function(value, element) {
         return this.optional(element) || /^[789]\d{9}$/.test(value);
     }, "Mobile must start with 7/8/9 and be 10 digits");
 
     $.validator.addMethod("addressPattern", function(value, element) {
-        return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,100}$/.test(value);
+        return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,200}$/.test(value);
     }, "Address can contain letters, numbers, ,./#- (max 100)");
 
     $.validator.addMethod("pinPattern", function(value, element) {
@@ -42,7 +55,7 @@ $(document).ready(function() {
             firstName: { required: true, namePattern: true },
             lastName: { required: true, namePattern: true },
             email: { required: true, emailPattern: true },
-            password: { required: true, passwordPattern: true },
+            password: { required: true, passwordPattern: true , minlength : 8, maxlength : 16},
             confirmPassword: { required: true, equalTo: "#password" },
             mobileNumber: { required: true, mobilePattern: true },
             address: { required: false, addressPattern: true },
@@ -58,7 +71,7 @@ $(document).ready(function() {
             firstName: { required: "Please enter your first name" },
             lastName: { required: "Please enter your last name" },
             email: { required: "Please enter your email" },
-            password: { required: "Please enter password" },
+            password: { required: "Please enter password", maxlength : "Password should not have more than 16 characters" },
             confirmPassword: { required: "Confirm your password", equalTo: "Passwords do not match" },
             mobileNumber: { required: "Enter mobile number" },
             address: { required: "Enter address" },
@@ -68,8 +81,12 @@ $(document).ready(function() {
             pinCode: { required: "Enter pin code" }
         },
         errorClass: "error-message",
-        errorPlacement: function(error, element) {
-            error.insertAfter(element);
+        errorPlacement: function (error, element) {
+            if (element.attr("name") === "password" || element.attr("name") === "confirmPassword") {
+                error.insertAfter(element.closest(".password-wrapper"));
+            } else {
+                error.insertAfter(element);
+            }
         },
         highlight: function(element) {
             $(element).addClass('error');
