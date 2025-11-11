@@ -17,7 +17,7 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-        alert("⚠ Unauthorized. Please login.");
+        alert("Unauthorized. Please login.");
         window.location.href = "/Frontend/html/login.html";
         return;
     }
@@ -60,6 +60,68 @@ if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
   $("#profilePic").click(function () {
     $("#profileDropdown").toggle();
   });
+
+  //delete profile
+  $("#delete-profile").click(function () {
+
+    if (!token) {
+        alert("User not logged in!");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
+        return;
+    }
+
+    $.ajax({
+        url: `http://localhost:8080/crm/user/delete-user`,
+        type: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        success: function (response) {
+            alert(response);
+
+            // remove token after success
+            localStorage.removeItem("Authorization");
+
+            // redirect to login page
+            window.location.href = "/Frontend/html/login.html";
+        },
+        error: function (xhr) {
+            alert("Failed to delete user: " + xhr.responseText);
+        }
+    });
+});
+
+//logout
+$("#logout").click(function () {
+    if (!token) {
+        window.location.href = "/Frontend/html/login.html";
+        return;
+    }
+    $.ajax({
+        url: `http://localhost:8080/crm/user/logout`,
+        type: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        success: function (response) {
+            alert(response);
+
+            // remove token
+            localStorage.removeItem("Authorization");
+
+            // redirect to login
+            window.location.href = "/Frontend/html/login.html";
+        },
+        error: function (xhr) {
+            alert("Failed to logout: " + xhr.responseText);
+        }
+    });
+});
+
+
 
   // Close dropdown when clicked outside
   $(document).click(function (event) {
@@ -115,6 +177,37 @@ if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
             });
         }
     });
+
+    $("#view-profile").click(function () {
+
+
+    $.ajax({
+        url: `http://localhost:8080/crm/user/get-user`,
+        type: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        success: function (user) {
+
+            $("#profileName").text(user.firstName + " " + user.lastName);
+            $("#profileEmail").text(user.email);
+            $("#profileMobile").text(user.mobileNumber);
+            $("#profileAddress").text(user.address || "-");
+            $("#profileCity").text(user.city || "-");
+            $("#profileState").text(user.state || "-");
+            $("#profileCountry").text(user.country || "-");
+            $("#profilePin").text(user.pinCode || "-");
+            $("#profileRole").text(user.role);
+            $("#profileDate").text(user.registeredOn);
+
+            $("#profileModal").modal("show");
+        },
+        error: function () {
+            alert("Failed to fetch profile");
+        }
+    });
+});
+
 
 
 });

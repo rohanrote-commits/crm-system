@@ -41,11 +41,10 @@
       <div class="profile-menu">
         <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
         <div class="dropdown" id="profileDropdown">
-          <button class="drop-item">View Users</button>
-          <button class="drop-item">Update User</button>
-          <button class="drop-item">Delete User</button>
-          <button class="drop-item">Logout</button>
-          <button class="drop-item">Help Desk</button>
+          <button id = "view-profile" class="drop-item">View Profile</button>
+          <button id = "delete-profile" class="drop-item">Delete Profile</button>
+          <button id = "logout" class="drop-item">Logout</button>
+         
         </div>
       </div>
     </div>
@@ -367,7 +366,84 @@
       </div>
     </div>
   </div>
+
 </div>
+
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header text-white">
+        <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Name</label>
+            <p class="form-control-plaintext" id="profileName"></p>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Mobile</label>
+            <p class="form-control-plaintext" id="profileMobile"></p>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Email</label>
+            <p class="form-control-plaintext" id="profileEmail"></p>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Role</label>
+            <p class="form-control-plaintext" id="profileRole"></p>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-bold">Address</label>
+            <p class="form-control-plaintext" id="profileAddress"></p>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold">City</label>
+            <p class="form-control-plaintext" id="profileCity"></p>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold">State</label>
+            <p class="form-control-plaintext" id="profileState"></p>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Country</label>
+            <p class="form-control-plaintext" id="profileCountry"></p>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Pin Code</label>
+            <p class="form-control-plaintext" id="profilePin"></p>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Registered On</label>
+            <p class="form-control-plaintext" id="profileDate"></p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
