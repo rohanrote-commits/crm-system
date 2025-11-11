@@ -6,5 +6,5 @@ public interface IUserSessionService {
     public boolean findSessionByEmail(String email);
     public void deleteSessionByEmail(String email);
     public void saveSession(UserSession userSession);
-
+    public boolean findSessionByToken(String token,String email);
 }

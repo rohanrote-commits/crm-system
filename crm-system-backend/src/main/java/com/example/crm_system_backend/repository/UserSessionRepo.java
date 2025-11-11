@@ -9,4 +9,8 @@ public interface UserSessionRepo extends JpaRepository<UserSession, String> {
     boolean existsByEmail(String email);
 
     void deleteByEmail(String email);
+
+    boolean existsByToken(String token);
+
+    boolean existsByTokenAndEmail(String token, String email);
 }
