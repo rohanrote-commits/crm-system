@@ -1,0 +1,14 @@
+/* .lead-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 30px;
+} */
+/* .lead-details p {
+  margin: 6px 0;
+}
+.lead-details strong {
+  color: #333;
+} */
+#viewLeadLabel{
+    color: white;
+}
