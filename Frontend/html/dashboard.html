@@ -1,456 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard | CRM Lead Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | CRM Lead Management</title>
     <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="/Frontend/css/dashboard-test.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/Frontend/css/dashboard-test.css">
+    <link rel="stylesheet" href="/Frontend/css/lead-model.css">
 
-  <!-- jQuery must come first -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- jQuery must come first -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
 
-  <!-- Then DataTables -->
-  <link rel="stylesheet" 
-        href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- Then DataTables -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 </head>
 
 <body>
-  <!-- Header -->
-  <header class="top-bar">
+<!-- Header -->
+<header class="top-bar">
     <div class="logo">CRM <span>Lead Management</span></div>
-        <div class="template-menu">
-      <a href="#" id="templateMenuToggle">Template ⮟</a>
-      <div class="dropdown" id="templateDropdown">
-        <button class="drop-item-template" id ="userTemplate" >User Template</button>
-        <button class="drop-item-template" id = "leadTemplate">Lead Template</button>
-        <button class="drop-item-template" id="reportTemplate">Report Template</button>
-      </div>
+    <!-- <div class="template-menu">
+    <a href="#" id="templateMenuToggle">Template ⮟</a>
+    <div class="dropdown" id="templateDropdown">
+      <button class="drop-item" id ="userTemplate" >User Template</button>
+      <button class="drop-item" id = "leadTemplate">Lead Template</button>
+      <button class="drop-item" id="reportTemplate">Report Template</button>
     </div>
-      </div>
+  </div> -->
+    </div>
     <div class="nav-right">
-      <div class="profile-menu">
-        <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
-        <div class="dropdown" id="profileDropdown">
-          <button id = "view-profile" class="drop-item">View Profile</button>
-          <button id = "delete-profile" class="drop-item">Delete Profile</button>
-          <button id = "logout" class="drop-item">Logout</button>
-         
+        <div class="profile-menu">
+            <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
+            <div class="dropdown" id="profileDropdown">
+                <button id = "view-profile" class="drop-item">View Profile</button>
+                <button id = "delete-profile" class="drop-item">Delete Profile</button>
+                <button id = "logout" class="drop-item">Logout</button>
+            </div>
         </div>
-      </div>
     </div>
-  </header>
+</header>
 
-  <!-- Dashboard Layout -->
-  <div class="dashboard-layout">
+<!-- Dashboard Layout -->
+<div class="dashboard-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>CRM</h2>
-        <span>Lead Management</span>
-      </div>
-      <nav class="sidebar-nav">
-        <button class="sidebar-btn active" data-target="leads">Leads</button>
-        <button class="sidebar-btn" data-target="users" style="display:none;">Users</button>
-        <button class="sidebar-btn" data-target="reports">Reports</button>
-      </nav>
+        <nav class="sidebar-nav">
+            <button class="sidebar-btn active" data-target="leads">Leads</button>
+            <!-- <button class="sidebar-btn" data-target="users" style="display:none;">Users</button> -->
+            <button class="sidebar-btn" data-target="reports">Reports</button>
+        </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="dashboard-container">
-      <!-- Leads Section -->
-      <div class="dashboard-section" id="leads">
-        <h3>Leads</h3>
-        <div class="section-buttons">
-          <button class="btn-section" id = "addLeadBtn">Add Lead</button>
-          <button class="btn-section" id = "importLeadBtn" >Import Leads</button>
-        </div>
-        <div class="lead-table-container">
-          <table id="lead-table" class="table table-bordered table-hover "  style="width:100%; margin: 20px auto;">
-            <thead>
-              <tr>
-                <!-- <th>ID</th> -->
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Mobile</th>
-                <th>GSTIN</th>
-                <th>Description</th>
-                <th>Address</th>
-                <th>Status</th>
-                <th>Intrested Modules</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-      </div>
 
-      <!-- Users Section -->
-      <div class="dashboard-section" id="users" style="display:none;">
-        <h3>Users</h3>
-        <div class="section-buttons">
-          <button id="addUser" class="btn-section">Add User</button>
-          <button id="bulkUpload" class="btn-section">Add Bulk Users</button>
-
+        <!-- Leads Section -->
+        <div class="dashboard-section" id="leads">
+            <!-- Header -->
+            <div class="section-header">
+                <div class="lead-header">
+                    <h3>Leads</h3>
+                    <div class="section-buttons">
+                        <button class="btn-section" id="addLeadBtn">Add Lead</button>
+                        <div class="dropdown" id="leadDropdown">
+                            <button id="addSingleLeadBtn" class="drop-item">Add Lead</button>
+                            <button id="importLead" class="drop-item">Bulk Import</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <!-- Table -->
+            <div class="section-body">
+                <div class="lead-table-container">
+                    <table id="lead-table" class="table table-bordered table-hover" style="width:100%; margin: 20px auto;">
+                        <thead class="table-primary">
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>GSTIN</th>
+                            <th>Description</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Interested Modules</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
+        <!-- Users Section -->
+        <!-- <div class="dashboard-section" id="users" style="display:none;"> -->
+            <!-- Header -->
+            <!-- <div class="section-header">
+                <div class="lead-header">
+                    <h3>Users</h3>
+                    <div class="section-buttons">
+                        <button id="addUser" class="btn-section">Add User</button>
+                        <button id="bulkUpload" class="btn-section">Add Bulk Users</button>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Table -->
+            <!-- <div class="section-body">
                 <div class="user-table-container">
-          <table id="user-table" class="table table-bordered table-hover "  style="width:100%; margin: 20px auto;">
-               <thead>
-        <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Mobile</th>
-            <th>Role</th>
-            <th>Registered By</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-            <tbody>
-              <tr>
-              </tr>
-            </tbody>
-          </table>
-          </div>
+                    <table id="user-table" class="table table-bordered table-hover" style="width:100%; margin: 20px auto;">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Role</th>
+                            <th>Registered By</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div> -->
 
-      </div>
+        <!-- Reports Section -->
+        <div class="dashboard-section" id="reports" style="display:none;">
+            <!-- Header -->
+            <div class="section-header">
+                <div class="lead-header">
+                    <h3>Reports</h3>
+                    <div class="section-buttons">
+                        <button class="btn-section">Generate Report</button>
+                        <button class="btn-section">View Reports</button>
+                        <button class="btn-section">Download Report</button>
+                    </div>
+                </div>
+            </div>
 
-      <!-- Reports Section -->
-      <div class="dashboard-section" id="reports" style="display:none;">
-        <h3>Reports</h3>
-        <div class="section-buttons">
-          <button class="btn-section">Generate Report</button>
-          <button class="btn-section">View Reports</button>
-          <button class="btn-section">Download Report</button>
+            <!-- Body -->
+            <div class="section-body">
+                <!-- You can place report content here -->
+            </div>
         </div>
-      </div>
+
     </main>
-  </div>
+</div>
 
-
-  <!-- Add / Edit Lead Modal -->
+<!-- Add / Edit Lead Modal -->
 <div class="modal fade" id="leadModal" tabindex="-1" aria-labelledby="leadModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header  text-white" >
-        <h5 class="modal-title" id="leadModalLabel">Add Lead</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header  text-white" >
+                <h5 class="modal-title" id="leadModalLabel">Add Lead</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-      <div class="modal-body">
-        <form id="leadForm">
-          <input type="hidden" id="leadId" name="leadId">
+            <div class="modal-body">
+                <form id="leadForm">
+                    <input type="hidden" id="leadId" name="leadId">
 
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="firstName" class="form-label">First Name</label>
-              <input type="text" id="firstName" name="firstName" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="lastName" class="form-label">Last Name</label>
-              <input type="text" id="lastName" name="lastName" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" id="email" name="email" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="mobileNumber" class="form-label">Mobile</label>
-              <input type="text" id="mobileNumber" name="mobileNumber" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="gstin" class="form-label">GSTIN</label>
-              <input type="text" id="gstin" name="gstin" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label for="leadStatus" class="form-label">Status</label>
-              <select id="leadStatus" name="leadStatus" class="form-select">
-                <option value="ADDED">ADDED</option>
-                <option value="CONTACTED">CONTACTED</option>
-                <option value="CONVERTED">CONVERTED</option>
-                <option value="NOT_CONVERTED">NOT_CONVERTED</option>
-              </select>
-            </div>
-            <div class="col-12">
-              <label for="businessAddress" class="form-label">Address</label>
-              <textarea id="businessAddress" name="businessAddress" class="form-control" rows="2"></textarea>
-            </div>
-            <div class="col-12">
-              <label for="description" class="form-label">Description</label>
-              <textarea id="description" name="description" class="form-control" rows="2"></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="interestedModules" class="form-label">Interested Modules</label>
-              <select id="interestedModules" class="form-select" multiple>
-                <option value="GSTR">GSTR</option>
-                <option value="ITC Reconsilation">ITC Reconsilation</option>
-                <option value="E Invoice">E Invoice</option>
-                <option value="EWay Bil">EWay Bill</option>
-                <option value="LMS">LMS</option>
-                <option value="Third Eye">Third Eye</option>
-                <option value="Safe Sign">Safe Sign</option>
-              </select>
-              <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
-            </div>
-          </div>
-      </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name<span class="required">*</span></label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name<span class="required">*</span></label>
+                            <input type="text" id="lastName" name="lastName" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email<span class="required">*</span></label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mobileNumber" class="form-label">Mobile<span class="required">*</span></label>
+                            <input type="text" id="mobileNumber" name="mobileNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gstin" class="form-label">GSTIN<span class="required">*</span></label>
+                            <input type="text" id="gstin" name="gstin" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="leadStatus" class="form-label">Status</label>
+                            <select id="leadStatus" name="leadStatus" class="form-select">
+                                <option value="ADDED">ADDED</option>
+                                <option value="CONTACTED">CONTACTED</option>
+                                <option value="CONVERTED">CONVERTED</option>
+                                <option value="NOT_CONVERTED">NOT CONVERTED</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="businessAddress" class="form-label">Address</label>
+                            <textarea id="businessAddress" name="businessAddress" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interested Modules<span class="required">*</span></label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="GSTR" id="modGSTR" name="interestedModules">
+                                        <label class="form-check-label" for="modGSTR">GSTR</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ITC Reconsilation" id="modITC" name="interestedModules">
+                                        <label class="form-check-label" for="modITC">ITC Reconciliation</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="E Invoice" id="modEInvoice" name="interestedModules">
+                                        <label class="form-check-label" for="modEInvoice">E-Invoice</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="EWay Bill" id="modEWay" name="interestedModules">
+                                        <label class="form-check-label" for="modEWay">E-Way Bill</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="LMS" id="modLMS" name="interestedModules">
+                                        <label class="form-check-label" for="modLMS">LMS</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="Third Eye" id="modThirdEye" name="interestedModules">
+                                        <label class="form-check-label" for="modThirdEye">Third Eye</label>
+                                    </div>
+                                </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
-      </div>
-      </form>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="Safe Sign" id="modSafeSign" name="interestedModules">
+                                        <label class="form-check-label" for="modSafeSign">Safe Sign</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
+            </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
 
 
 <!-- Add User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
 
-      <div class="modal-header text-white">
-        <h5 class="modal-title" id="userModalLabel">Add User</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="userForm">
-          <input type="hidden" id="userId" name="userId">
-
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="userFirstName" class="form-label">First Name</label>
-              <input type="text" id="userFirstName" name="firstName" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="userLastName" class="form-label">Last Name</label>
-              <input type="text" id="userLastName" name="lastName" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label for="userEmail" class="form-label">Email</label>
-              <input type="email" id="userEmail" name="email" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="userMobileNumber" class="form-label">Mobile</label>
-              <input type="text" id="userMobileNumber" name="mobileNumber" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="userPassword" class="form-label">Password</label>
-              <input type="password" id="userPassword" name="password" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="userConfirmPassword" class="form-label">Confirm Password</label>
-              <input type="password" id="userConfirmPassword" name="confirmPassword" class="form-control" required>
-            </div>
-            <div class="col-12">
-              <label for="userAddress" class="form-label">Address (Optional)</label>
-              <input type="text" id="userAddress" name="address" class="form-control">
+            <div class="modal-header text-white">
+                <h5 class="modal-title" id="userModalLabel">Add User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <div id="addressFields" class="row g-3 d-none">
-              <div class="col-md-6">
-                <label for="userCity" class="form-label">City</label>
-                <input type="text" id="userCity" name="city" class="form-control">
-              </div>
-              <div class="col-md-6">
-                <label for="userState" class="form-label">State</label>
-                <select id="userState" name="state" class="form-select">
-                  <option value="">Select State</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Gujarat">Gujarat</option>
-                  <option value="Delhi">Delhi</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label for="userCountry" class="form-label">Country</label>
-                <select id="userCountry" name="country" class="form-select">
-                  <option value="">Select Country</option>
-                  <option value="India">India</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label for="userPinCode" class="form-label">Pin Code</label>
-                <input type="text" id="userPinCode" name="pinCode" class="form-control">
-              </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId" name="userId">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="userFirstName" class="form-label">First Name</label>
+                            <input type="text" id="userFirstName" name="firstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="userLastName" class="form-label">Last Name</label>
+                            <input type="text" id="userLastName" name="lastName" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="userEmail" class="form-label">Email</label>
+                            <input type="email" id="userEmail" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="userMobileNumber" class="form-label">Mobile</label>
+                            <input type="text" id="userMobileNumber" name="mobileNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="userPassword" class="form-label">Password</label>
+                            <input type="password" id="userPassword" name="password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="userConfirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" id="userConfirmPassword" name="confirmPassword" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="userAddress" class="form-label">Address (Optional)</label>
+                            <input type="text" id="userAddress" name="address" class="form-control">
+                        </div>
+
+                        <div id="addressFields" class="row g-3 d-none">
+                            <div class="col-md-6">
+                                <label for="userCity" class="form-label">City</label>
+                                <input type="text" id="userCity" name="city" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="userState" class="form-label">State</label>
+                                <select id="userState" name="state" class="form-select">
+                                    <option value="">Select State</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Gujarat">Gujarat</option>
+                                    <option value="Delhi">Delhi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="userCountry" class="form-label">Country</label>
+                                <select id="userCountry" name="country" class="form-select">
+                                    <option value="">Select Country</option>
+                                    <option value="India">India</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="userPinCode" class="form-label">Pin Code</label>
+                                <input type="text" id="userPinCode" name="pinCode" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="userRole" class="form-label">Role</label>
+                            <select id="userRole" name="role" class="form-select" required>
+                                <option value="">Select Role</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveUserBtn" class="btn btn-primary text-white">Save User</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="col-md-6">
-              <label for="userRole" class="form-label">Role</label>
-              <select id="userRole" name="role" class="form-select" required>
-                <option value="">Select Role</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Modal footer must be inside form for submit button to work -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" id="saveUserBtn" class="btn btn-primary text-white">Save User</button>
-          </div>
-        </form>
-      </div>
-
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Import Leads Modal -->
 <div class="modal fade" id="importLeadsModal" tabindex="-1" aria-labelledby="importLeadsLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="importLeadsLabel">Import Leads from Excel</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importLeadsLabel">Import Leads from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-      <div class="modal-body">
-        <form id="importLeadsForm" enctype="multipart/form-data">
-          <div class="mb-3">
-            <label for="leadFile" class="form-label">Upload Excel File (.xlsx / .xls)</label>
-            <input type="file" class="form-control" id="leadFile" name="file" accept=".xlsx,.xls" required />
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-success">Upload & Import</button>
-          </div>
-        </form>
-      </div>
+            <div class="modal-body">
+                <form id="importLeadsForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="leadFile" class="form-label">Upload Excel File (.xlsx / .xls)</label>
+                        <input type="file" class="form-control" id="leadFile" name="file" accept=".xlsx,.xls" required />
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">Upload & Import</button>
+                    </div>
+                </form>
+            </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 
 <!-- Import Users Modal -->
 <div class="modal fade" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="importUsersLabel">Import Users from Excel</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importUsersLabel">Import Users from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-      <div class="modal-body">
-        <form id="importUsersForm" enctype="multipart/form-data">
-          <div class="mb-3">
-            <label for="userFile" class="form-label">Upload Excel File (.xlsx / .xls)</label>
-            <input type="file" class="form-control" id="userFile" name="file" accept=".xlsx,.xls" required />
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-success">Upload & Import</button>
-          </div>
-        </form>
-      </div>
+            <div class="modal-body">
+                <form id="importUsersForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="userFile" class="form-label">Upload Excel File (.xlsx / .xls)</label>
+                        <input type="file" class="form-control" id="userFile" name="file" accept=".xlsx,.xls" required />
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">Upload & Import</button>
+                    </div>
+                </form>
+            </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
-  </div>
 
 </div>
 
 <!-- Profile Modal -->
 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
 
-      <div class="modal-header text-white">
-        <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+            <div class="modal-header text-white">
+                <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-      <div class="modal-body">
-        <div class="row g-3">
+            <div class="modal-body">
+                <div class="row g-3">
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Name</label>
-            <p class="form-control-plaintext" id="profileName"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Name</label>
+                        <p class="form-control-plaintext" id="profileName"></p>
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Mobile</label>
-            <p class="form-control-plaintext" id="profileMobile"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Mobile</label>
+                        <p class="form-control-plaintext" id="profileMobile"></p>
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Email</label>
-            <p class="form-control-plaintext" id="profileEmail"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Email</label>
+                        <p class="form-control-plaintext" id="profileEmail"></p>
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Role</label>
-            <p class="form-control-plaintext" id="profileRole"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Role</label>
+                        <p class="form-control-plaintext" id="profileRole"></p>
+                    </div>
 
-          <div class="col-12">
-            <label class="form-label fw-bold">Address</label>
-            <p class="form-control-plaintext" id="profileAddress"></p>
-          </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Address</label>
+                        <p class="form-control-plaintext" id="profileAddress"></p>
+                    </div>
 
-          <div class="col-md-4">
-            <label class="form-label fw-bold">City</label>
-            <p class="form-control-plaintext" id="profileCity"></p>
-          </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">City</label>
+                        <p class="form-control-plaintext" id="profileCity"></p>
+                    </div>
 
-          <div class="col-md-4">
-            <label class="form-label fw-bold">State</label>
-            <p class="form-control-plaintext" id="profileState"></p>
-          </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">State</label>
+                        <p class="form-control-plaintext" id="profileState"></p>
+                    </div>
 
-          <div class="col-md-4">
-            <label class="form-label fw-bold">Country</label>
-            <p class="form-control-plaintext" id="profileCountry"></p>
-          </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Country</label>
+                        <p class="form-control-plaintext" id="profileCountry"></p>
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Pin Code</label>
-            <p class="form-control-plaintext" id="profilePin"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Pin Code</label>
+                        <p class="form-control-plaintext" id="profilePin"></p>
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Registered On</label>
-            <p class="form-control-plaintext" id="profileDate"></p>
-          </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Registered On</label>
+                        <p class="form-control-plaintext" id="profileDate"></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
 
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-
     </div>
-  </div>
+</div>
+
+<!-- View Lead Modal -->
+<div class="modal fade" id="viewLeadModal" tabindex="-1" aria-labelledby="viewLeadLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewLeadLabel">Lead Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="lead-details">
+                    <p><strong>First Name:</strong> <span id="viewFirstName"></span></p>
+                    <p><strong>Last Name:</strong> <span id="viewLastName"></span></p>
+                    <p><strong>Email:</strong> <span id="viewEmail"></span></p>
+                    <p><strong>Mobile:</strong> <span id="viewMobile"></span></p>
+                    <p><strong>GSTIN:</strong> <span id="viewGstin"></span></p>
+                    <p><strong>Description:</strong> <span id="viewDescription"></span></p>
+                    <p><strong>Address:</strong> <span id="viewAddress"></span></p>
+                    <p><strong>Status:</strong> <span id="viewStatus"></span></p>
+                    <p><strong>Interested Modules:</strong> <span id="viewModules"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Custom JS -->
-  <script src="/Frontend/javascript/dashboard.js"></script>
-   <script src="/Frontend/javascript/leads/download_templates.js"></script>
+<!-- Custom JS -->
+<script src="/Frontend/javascript/dashboard.js"></script>
+<script src="/Frontend/javascript/leads/download_templates.js"></script>
 <script src="/Frontend/javascript/leads/add_lead.js"></script>
 <script src="/Frontend/javascript/users/add_users.js"></script>
 <script src="/Frontend/javascript/leads/upload_lead.js"></script>

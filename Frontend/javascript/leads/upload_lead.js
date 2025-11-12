@@ -26,6 +26,18 @@ $(document).ready(function() {
 
   const payload = parseJwt(token);
   const userRole = payload?.role?.trim();
+  
+      // Profile dropdown
+    $("#profilePic").click(function () {
+        $("#profileDropdown").toggle();
+    });
+
+    // Close profile dropdown when clicked outside
+    $(document).click(function (event) {
+        if (!$(event.target).closest(".profile-menu").length) {
+            $("#profileDropdown").hide();
+        }
+    });
 
   // Open Modal on Button Click
   $('#importLeadBtn').on('click', function() {

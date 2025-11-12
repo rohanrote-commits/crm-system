@@ -13,6 +13,7 @@ import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,10 +30,13 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     private final LeadExcelHelper  leadExcelHelper;
 
-    public LeadHandler(LeadService leadService, UserService userRepo, LeadExcelHelper leadExcelHelper) {
+    private final ModelMapper modelMapper;
+
+    public LeadHandler(LeadService leadService, UserService userRepo, LeadExcelHelper leadExcelHelper,ModelMapper modelMapper) {
         this.leadService = leadService;
         this.userService = userRepo;
         this.leadExcelHelper = leadExcelHelper;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -52,9 +56,7 @@ public class LeadHandler implements IHandler<LeadDto> {
         lead.setUpdatedAt(new Date());
         lead.setLeadStatus(LeadStatus.ADDED);
         Lead savedLead =  leadService.save(lead);
-        LeadDto savedLeadDto = new LeadDto();
-        BeanUtils.copyProperties(savedLead, savedLeadDto);
-        return savedLeadDto;
+        return modelMapper.map(savedLead,LeadDto.class);
     }
 
     public List<LeadDto> getLeadsByUser(Long userId) {
@@ -65,7 +67,8 @@ public class LeadHandler implements IHandler<LeadDto> {
                 ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         ).stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
-            BeanUtils.copyProperties(lead, leadDto);
+            //BeanUtils.copyProperties(lead, leadDto);
+            modelMapper.map(lead, leadDto);
             return leadDto;
         }).toList();
         return leadList;
@@ -81,7 +84,8 @@ public class LeadHandler implements IHandler<LeadDto> {
     public List<LeadDto> getAll() {
       List<LeadDto> leadList =  leadService.getAllLeads().stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
-            BeanUtils.copyProperties(lead, leadDto);
+           // BeanUtils.copyProperties(lead, leadDto);
+            modelMapper.map(lead, leadDto);
             return leadDto;
         }).toList();
         return leadList;
@@ -92,12 +96,11 @@ public class LeadHandler implements IHandler<LeadDto> {
         Lead oldLead = leadService.getLeadById(leadId).orElseThrow(
                 ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         );
-        Lead lead = new Lead();
-        BeanUtils.copyProperties(oldLead, lead);
-        Lead updatedLead =  leadService.editLead(leadId,lead);
-        LeadDto updatedLeadDto = new LeadDto();
-        BeanUtils.copyProperties(updatedLead, updatedLeadDto);
-        return updatedLeadDto;
+        modelMapper.map(leadDto, oldLead);
+        oldLead.setId(leadId);
+        oldLead.setUpdatedAt(new Date());
+        leadService.editLead(leadId,oldLead);
+        return  modelMapper.map(oldLead,LeadDto.class);
     }
 
     @Override

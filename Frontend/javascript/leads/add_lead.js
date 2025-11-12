@@ -29,7 +29,7 @@ $(document).ready(function (params) {
   var isEdit = false;
 
   //Add Lead
-  $("#addLeadBtn").click(function () {
+  $("#addSingleLeadBtn").click(function () {
     isEdit = false;
     $("#leadModalLabel").text("Add Lead");
     $("#saveLeadBtn").text("Add");
@@ -59,7 +59,11 @@ $(document).ready(function (params) {
     $("#leadStatus").val(rowData.leadStatus);
     $("#businessAddress").val(rowData.businessAddress);
     $("#description").val(rowData.description);
-
+    rowData.interestedModules.forEach((mod) => {
+      $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+    });
+    console.log(rowData.interestedModules);
+    
     if (rowData.id != null) {
       $("#email").prop("readOnly", true);
       $("#gstin").prop("readOnly", true);
@@ -68,48 +72,6 @@ $(document).ready(function (params) {
     $("#leadModal").modal("show");
   });
 
-  // Add Lead or edit lead call
-  $("#saveLeadBtn").click(function () {
-    const leadId = $('#leadId').val();
-    const leadData = {
-      firstName: $("#firstName").val(),
-      lastName: $("#lastName").val(),
-      email: $("#email").val(),
-      mobileNumber: $("#mobileNumber").val(),
-      gstin: $("#gstin").val(),
-      description: $("#description").val(),
-      businessAddress: $("#businessAddress").val(),
-      leadStatus: $("#leadStatus").val(),
-      user: payload?.email,
-      interestedModules: $("#interestedModules").val() || [],
-    };
-
-    //Add Lead
-    const method = isEdit ? "PUT" : "POST";
-    const url = isEdit
-      ? `http://localhost:8080/crm/lead/by/email/${leadData.email}`
-      : `http://localhost:8080/crm/lead/`;
-
-    $.ajax({
-      url,
-      type: method,
-      contentType: "application/json",
-      headers: { Authorization: "Bearer " + token },
-      data: JSON.stringify(leadData),
-      success: function () {
-        alert(
-          isEdit ? "Lead updated successfully!" : "Lead added successfully!"
-        );
-        $("#leadModal").modal("hide");
-        $("#lead-table").DataTable().ajax.reload();
-      },
-      error: function (err) {
-        console.log(err);
-        
-        alert("Something went wrong. Please try again.");
-      },
-    });
-  });
 
   //Validation methods
   $.validator.addMethod(
@@ -148,6 +110,7 @@ $(document).ready(function (params) {
     "Description can include letters, numbers & special chars (max 100 chars)"
   );
 
+  // Add Lead or edit lead call
   $("#leadForm").validate({
     rules: {
       firstName: { required: true, namePattern: true },
@@ -155,8 +118,8 @@ $(document).ready(function (params) {
       email: { required: true, emailPattern: true },
       mobileNumber: { required: true, mobilePattern: true },
       gstin: { required: true, gstinPattern: true },
-      businessAddress: { addressPattern: true },
-      description: { descriptionPattern: true },
+      businessAddress: { required:false , addressPattern: true },
+      description: {  required:false ,descriptionPattern: true },
     },
     messages: {
       firstName: { required: "Please enter first name" },
@@ -167,5 +130,49 @@ $(document).ready(function (params) {
     },
     errorElement: "span",
     errorClass: "text-danger",
+    submitHandler: function () {
+      const leadId = $("#leadId").val();
+      const leadData = {
+        firstName: $("#firstName").val(),
+        lastName: $("#lastName").val(),
+        email: $("#email").val(),
+        mobileNumber: $("#mobileNumber").val(),
+        gstin: $("#gstin").val(),
+        description: $("#description").val(),
+        businessAddress: $("#businessAddress").val(),
+        leadStatus: $("#leadStatus").val(),
+        user: payload?.email,
+        interestedModules: $(".form-check-input:checked")
+          .map(function () {
+            return $(this).val();
+          })
+          .get(),
+      };
+
+      //Add Lead
+      const method = isEdit ? "PUT" : "POST";
+      const url = isEdit
+        ? `http://localhost:8080/crm/lead/${leadData.email}`
+        : `http://localhost:8080/crm/lead/`;
+
+      $.ajax({
+        url,
+        type: method,
+        contentType: "application/json",
+        headers: { Authorization: "Bearer " + token },
+        data: JSON.stringify(leadData),
+        success: function () {
+          alert(
+            isEdit ? "Lead updated successfully!" : "Lead added successfully!"
+          );
+          $("#leadModal").modal("hide");
+          $("#lead-table").DataTable().ajax.reload();
+        },
+        error: function (err) {
+          console.log(err);
+          alert("Something went wrong. Please try again.");
+        },
+      });
+    },
   });
 });
