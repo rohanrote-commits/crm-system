@@ -49,6 +49,10 @@ $.validator.addMethod("passwordPattern", function (value) {
         return this.optional(element) || /^[0-9]{6}$/.test(value);
     }, "Pin code must be 6 digits");
 
+    $('#cancelBtn').on('click', function() {
+    window.location.href = 'login.html';
+});
+
     // jQuery Validate setup
     $('#signUpForm').validate({
         rules: {
