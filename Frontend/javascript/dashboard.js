@@ -1,6 +1,6 @@
 
 $(document).ready(function () {
-        // Parse JWT
+    // Parse JWT
     function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -25,110 +25,124 @@ $(document).ready(function () {
     const payload = parseJwt(token);
     const userRole = payload?.role?.trim();
     console.log(payload);
-    
-    loadLeads(payload?.email,token);
+
+    loadLeads(payload,token);
 
 
 // Hide Users tab for non-admin roles
-if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
-    $(".sidebar-btn[data-target='users']").hide();
-} else {
-    $(".sidebar-btn[data-target='users']").show();
-}
-
-  // Sidebar navigation
-  $(".sidebar-btn").click(function () {
-    const target = $(this).data("target");
-
-    $(".sidebar-btn").removeClass("active");
-    $(this).addClass("active");
-
-    $(".dashboard-section").hide();
-    $("#" + target).show();
-    console.log(target);
-
-    if(target === "leads"){
-        loadLeads(payload,token);
-    }
-    else if(target === "users"){
-        loadUsers(token)
+    if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
+        $(".sidebar-btn[data-target='users']").hide();
+    } else {
+        $(".sidebar-btn[data-target='users']").show();
     }
 
-  });
+    // Sidebar navigation
+    $(".sidebar-btn").click(function () {
+        const target = $(this).data("target");
 
-  // Profile dropdown
-  $("#profilePic").click(function () {
-    $("#profileDropdown").toggle();
-  });
+        $(".sidebar-btn").removeClass("active");
+        $(this).addClass("active");
 
-  //delete profile
-  $("#delete-profile").click(function () {
+        $(".dashboard-section").hide();
+        $("#" + target).show();
+        console.log(target);
 
-    if (!token) {
-        alert("User not logged in!");
-        return;
-    }
+        if(target === "leads"){
+            loadLeads(payload,token);
+        }
 
-    if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
-        return;
-    }
 
-    $.ajax({
-        url: `http://localhost:8080/crm/user/delete-user`,
-        type: "DELETE",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        success: function (response) {
-            alert(response);
+    });
 
-            // remove token after success
-            localStorage.removeItem("Authorization");
+    // Profile dropdown
+    $("#profilePic").click(function () {
+        $("#profileDropdown").toggle();
+    });
 
-            // redirect to login page
-            window.location.href = "/Frontend/html/login.html";
-        },
-        error: function (xhr) {
-            alert("Failed to delete user: " + xhr.responseText);
+    // Close profile dropdown when clicked outside
+    $(document).click(function (event) {
+        if (!$(event.target).closest(".profile-menu").length) {
+            $("#profileDropdown").hide();
         }
     });
-});
+
+    $("#addLeadBtn").on("click", function () {
+        $("#leadDropdown").toggleClass("show");
+    });
+
+// Optional: close dropdown when clicking outside
+    $(document).on("click", function (e) {
+        if (!$(e.target).closest(".section-buttons").length) {
+            $("#leadDropdown").removeClass("show");
+        }
+    })
+
+    $("#importLead").click(function (event) {
+          window.location.href = "leads/upload_lead.html";
+    });
+
+
+    //delete profile
+    $("#delete-profile").click(function () {
+
+        if (!token) {
+            alert("User not logged in!");
+            return;
+        }
+
+        if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
+            return;
+        }
+
+        $.ajax({
+            url: `http://localhost:8080/crm/user/delete-user`,
+            type: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            success: function (response) {
+                alert(response);
+
+                // remove token after success
+                localStorage.removeItem("Authorization");
+
+                // redirect to login page
+                window.location.href = "/Frontend/html/login.html";
+            },
+            error: function (xhr) {
+                alert("Failed to delete user: " + xhr.responseText);
+            }
+        });
+    });
 
 //logout
-$("#logout").click(function () {
-    if (!token) {
-        window.location.href = "/Frontend/html/login.html";
-        return;
-    }
-    $.ajax({
-        url: `http://localhost:8080/crm/user/logout`,
-        type: "GET",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        success: function (response) {
-            alert(response);
-
-            // remove token
-            localStorage.removeItem("Authorization");
-
-            // redirect to login
+    $("#logout").click(function () {
+        if (!token) {
             window.location.href = "/Frontend/html/login.html";
-        },
-        error: function (xhr) {
-            alert("Failed to logout: " + xhr.responseText);
+            return;
         }
+        $.ajax({
+            url: `http://localhost:8080/crm/user/logout`,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            success: function (response) {
+                alert(response);
+
+                // remove token
+                localStorage.removeItem("Authorization");
+
+                // redirect to login
+                window.location.href = "/Frontend/html/login.html";
+            },
+            error: function (xhr) {
+                alert("Failed to logout: " + xhr.responseText);
+            }
+        });
     });
-});
 
 
-
-  // Close dropdown when clicked outside
-  $(document).click(function (event) {
-    if (!$(event.target).closest(".profile-menu").length) {
-      $("#profileDropdown").hide();
-    }
-  });
 
     // Delete button click
     $('#lead-table').on('click', '.delete-lead', function() {
@@ -144,16 +158,17 @@ $("#logout").click(function () {
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
                     alert("Lead deleted successfully.");
-                    $('#lead-table').DataTable().reload();
+
                 },
                 error: function() {
                     alert("Error deleting lead.");
                 }
             });
+            $('#lead-table').DataTable().ajax.reload();
         }
     });
 
-      $('#user-table').on('click', '.delete-user', function() {
+    $('#user-table').on('click', '.delete-user', function() {
         const user = {
             email : $(this).data('email')
         };
@@ -181,40 +196,54 @@ $("#logout").click(function () {
     $("#view-profile").click(function () {
 
 
-    $.ajax({
-        url: `http://localhost:8080/crm/user/get-user`,
-        type: "GET",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        success: function (user) {
+        $.ajax({
+            url: `http://localhost:8080/crm/user/get-user`,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            success: function (user) {
 
-            $("#profileName").text(user.firstName + " " + user.lastName);
-            $("#profileEmail").text(user.email);
-            $("#profileMobile").text(user.mobileNumber);
-            $("#profileAddress").text(user.address || "-");
-            $("#profileCity").text(user.city || "-");
-            $("#profileState").text(user.state || "-");
-            $("#profileCountry").text(user.country || "-");
-            $("#profilePin").text(user.pinCode || "-");
-            $("#profileRole").text(user.role);
-            $("#profileDate").text(user.registeredOn);
+                $("#profileName").text(user.firstName + " " + user.lastName);
+                $("#profileEmail").text(user.email);
+                $("#profileMobile").text(user.mobileNumber);
+                $("#profileAddress").text(user.address || "-");
+                $("#profileCity").text(user.city || "-");
+                $("#profileState").text(user.state || "-");
+                $("#profileCountry").text(user.country || "-");
+                $("#profilePin").text(user.pinCode || "-");
+                $("#profileRole").text(user.role);
+                $("#profileDate").text(user.registeredOn);
 
-            $("#profileModal").modal("show");
-        },
-        error: function () {
-            alert("Failed to fetch profile");
-        }
+                $("#profileModal").modal("show");
+            },
+            error: function () {
+                alert("Failed to fetch profile");
+            }
+        });
     });
-});
 
+    $(document).on("click", ".view-lead-info", function () {
+        const lead = JSON.parse($(this).attr("data-lead"));
 
+        $("#viewFirstName").text(lead.firstName || "-");
+        $("#viewLastName").text(lead.lastName || "-");
+        $("#viewEmail").text(lead.email || "-");
+        $("#viewMobile").text(lead.mobileNumber || "-");
+        $("#viewGstin").text(lead.gstin || "-");
+        $("#viewDescription").text(lead.description || "-");
+        $("#viewAddress").text(lead.businessAddress || "-");
+        $("#viewStatus").text(lead.leadStatus || "-");
+        $("#viewModules").text(lead.interestedModules || "-");
+
+        $("#viewLeadModal").modal("show");
+    });
 
 });
 
 function loadUsers(token){
     console.log(token);
-        $.ajax({
+    $.ajax({
         url: "http://localhost:8080/crm/user/users",
         type: "GET",
         headers: {
@@ -233,11 +262,12 @@ function loadUsers(token){
                     { data: "role" },
                     {data : "emailOfAdminRegistered"},
                     {
-                    data: null,
-                    title: "Action",
-                    orderable: false, // Prevent sorting on this column
-                    render: function (data, type, row) {
-                        return `
+                        data: null,
+                        title: "Action",
+                        orderable: false, // Prevent sorting on this column
+                        render: function (data, type, row) {
+
+                            return `
                             <div class="d-flex justify-content-center gap-2">
                                 <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
                                     <i class="bi bi-pencil"></i>
@@ -247,7 +277,7 @@ function loadUsers(token){
                                 </button>
                             </div>
                         `;
-                    }
+                        }
                     }
                 ],
                 pageLength: 5
@@ -255,7 +285,7 @@ function loadUsers(token){
         }
     })
 };
-        
+
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
@@ -270,14 +300,14 @@ function loadLeads(payload, token) {
             initializeLeadTable(response);
         },
         error: function (xhr) {
-                if (xhr.status === 401) {
-                    alert("Session expired. Login again.");
-                    sessionStorage.clear();
-                    window.location.href = "/Frontend/html/login.html";
-                } else {
-                    console.error("token is : " + token);
-                    alert("Error loading leads.");
-        }
+            if (xhr.status === 401) {
+                alert("Session expired. Login again.");
+                sessionStorage.clear();
+                window.location.href = "/Frontend/html/login.html";
+            } else {
+                console.error("token is : " + token);
+                alert("Error loading leads.");
+            }
         }
     });
 }
@@ -289,20 +319,20 @@ function initializeLeadTable(data) {
         $("#lead-table").DataTable().clear().rows.add(data).draw();
         return;
     }
-
     $("#lead-table").DataTable({
         data: data,
         columns: [
             { data: "firstName", title: "First Name" },
             { data: "lastName", title: "Last Name" },
             { data: "email", title: "Email" },
-            { data: "mobileNumber", title: "Mobile" },
+            { data: "mobileNumber", title: "Mobile", visible: false },
             { data: "gstin", title: "GSTIN" },
-            { data: "description", title: "Description" },
-            { data: "businessAddress", title: "Address" },
+            { data: "description", title: "Description", visible: false  },
+            { data: "businessAddress", title: "Address", visible: false  },
             {
                 data: "leadStatus",
                 title: "Status",
+                orderable: false,
                 render: function (data) {
                     let badgeClass = "";
                     switch (data) {
@@ -312,22 +342,24 @@ function initializeLeadTable(data) {
                         case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
                         default: badgeClass = "bg-secondary";
                     }
-                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                    return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED"?"NOT CONVERTED":data}</span>`;
                 }
             },
             {
                 data: "interestedModules",
                 title: "Interested Modules",
+                orderable: false,
                 render: function (data) {
-                    return data && data.length ? data.join(", ") : "-";
+                    return data && data.length ? data.join(`,\n`) : "-";
                 }
             },
             {
-            data: null,
-            title: "Action",
-            orderable: false, // Prevent sorting on this column
-            render: function (data, type, row) {
-                return `
+                data: null,
+                title: "Action",
+                orderable: false, // Prevent sorting on this column
+                render: function (data, type, row) {
+                    const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
+                    return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
@@ -335,9 +367,12 @@ function initializeLeadTable(data) {
                         <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
                             <i class="bi bi-trash"></i>
                         </button>
+                        <button class="btn btn-sm btn-secondary view-lead-info" data-lead="${leadData}">
+                            <i class="bi bi-eye"></i>
+                        </button>
                     </div>
                 `;
-            }
+                }
             }
         ],
         destroy: true,

@@ -43,11 +43,7 @@ public class LeadService implements ILeadService {
 
     @Override
     public Lead editLead(Long leadId,Lead lead) {
-        Lead savedLead = leadRepository.getLeadsById(leadId).orElseThrow(
-                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
-        );
-        BeanUtils.copyProperties(lead,savedLead);
-        return leadRepository.save(savedLead);
+       return leadRepository.save(lead);
     }
 
     @Override
