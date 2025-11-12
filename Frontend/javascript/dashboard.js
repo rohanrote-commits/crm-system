@@ -48,12 +48,12 @@ if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
     console.log(target);
 
     if(target === "leads"){
-        loadLeads(payload?.email,token);
+        loadLeads(payload,token);
     }
     else if(target === "users"){
         loadUsers(token)
     }
-    
+
   });
 
   // Profile dropdown
@@ -136,7 +136,7 @@ $("#logout").click(function () {
 
         if (confirm("Are you sure you want to delete this lead?")) {
             $.ajax({
-                url: `http://localhost:8080/api/crm/lead/`,
+                url: `http://localhost:8080/crm/lead/`,
                 type: 'DELETE',
                 data :{
                     email : email
@@ -144,7 +144,7 @@ $("#logout").click(function () {
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
                     alert("Lead deleted successfully.");
-                    $('#lead-table').DataTable().ajax.reload();
+                    $('#lead-table').DataTable().reload();
                 },
                 error: function() {
                     alert("Error deleting lead.");
@@ -157,9 +157,9 @@ $("#logout").click(function () {
         const user = {
             email : $(this).data('email')
         };
-     
-      
-  
+
+
+
         if (confirm("Are you sure you want to delete this User?")) {
             $.ajax({
                 url: `http://localhost:8080/crm/user/delete-sub_user`,
@@ -252,23 +252,15 @@ function loadUsers(token){
                 ],
                 pageLength: 5
             });
-
-        },
-        error: function (xhr) {
-            if (xhr.status == 401) {
-                alert("Session expired. Login again.");
-                sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.html";
-            } else {
-                alert("Error loading users.");
-            }
         }
-    });
-}
+    })
+};
+        
 
-function loadLeads(email, token) {
+// Function: Load Leads from API
+function loadLeads(payload, token) {
     $.ajax({
-        url: `http://localhost:8080/api/crm/lead/by/email/${email}`,
+        url: `http://localhost:8080/crm/lead/by/${payload.sub}`,
         type: "GET",
         headers: {
             "Authorization": "Bearer " + token
@@ -291,6 +283,7 @@ function loadLeads(email, token) {
 }
 
 
+// Initialize DataTable with dynamic data
 function initializeLeadTable(data) {
     if ($.fn.DataTable.isDataTable("#lead-table")) {
         $("#lead-table").DataTable().clear().rows.add(data).draw();
