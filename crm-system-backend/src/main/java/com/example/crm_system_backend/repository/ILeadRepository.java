@@ -23,9 +23,10 @@ public interface ILeadRepository extends JpaRepository<Lead,Integer> {
     @Query("Select Count(l) from Lead l where l.user.id = :userId")
     int getLeadCountByUserId(@Param("userId") Long userId);
 
+    @Query("Select l from Lead l where l.user.id = :userId")
+    List<Lead> getLeads(@Param("userId") Long userId);
+
     @Query("Select l.leadStatus from Lead l where l.user.id = :userid")
     List<String> getLeadStatusByUserId(@Param("userid") Long userid);
 
-//    @Query("Select l from Lead l where l.user.id= :userId")
-//    List<Lead> getLeadsByUserId(@Param("userId") Long userId);
 }
