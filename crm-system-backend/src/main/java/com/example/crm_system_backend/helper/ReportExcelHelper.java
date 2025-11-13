@@ -59,63 +59,26 @@ public class ReportExcelHelper {
         return dataStyle;
     }
 
-
-    public Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    // Get Lists
-    public List<User> getUserList(Date start, Date end) {
-        List<User> userList = new ArrayList<>();
-        for(User user : userRepo.findAll()) {
-            Date date = convertLocalDateTimeToDate(user.getRegisteredOn());
-            if(date.after(start) && date.before(end)) {
-                userList.add(user);
+    public List<Lead> getLeadList(List<Lead> leads, Date start, Date end) {
+        List<Lead> leadList = new ArrayList<>();
+        for(Lead lead : leads) {
+            Date createdAt = lead.getCreatedAt();
+            if((createdAt.after(start) && createdAt.before(end))) {
+                leadList.add(lead);
             }
         }
-        return userList;
+        return leadList;
     }
 
-    public List<Lead> getLeadList(String email) {
-
-        // Get leads of specific user logic
-        Optional<User> user = userRepo.getUserByEmail(email);
-        if(user.isEmpty()) {
-            System.err.println("User with email " + email + " not found");
-            return null;
+    public List<Lead> getLeadList(Date start, Date end) {
+        List<Lead> leadList = new ArrayList<>();
+        for(Lead lead : leadRepo.findAll()) {
+            Date createdAt = lead.getCreatedAt();
+            if((createdAt.after(start) && createdAt.before(end))) {
+                leadList.add(lead);
+            }
         }
-        Optional<List<Lead>> listOfLeads = leadRepo.getLeadsByUser(user);
-        if(listOfLeads.isEmpty()) {
-            System.err.println("User with email " + email + " has not registered any leads");
-            return null;
-        }
-
-        return listOfLeads.get();
-    }
-
-    public void createDropdownCell(Sheet sheet, int rowIndex, int cellIndex, Set<String> modules) {
-
-        String[] moduleArray = modules.toArray(new String[0]);
-        DataValidationHelper dvHelper = sheet.getDataValidationHelper();
-
-        if (String.join(",", moduleArray).length() > 255) {
-            System.err.println("Values too long for direct list constraint!");
-            return;
-        }
-
-        DataValidationConstraint constraint = dvHelper.createExplicitListConstraint(moduleArray);
-        CellRangeAddressList addressList = new CellRangeAddressList(rowIndex, rowIndex, cellIndex, cellIndex);
-        DataValidation validation = dvHelper.createValidation(constraint, addressList);
-        validation.setSuppressDropDownArrow(true);
-        sheet.addValidationData(validation);
-    }
-
-    public Set<String> getSetOfInterestedModules(Long leadId) {
-        Optional<Lead> lead = leadRepo.getLeadsById(leadId);
-        if(lead.isPresent()) {
-            return lead.get().getInterestedModules();
-        }
-        return null;
+        return leadList;
     }
 
 }

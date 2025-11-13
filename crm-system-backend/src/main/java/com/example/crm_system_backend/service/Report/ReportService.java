@@ -4,6 +4,7 @@ import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.ILeadRepository;
+import com.example.crm_system_backend.repository.IUserRepo;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class ReportService {
@@ -24,7 +24,10 @@ public class ReportService {
     @Autowired
     ILeadRepository leadRepo;
 
-    public byte[] ListToExcel(List<User> users, Date start, Date end) throws IOException {
+    @Autowired
+    IUserRepo userRepo;
+
+    public byte[] ListToExcel(List<Lead> leads, Date start, Date end) throws IOException {
 
         // Create new workbook and sheet
         try (Workbook workbook = new XSSFWorkbook();
@@ -41,9 +44,35 @@ public class ReportService {
 
             String[] summaryReport_headers = {"Sr No", "Name", "Email", "Total No of Leads Added", "Total No of Leads Processed", "Total No of Leads Converted", "Processed %", "Success %", "Comment"};
 
-            Map<Long, List<Lead>> map = SummaryReport(head_style, header_style, data_style,
-                    summaryReport_sheet, summaryReport_headers, columnCount,
-                    users, start, end);
+            // get user list
+            List<Long> idList = new ArrayList<>();
+            Set<User> userSet = new HashSet<>();
+            for(Lead lead : leads) {
+                idList.add(lead.getUser().getId());
+            }
+
+            // create map user->leads
+            Map<Long, List<Lead>> map = new HashMap<>();
+            for(Long id : idList) {
+                List<Lead> list = leadRepo.getLeads(id);
+                List<Lead> leadList = helper.getLeadList(list, start, end);
+                map.put(id, leadList);
+            }
+
+            for(Long id : idList) {
+                Optional<User> user = userRepo.getUserById(id);
+                user.ifPresent(userSet::add);
+            }
+
+            List<User> users = new ArrayList<>(userSet);
+
+            if(!users.isEmpty()) {
+                SummaryReport(head_style, header_style, data_style,
+                        summaryReport_sheet, summaryReport_headers, columnCount,
+                        users, start, end);
+            } else {
+                throw new IOException("No leads created/updated in this time period !!");
+            }
 
             for (int i = 0; i < summaryReport_headers.length; i++) {
                 summaryReport_sheet.autoSizeColumn(i, true);
@@ -58,8 +87,8 @@ public class ReportService {
                 String[] perUserReport_headers = new String[]{"Lead ID", "First Name", "Last Name", "Email", "GSTIN", "Products", "Status"};
 
                 perUserReport(head_style, header_style, data_style,
-                                perUserReport_sheet, perUserReport_headers, columnCount,
-                                map.get(user.getId()));
+                        perUserReport_sheet, perUserReport_headers, columnCount,
+                        map.get(user.getId()));
 
                 for (int i = 0; i < perUserReport_headers.length; i++) {
                     perUserReport_sheet.autoSizeColumn(i, true);
@@ -72,7 +101,7 @@ public class ReportService {
         }
     }
 
-    public Map<Long, List<Lead>> SummaryReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
+    public void SummaryReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                               Sheet sheet, String[] headers, int columnCount,
                               List<User> users, Date start, Date end) throws IOException {
 
@@ -125,23 +154,24 @@ public class ReportService {
             row.createCell(cellNum++).setCellValue(user.getEmail());
             // Column 3:
             int count = leadRepo.getLeadCountByUserId(userId);
-            row.createCell(cellNum++).setCellValue(count);
+            row.createCell(cellNum++).setCellValue(count);  //These are ADDED
             // Column 4:
-            int processed = 0;
+            int contacted = 0;
             int converted = 0;
             List<String> statusList = leadRepo.getLeadStatusByUserId(userId);
             for (String status : statusList) {
-                if (status.equalsIgnoreCase("ADDED")) {
-                    processed++;
+                if (status.equalsIgnoreCase("CONTACTED")) {
+                    contacted++;
                 } else if (status.equalsIgnoreCase("CONVERTED")) {
+                    contacted++;
                     converted++;
                 }
             }
-            row.createCell(cellNum++).setCellValue(processed);
+            row.createCell(cellNum++).setCellValue(contacted);
             // Column 5:
             row.createCell(cellNum++).setCellValue(converted);
             // Column 6:
-            float process_percent = (float) processed / count * 100;
+            float process_percent = (float) contacted / count * 100;
             String process = String.format("%.2f", process_percent) + " %";
             row.createCell(cellNum++).setCellValue(process);
             // Column 7:
@@ -157,10 +187,9 @@ public class ReportService {
                 }
             }
 
-            String data = "Leads neither \n Processed nor \n Converted: \n" + neitherContactedNorConverted;
+            String data = "Leads neither Processed nor Converted: " + neitherContactedNorConverted;
             row.createCell(cellNum++).setCellValue(data);
         }
-        return map;
     }
 
 
@@ -205,4 +234,5 @@ public class ReportService {
         }
     }
 }
+
 

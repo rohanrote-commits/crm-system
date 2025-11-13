@@ -75,20 +75,11 @@ public class EmailSchedulerController {
                 .build();
     }
 
-//    private Trigger immediateTrigger(JobDetail jobDetail, ZonedDateTime dateTime) {
-//        return TriggerBuilder.newTrigger()
-//                .forJob(jobDetail)
-//                .withIdentity(jobDetail.getKey().getName(), "Immediate Trigger")
-//                .withDescription("send trigger immediately")
-//                .startNow()
-//                .withSchedule(SimpleScheduleBuilder.simpleSchedule())
-//                .build();
-//    }
 
     private Trigger buildTrigger(JobDetail jobDetail, ZonedDateTime startAt) {
 
         // 0 seconds, 0 minutes, 9 hours, 1st of every month, *: all months, ?: any day
-        String monthlyCronExpression = "0 51 18 12 * ?";
+        String monthlyCronExpression = "0 20 14 13 * ?";
 
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)

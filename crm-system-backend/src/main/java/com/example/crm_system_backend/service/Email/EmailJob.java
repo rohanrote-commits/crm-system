@@ -40,8 +40,6 @@ public class EmailJob extends QuartzJobBean {
         String body = jobDataMap.getString("body");
         String recipientEmail = jobDataMap.getString("email");
 
-        System.out.println("Attempting to send mail to: " + recipientEmail + " with subject: " + subject);
-
         try {
             sendMail(mailProperties.getUsername(), recipientEmail, subject, body);
         } catch (IOException e) {
@@ -58,7 +56,7 @@ public class EmailJob extends QuartzJobBean {
         LocalDate localEndDate = previousMonth.atEndOfMonth();
         Date endDate = Date.from(localEndDate.atStartOfDay(ZoneId.systemDefault()).plusDays(1).minusNanos(1).toInstant());
 
-        String reportName = previousMonth.getMonth().name() + "-" + previousMonth.getYear() + " Monthly Report.xlsx";
+        String reportName = previousMonth.getMonth().name() + "-" + previousMonth.getYear() + " Monthly Report";
 
         ResponseEntity<byte[]> monthlyReport = reportController.getTemplate(startDate, endDate);
 
@@ -69,17 +67,17 @@ public class EmailJob extends QuartzJobBean {
                     message,
                     true,   // Enables multipart (for attachments)
                     StandardCharsets.UTF_8.toString());
-            messageHelper.setSubject(subject);
+            messageHelper.setSubject(reportName);
             messageHelper.setText("Please find attached " + reportName + " !!", true);
             messageHelper.setFrom(fromEmail);
             messageHelper.setTo(toEmail);
             if (monthlyReport.getBody() != null) {
                 ByteArrayResource resource = new ByteArrayResource(monthlyReport.getBody());
-                messageHelper.addAttachment(reportName, resource);
-                System.out.println("Report attached successfully: " + reportName);
+                messageHelper.addAttachment(reportName + ".xlsx", resource);
+                System.out.println("Report attached successfully: " + reportName + ".xlsx");
             } else {
                 System.err.println("Error: Monthly report data was empty or null.");
-                messageHelper.setText("Dear recipient,\n\nCould not generate the monthly report for " + previousMonth.toString() + ".", false);
+                messageHelper.setText("Dear recipient,\n\nCould not generate the monthly report for " + previousMonth + "!", false);
             }
             mailSender.send(message);
 

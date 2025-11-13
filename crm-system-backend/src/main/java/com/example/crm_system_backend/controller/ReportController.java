@@ -1,6 +1,6 @@
 package com.example.crm_system_backend.controller;
 
-import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.service.Report.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +28,10 @@ public class ReportController {
 
     @GetMapping("/getTemplate")
     public ResponseEntity<byte[]> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) throws IOException {
-        List<User> userList = helper.getUserList(start, end);
+        List<Lead> leadList = helper.getLeadList(start, end);
         byte[] excelBytes = null;
-        if (!userList.isEmpty()) {
-            excelBytes = service.ListToExcel(userList, start, end);
+        if (!leadList.isEmpty()) {
+            excelBytes = service.ListToExcel(leadList, start, end);
         }
         HttpHeaders headers = new HttpHeaders();
 
