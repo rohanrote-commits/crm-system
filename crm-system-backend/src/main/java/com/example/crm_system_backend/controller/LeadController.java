@@ -55,7 +55,7 @@ public class LeadController {
         return new ResponseEntity<>("Lead Deleted Successfully",HttpStatus.OK);
     }
 
-    @PostMapping("/file/{id}")
+    @PostMapping("/import/{id}")
     public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file,@PathVariable Long id) {
          leadHandler.bulkUpload(file,id);
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);

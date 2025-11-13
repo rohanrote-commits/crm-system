@@ -1,4 +1,4 @@
-package com.example.crm_system_backend.entity;
+package com.example.crm_system_backend.constants;
 
 public enum LeadStatus {
     ADDED,

@@ -43,19 +43,109 @@ body {
     cursor: pointer;
 }
 
-/* Layout */
-.dashboard-layout {
-    display: flex;
-    height: calc(100vh - 60px);
+/* General page spacing */
+.dashboard-container {
+  padding: 40px 60px;
+  background-color: #f6f8fa;
+  min-height: 100vh;
 }
 
-/* Dashboard Container */
-.dashboard-container {
-    flex: 1;
-    padding: 20px;
-    overflow-x: auto;
-    overflow-y: auto;
+/* Reusable card style for white containers */
+.dashboard-section {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 24px 32px;
+  transition: all 0.2s ease-in-out;
 }
+
+.dashboard-section:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Top section (Upload controls) */
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.upload-header h3 {
+  font-weight: 600;
+  color: #1d3557;
+}
+
+.upload-header p {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+/* Buttons */
+.btn-outline-primary {
+  color: #1d3557;
+  border-color: #1d3557;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background-color: #1d3557;
+  color: #fff;
+  border-color: #0b2c5a;
+}
+
+.btn-success {
+  background-color: #f76c24;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+
+.btn-success:hover {
+  background-color: #e55d14;
+}
+
+/* Upload History Table */
+.upload-history-table-container {
+  margin-top: 10px;
+}
+
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead {
+  background-color: #f1f3f5;
+  color: #333;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  font-weight: 600;
+  color: #1d3557;
+}
+
+
 .dropdown {
     position: absolute;
     top: 100%; /* dropdown opens below button */
@@ -87,4 +177,12 @@ body {
 
 .drop-item:hover {
     background-color: #c5c1c1;
+}
+
+/* #logout:hover {
+    background-color: #e6de8f;
+} */
+
+#delete-profile:hover {
+    background-color: #e15e5e;
 }

@@ -1,4 +1,4 @@
-package com.example.crm_system_backend.exception;
+package com.example.crm_system_backend.constants;
 
 public enum ExceptionCode {
     LEADER_NOT_FOUND,

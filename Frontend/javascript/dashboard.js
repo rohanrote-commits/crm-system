@@ -1,6 +1,6 @@
 
 $(document).ready(function () {
-        // Parse JWT
+    // Parse JWT
     function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -30,41 +30,41 @@ $(document).ready(function () {
 
 
 // Hide Users tab for non-admin roles
-if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
-    $(".sidebar-btn[data-target='users']").hide();
-} else {
-    $(".sidebar-btn[data-target='users']").show();
-}
+    if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
+        $(".sidebar-btn[data-target='users']").hide();
+    } else {
+        $(".sidebar-btn[data-target='users']").show();
+    }
 
-  // Sidebar navigation
-  $(".sidebar-btn").click(function () {
-    const target = $(this).data("target");
+    // Sidebar navigation
+    $(".sidebar-btn").click(function () {
+        const target = $(this).data("target");
 
-    $(".sidebar-btn").removeClass("active");
-    $(this).addClass("active");
+        $(".sidebar-btn").removeClass("active");
+        $(this).addClass("active");
 
-    $(".dashboard-section").hide();
-    $("#" + target).show();
-    console.log(target);
+        $(".dashboard-section").hide();
+        $("#" + target).show();
+        console.log(target);
 
         if(target === "leads"){
             loadLeads(payload,token);
         }
 
-
     });
 
-    // Profile dropdown
-    $("#profilePic").click(function () {
-        $("#profileDropdown").toggle();
-    });
+    // Toggle dropdown when profile image is clicked
+  $("#profilePic").on("click", function (e) {
+    e.stopPropagation(); // Prevent click from bubbling up
+    $("#profileDropdown").toggleClass("show"); // Toggle visibility
+  });
 
-    // // Close profile dropdown when clicked outside
-    // $(document).click(function (event) {
-    //     if (!$(event.target).closest(".profile-menu").length) {
-    //         $("#profileDropdown").hide();
-    //     }
-    // });
+  // Hide dropdown when clicking anywhere outside
+  $(document).on("click", function (e) {
+    if (!$(e.target).closest(".profile-menu").length) {
+      $("#profileDropdown").removeClass("show");
+    }
+  });
 
     $("#addLeadBtn").on("click", function () {
         $("#leadDropdown").toggleClass("show");
@@ -115,11 +115,6 @@ if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
         });
     });
 
-$("#manage-users").click(function() {
-            window.location.href = "/Frontend/html/user-dashboard.html";
-        return;
-})
-
 //logout
     $("#logout").click(function () {
         if (!token) {
@@ -148,6 +143,7 @@ $("#manage-users").click(function() {
     });
 
 
+
     // Delete button click
     $('#lead-table').on('click', '.delete-lead', function() {
         const email = $(this).data('email');
@@ -168,10 +164,11 @@ $("#manage-users").click(function() {
                     alert("Error deleting lead.");
                 }
             });
+            $('#lead-table').DataTable().ajax.reload();
         }
     });
 
-      $('#user-table').on('click', '.delete-user', function() {
+    $('#user-table').on('click', '.delete-user', function() {
         const user = {
             email : $(this).data('email')
         };
@@ -199,32 +196,32 @@ $("#manage-users").click(function() {
     $("#view-profile").click(function () {
 
 
-    $.ajax({
-        url: `http://localhost:8080/crm/user/get-user`,
-        type: "GET",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        success: function (user) {
+        $.ajax({
+            url: `http://localhost:8080/crm/user/get-user`,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            success: function (user) {
 
-            $("#profileName").text(user.firstName + " " + user.lastName);
-            $("#profileEmail").text(user.email);
-            $("#profileMobile").text(user.mobileNumber);
-            $("#profileAddress").text(user.address || "-");
-            $("#profileCity").text(user.city || "-");
-            $("#profileState").text(user.state || "-");
-            $("#profileCountry").text(user.country || "-");
-            $("#profilePin").text(user.pinCode || "-");
-            $("#profileRole").text(user.role);
-            $("#profileDate").text(user.registeredOn);
+                $("#profileName").text(user.firstName + " " + user.lastName);
+                $("#profileEmail").text(user.email);
+                $("#profileMobile").text(user.mobileNumber);
+                $("#profileAddress").text(user.address || "-");
+                $("#profileCity").text(user.city || "-");
+                $("#profileState").text(user.state || "-");
+                $("#profileCountry").text(user.country || "-");
+                $("#profilePin").text(user.pinCode || "-");
+                $("#profileRole").text(user.role);
+                $("#profileDate").text(user.registeredOn);
 
-            $("#profileModal").modal("show");
-        },
-        error: function () {
-            alert("Failed to fetch profile");
-        }
+                $("#profileModal").modal("show");
+            },
+            error: function () {
+                alert("Failed to fetch profile");
+            }
+        });
     });
-});
 
     $(document).on("click", ".view-lead-info", function () {
         const lead = JSON.parse($(this).attr("data-lead"));
@@ -246,7 +243,7 @@ $("#manage-users").click(function() {
 
 function loadUsers(token){
     console.log(token);
-        $.ajax({
+    $.ajax({
         url: "http://localhost:8080/crm/user/users",
         type: "GET",
         headers: {
@@ -265,11 +262,12 @@ function loadUsers(token){
                     { data: "role" },
                     {data : "emailOfAdminRegistered"},
                     {
-                    data: null,
-                    title: "Action",
-                    orderable: false, // Prevent sorting on this column
-                    render: function (data, type, row) {
-                        return `
+                        data: null,
+                        title: "Action",
+                        orderable: false, // Prevent sorting on this column
+                        render: function (data, type, row) {
+
+                            return `
                             <div class="d-flex justify-content-center gap-2">
                                 <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
                                     <i class="bi bi-pencil"></i>
@@ -279,7 +277,7 @@ function loadUsers(token){
                                 </button>
                             </div>
                         `;
-                    }
+                        }
                     }
                 ],
                 pageLength: 5
@@ -287,7 +285,7 @@ function loadUsers(token){
         }
     })
 };
-        
+
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
@@ -302,14 +300,14 @@ function loadLeads(payload, token) {
             initializeLeadTable(response);
         },
         error: function (xhr) {
-                if (xhr.status === 401) {
-                    alert("Session expired. Login again.");
-                    sessionStorage.clear();
-                    window.location.href = "/Frontend/html/login.html";
-                } else {
-                    console.error("token is : " + token);
-                    alert("Error loading leads.");
-        }
+            if (xhr.status === 401) {
+                alert("Session expired. Login again.");
+                sessionStorage.clear();
+                window.location.href = "/Frontend/html/login.html";
+            } else {
+                console.error("token is : " + token);
+                alert("Error loading leads.");
+            }
         }
     });
 }
@@ -321,17 +319,16 @@ function initializeLeadTable(data) {
         $("#lead-table").DataTable().clear().rows.add(data).draw();
         return;
     }
-
     $("#lead-table").DataTable({
         data: data,
         columns: [
             { data: "firstName", title: "First Name" },
             { data: "lastName", title: "Last Name" },
             { data: "email", title: "Email" },
-            { data: "mobileNumber", title: "Mobile" },
+            { data: "mobileNumber", title: "Mobile", visible: false },
             { data: "gstin", title: "GSTIN" },
-            { data: "description", title: "Description" },
-            { data: "businessAddress", title: "Address" },
+            { data: "description", title: "Description", visible: false  },
+            { data: "businessAddress", title: "Address", visible: false  },
             {
                 data: "leadStatus",
                 title: "Status",
@@ -353,15 +350,16 @@ function initializeLeadTable(data) {
                 title: "Interested Modules",
                 orderable: false,
                 render: function (data) {
-                    return data && data.length ? data.join(", ") : "-";
+                    return data && data.length ? data.join(`,\n`) : "-";
                 }
             },
             {
-            data: null,
-            title: "Action",
-            orderable: false, // Prevent sorting on this column
-            render: function (data, type, row) {
-                return `
+                data: null,
+                title: "Action",
+                orderable: false, // Prevent sorting on this column
+                render: function (data, type, row) {
+                    const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
+                    return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
@@ -374,7 +372,7 @@ function initializeLeadTable(data) {
                         </button>
                     </div>
                 `;
-            }
+                }
             }
         ],
         destroy: true,
