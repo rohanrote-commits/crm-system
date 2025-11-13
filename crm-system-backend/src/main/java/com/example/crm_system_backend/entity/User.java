@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.entity;
 
+import com.example.crm_system_backend.constants.Roles;
 import jakarta.persistence.*;
 import lombok.Data;
 

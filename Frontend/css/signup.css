@@ -33,19 +33,21 @@ body {
 
 /* Sign Up Container */
 .signup-container {
+  margin-top: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 80vh;
+  margin-bottom: 20px;
 }
 
 .signup-box {
   background-color: #fff;
   padding: 40px;
-  width: 400px; /* Fixed width */
+  width: 800px; /* Fixed width */
   height: auto;
   max-height: 700px; /* Optional: prevent extreme height */
-  overflow-y: auto; /* scroll if content exceeds box */
+
   box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
   border-radius: 10px;
   text-align: center;
@@ -66,6 +68,9 @@ label {
 
 .required {
   color: red;
+}
+input{
+  width: 200px;
 }
 
 input[type="text"],
@@ -108,4 +113,118 @@ select {
 
 .error {
   border-color: red;
+}
+/* Remove fixed width for all inputs */
+input {
+  width: auto; /* or just remove this rule completely */
+}
+
+/* Two-column form layout */
+.form-row {
+  display: flex;
+  gap: 15px; /* space between columns */
+  margin-bottom: 10px;
+}
+
+.form-group {
+  flex: 1; /* equal width for both columns */
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%; /* fill the column */
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; /* ensures padding doesn't overflow */
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding: 10px 38px 10px 12px; /* leave space for eye icon */
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.pw-toggle:hover,
+.pw-toggle:focus {
+  background: rgba(0,0,0,0.05);
+  outline: none;
+}
+
+.eye-icon { fill: currentColor; color: #666; }
+
+/* Optional: style error messages */
+label.error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+.btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.3s;
+}
+
+/* Sign Up - Orange */
+.btn-signup {
+  background-color: hwb(19 0% 0%);
+}
+.btn-signup:hover {
+  background-color: #fb4b00;
+}
+
+/* Clear All - Gray */
+.btn-clear {
+  background-color: #9e9e9e;
+}
+.btn-clear:hover {
+  background-color: #757575;
+}
+
+/* Cancel - Red */
+.btn-cancel {
+  background-color: #c91002;
+}
+.btn-cancel:hover {
+  background-color: #d32f2f;
+}
+
+/* Optional: spacing for buttons */
+.form-row {
+  display: flex;
+  gap: 10px; /* space between buttons */
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1; /* optional: make buttons same width */
 }

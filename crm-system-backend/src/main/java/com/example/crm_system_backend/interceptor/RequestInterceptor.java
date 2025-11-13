@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.interceptor;
 
-import com.example.crm_system_backend.handler.AuthHandler;
+import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
 import com.example.crm_system_backend.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,12 +41,12 @@ public class RequestInterceptor implements HandlerInterceptor {
             //check expiry of token
             if(jwtUtil.isTokenExpired(token)){
                 userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return false;
+                response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
+                throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
             //check  if session is already present
             String email = jwtUtil.getEmail(token);
-            if (email == null || !userSessionService.findSessionByEmail(email)) {
+            if (email == null || !userSessionService.findSessionByToken(token,email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }

@@ -1,8 +1,7 @@
 package com.example.crm_system_backend.dto;
 
 
-import com.example.crm_system_backend.entity.LeadStatus;
-import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.constants.LeadStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +12,7 @@ import java.util.Set;
 
 @Data
 public class LeadDto {
+    private Long id;
     private String firstName;
     private String lastName;
     @Email(message = "Email should be valid")

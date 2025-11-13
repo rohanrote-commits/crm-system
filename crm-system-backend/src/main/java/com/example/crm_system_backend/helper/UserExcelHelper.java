@@ -1,8 +1,8 @@
 package com.example.crm_system_backend.helper;
 
-import com.example.crm_system_backend.entity.Roles;
+import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ErrorCode;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.ExcelProcessingError;
 import lombok.extern.slf4j.Slf4j;
@@ -135,6 +135,7 @@ public class UserExcelHelper {
 
             if (isThereError) {
                 log.error("Error in file processing");
+
                 throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
             }
 

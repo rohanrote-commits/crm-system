@@ -1,7 +1,7 @@
 package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.Roles;
+import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IUserService;

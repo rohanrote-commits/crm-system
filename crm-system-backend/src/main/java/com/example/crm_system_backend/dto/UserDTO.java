@@ -1,7 +1,6 @@
 package com.example.crm_system_backend.dto;
 
-import com.example.crm_system_backend.entity.Roles;
-import jakarta.persistence.Column;
+import com.example.crm_system_backend.constants.Roles;
 import lombok.Data;
 
 @Data

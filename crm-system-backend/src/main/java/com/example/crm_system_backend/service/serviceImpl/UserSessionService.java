@@ -28,4 +28,11 @@ public class UserSessionService implements IUserSessionService {
     public void saveSession(UserSession userSession) {
         userSessionRepo.save(userSession);
     }
+
+    @Override
+    public boolean findSessionByToken(String token,String email) {
+        return userSessionRepo.existsByTokenAndEmail(token,email);
+    }
+
+
 }

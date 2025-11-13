@@ -2,12 +2,9 @@ package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ErrorCode;
-import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.ILeadService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,11 +40,7 @@ public class LeadService implements ILeadService {
 
     @Override
     public Lead editLead(Long leadId,Lead lead) {
-        Lead savedLead = leadRepository.getLeadsById(leadId).orElseThrow(
-                ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
-        );
-        BeanUtils.copyProperties(lead,savedLead);
-        return leadRepository.save(savedLead);
+       return leadRepository.save(lead);
     }
 
     @Override

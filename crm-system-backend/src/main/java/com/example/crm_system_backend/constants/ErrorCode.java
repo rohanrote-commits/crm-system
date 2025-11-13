@@ -1,4 +1,4 @@
-package com.example.crm_system_backend.exception;
+package com.example.crm_system_backend.constants;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -20,13 +20,20 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS("LAE","User Already Exists", HttpStatus.CONFLICT),
     ERROR_IN_FILE_DOWNLOAD("EDF","Error in File Download", HttpStatus.INTERNAL_SERVER_ERROR),
     WRONG_HEADERS("WH","Wrong Headers", HttpStatus.NOT_ACCEPTABLE),
+
     FILE_PROCESSING_EXCEPTION("FPE","File Processing Exception", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_NOT_FOUND_EXCEPTION("FNF","File Not Found", HttpStatus.NOT_FOUND),
+    FILE_HISTORY_NOT_FOUND("FHN","File History Not Found", HttpStatus.NOT_FOUND),
+    FILE_PROCESSING_FAILED("FPF","File Processing Failed", HttpStatus.NOT_ACCEPTABLE),
+
     USER_NOT_PRESENT_WITH_EMAIL("UNPE","User Not Present With Email", HttpStatus.NOT_FOUND),
     EMAIL_ALREADY_EXISTS("EAE","Email Already Exists", HttpStatus.CONFLICT),
     MOBILE_NUMBER_ALREADY_EXISTS("MNAE","Mobile Number Already Exists", HttpStatus.CONFLICT),
     USER_DATA_NOT_UPDATABLE("UDNU","User Data Not Updatable", HttpStatus.NOT_ACCEPTABLE),
+    SESSION_EXPIRED("SE","Session Expired", HttpStatus.UNAUTHORIZED),
+    ANOTHER_SESSION_ACTIVE("ASA","Another Session Active", HttpStatus.CONFLICT),
     ERROR_IN_FILE_PROCESSING("EFP","Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR);
+
 
 
     private final String code;

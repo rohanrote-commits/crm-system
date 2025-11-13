@@ -29,7 +29,7 @@ $(document).ready(function (params) {
   var isEdit = false;
 
   //Add Lead
-  $("#addLeadBtn").click(function () {
+  $("#addSingleLeadBtn").click(function () {
     isEdit = false;
     $("#leadModalLabel").text("Add Lead");
     $("#saveLeadBtn").text("Add");
@@ -50,7 +50,7 @@ $(document).ready(function (params) {
     $("#saveLeadBtn").text("Update Lead");
 
     // Fill data
-   // $("#leadId").val(rowData.id);
+    $("#leadId").val(rowData.id);
     $("#firstName").val(rowData.firstName);
     $("#lastName").val(rowData.lastName);
     $("#email").val(rowData.email);
@@ -59,50 +59,120 @@ $(document).ready(function (params) {
     $("#leadStatus").val(rowData.leadStatus);
     $("#businessAddress").val(rowData.businessAddress);
     $("#description").val(rowData.description);
+    rowData.interestedModules.forEach((mod) => {
+      $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+    });
+    console.log(rowData.interestedModules);
+    
+    if (rowData.id != null) {
+      $("#email").prop("readOnly", true);
+      $("#gstin").prop("readOnly", true);
+    }
 
     $("#leadModal").modal("show");
   });
 
 
+  //Validation methods
+  $.validator.addMethod(
+    "namePattern",
+    (value) => /^[A-Za-z ]{1,50}$/.test(value),
+    "Only alphabets and spaces allowed (1–50 chars)"
+  );
+
+  $.validator.addMethod(
+    "emailPattern",
+    (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
+    "Enter a valid email"
+  );
+
+  $.validator.addMethod(
+    "mobilePattern",
+    (value) => /^[789]\d{9}$/.test(value),
+    "Mobile must start with 7/8/9 and be 10 digits"
+  );
+
+  $.validator.addMethod(
+    "gstinPattern",
+    (value) => /^[A-Z0-9]{15}$/.test(value),
+    "GSTIN must be 15 uppercase alphanumeric characters"
+  );
+
+  $.validator.addMethod(
+    "addressPattern",
+    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    "Address can include letters, numbers & special chars (max 100 chars)"
+  );
+
+  $.validator.addMethod(
+    "descriptionPattern",
+    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    "Description can include letters, numbers & special chars (max 100 chars)"
+  );
+
   // Add Lead or edit lead call
-  $('#saveLeadBtn').click(function () {
-  //const leadId = $('#leadId').val();
-  const leadData = {
-    firstName: $('#firstName').val(),
-    lastName: $('#lastName').val(),
-    email: $('#email').val(),
-    mobileNumber: $('#mobileNumber').val(),
-    gstin: $('#gstin').val(),
-    description: $('#description').val(),
-    businessAddress: $('#businessAddress').val(),
-    leadStatus: $('#leadStatus').val(),
-    user : payload?.email,
-   interestedModules: $("#interestedModules").val() || []
-  };
+  $("#leadForm").validate({
+    rules: {
+      firstName: { required: true, namePattern: true },
+      lastName: { required: true, namePattern: true },
+      email: { required: true, emailPattern: true },
+      mobileNumber: { required: true, mobilePattern: true },
+      gstin: { required: true, gstinPattern: true },
+      businessAddress: { required:false , addressPattern: true },
+      description: {  required:false ,descriptionPattern: true },
+    },
+    messages: {
+      firstName: { required: "Please enter first name" },
+      lastName: { required: "Please enter last name" },
+      email: { required: "Please enter email" },
+      mobileNumber: { required: "Please enter mobile number" },
+      gstin: { required: "Please enter GSTIN" },
+    },
+    errorElement: "span",
+    errorClass: "text-danger",
+    submitHandler: function () {
+      const leadId = $("#leadId").val();
+      const leadData = {
+        firstName: $("#firstName").val(),
+        lastName: $("#lastName").val(),
+        email: $("#email").val(),
+        mobileNumber: $("#mobileNumber").val(),
+        gstin: $("#gstin").val(),
+        description: $("#description").val(),
+        businessAddress: $("#businessAddress").val(),
+        leadStatus: $("#leadStatus").val(),
+        user: payload?.email,
+        interestedModules: $(".form-check-input:checked")
+          .map(function () {
+            return $(this).val();
+          })
+          .get(),
+      };
 
-  //Add Lead
-  const method = isEdit ? 'PUT' : 'POST';
-  const url = isEdit
-    ? `http://localhost:8080/api/crm/lead/${leadData.email}`
-    : `http://localhost:8080/api/crm/lead/`;
+      //Add Lead
+      const method = isEdit ? "PUT" : "POST";
+      const url = isEdit
+        ? `http://localhost:8080/crm/lead/${leadData.email}`
+        : `http://localhost:8080/crm/lead/`;
 
-    $.ajax({
-      url,
-      type: method,
-      contentType: 'application/json',
-      headers: { "Authorization": "Bearer " + token },
-      data: JSON.stringify(leadData),
-      success: function () {
-        alert(isEdit ? 'Lead updated successfully!' : 'Lead added successfully!');
-        $('#leadModal').modal('hide');
-        $('#lead-table').DataTable().ajax.reload();
-      },
-      error: function () {
-        alert('Something went wrong. Please try again.');
-      }
-    });
-
+      $.ajax({
+        url,
+        type: method,
+        contentType: "application/json",
+        headers: { Authorization: "Bearer " + token },
+        data: JSON.stringify(leadData),
+        success: function () {
+          alert(
+            isEdit ? "Lead updated successfully!" : "Lead added successfully!"
+          );
+          $("#leadModal").modal("hide");
+          $("#lead-table").DataTable().ajax.reload();
+        },
+        error: function (err) {
+          console.log(err);
+          alert("Something went wrong. Please try again.");
+        },
+      });
+    },
   });
-
-
 });

@@ -1,7 +1,7 @@
 package com.example.crm_system_backend.exception;
 
+import com.example.crm_system_backend.constants.ErrorCode;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
 
 @Data
 public class ExcelProcessingError extends RuntimeException{

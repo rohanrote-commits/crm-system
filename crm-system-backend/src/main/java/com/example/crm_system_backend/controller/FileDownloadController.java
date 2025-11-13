@@ -26,9 +26,11 @@ public class FileDownloadController {
 
     @GetMapping("/lead-template")
     public ResponseEntity<byte[]> downloadLeadTemplate() throws FileDownloadException {
+        byte[] fileBytes = downloadHandler.downloadLeadTemplate();
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=lead-template.xlsx")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(downloadHandler.downloadUserTemplate());
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(fileBytes);
     }
 }

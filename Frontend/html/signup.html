@@ -22,85 +22,150 @@
     <div class="signup-box">
       <h2>Sign Up</h2>
       <form id="signUpForm">
-        <label for="firstName">First Name<span class="required">*</span></label>
-        <input type="text" id="firstName" name="firstName" placeholder="First Name" required>
+       <!-- First Name & Last Name -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="firstName">First Name<span class="required">*</span></label>
+    <input type="text" id="firstName" name="firstName" placeholder="First Name" required>
+  </div>
+  <div class="form-group">
+    <label for="lastName">Last Name<span class="required">*</span></label>
+    <input type="text" id="lastName" name="lastName" placeholder="Last Name" required>
+  </div>
+</div>
 
-        <label for="lastName">Last Name<span class="required">*</span></label>
-        <input type="text" id="lastName" name="lastName" placeholder="Last Name" required>
+<!-- Email & Mobile Number -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="email">Email<span class="required">*</span></label>
+    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+  </div>
+  <div class="form-group">
+    <label for="mobileNumber">Mobile Number<span class="required">*</span></label>
+    <input type="text" id="mobileNumber" name="mobileNumber" placeholder="Mobile Number" required>
+  </div>
+</div>
 
-        <label for="email">Email<span class="required">*</span></label>
-        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+<!-- Password & Confirm Password -->
+<div class="form-row">
+<div class="form-group">
+  <label for="password">Password<span class="required">*</span></label>
+  <div class="password-wrapper">
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <button type="button" class="pw-toggle" aria-label="Show password" aria-pressed="false">
+      <svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+        <circle class="pupil" cx="12" cy="12" r="2.5"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
-        <label for="mobileNumber">Mobile Number<span class="required">*</span></label>
-        <input type="text" id="mobileNumber" name="mobileNumber" placeholder="Mobile Number" required>
+<div class="form-group">
+  <label for="confirmPassword">Confirm Password<span class="required">*</span></label>
+  <div class="password-wrapper">
+    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+    <button type="button" class="pw-toggle" aria-label="Show password" aria-pressed="false">
+      <svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+        <circle class="pupil" cx="12" cy="12" r="2.5"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
-        <label for="password">Password<span class="required">*</span></label>
-        <input type="password" id="password" name="password" placeholder="Password" required>
+</div>
 
-        <label for="confirmPassword">Confirm Password<span class="required">*</span></label>
-        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+<!-- Address Field -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="address">Address</label>
+    <input type="text" id="address" name="address" placeholder="Address" required>
+  </div>
+</div>
 
-        <label for="address">Address</label>
-        <input type="text" id="address" name="address" placeholder="Address" required>
+<!-- Dependent Fields (Hidden Initially) -->
+<div id="addressFields" style="display:none;">
+  <!-- City & State -->
+  <div class="form-row">
+    <div class="form-group">
+      <label for="city">City<span class="required">*</span></label>
+      <input type="text" id="city" name="city" placeholder="City">
+    </div>
+    <div class="form-group">
+      <label for="state">State<span class="required">*</span></label>
+      <select id="state" name="state">
+        <option value="">Select State</option>
+        <option value="01 Jammu & Kashmir">Jammu & Kashmir</option>
+        <option value="02 Himachal Pradesh">Himachal Pradesh</option>
+        <option value="03 Punjab">Punjab</option>
+        <option value="04 Chandigarh">Chandigarh</option>
+        <option value="05 Uttarakhand">Uttarakhand</option>
+        <option value="06 Haryana">Haryana</option>
+        <option value="07 Delhi">Delhi</option>
+        <option value="08 Rajasthan">Rajasthan</option>
+        <option value="09 Uttar Pradesh">Uttar Pradesh</option>
+        <option value="10 Bihar">Bihar</option>
+        <option value="11 Sikkim">Sikkim</option>
+        <option value="12 Arunachal Pradesh">Arunachal Pradesh</option>
+        <option value="13 Nagaland">Nagaland</option>
+        <option value="14 Manipur">Manipur</option>
+        <option value="15 Mizoram">Mizoram</option>
+        <option value="16 Tripura">Tripura</option>
+        <option value="17 Meghalaya">Meghalaya</option>
+        <option value="18 Assam">Assam</option>
+        <option value="19 West Bengal">West Bengal</option>
+        <option value="20 Jharkhand">Jharkhand</option>
+        <option value="21 Odisha">Odisha</option>
+        <option value="22 Chhattisgarh">Chhattisgarh</option>
+        <option value="23 Madhya Pradesh">Madhya Pradesh</option>
+        <option value="24 Gujarat">Gujarat</option>
+        <option value="26 Dadra &">Dadra & Nagar Haveli & Daman & Diu</option>
+        <option value="27">Maharashtra</option>
+        <option value="29">Karnataka</option>
+        <option value="30">Goa</option>
+        <option value="31">Lakshdweep</option>
+        <option value="32">Kerala</option>
+        <option value="33">Tamil Nadu</option>
+        <option value="34">Puducherry</option>
+        <option value="35">Andaman & Nicobar Islands</option>
+        <option value="36">Telangana</option>
+        <option value="37">Andhra Pradesh</option>
+        <option value="38">Ladakh</option>
+        <option value="97">Other Territory</option>
+      </select>
+    </div>
+  </div>
 
-        <!-- Dependent Fields -->
-        <div id="addressFields" style="display:none;">
-          <label for="city">City<span class="required">*</span></label>
-          <input type="text" id="city" name="city" placeholder="City">
+  <!-- Country & Pin Code -->
+  <div class="form-row">
+    <div class="form-group">
+      <label for="country">Country<span class="required">*</span></label>
+      <select id="country" name="country">
+        <option value="">Select Country</option>
+        <option value="India">India</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="pinCode">Pin Code<span class="required">*</span></label>
+      <input type="text" id="pinCode" name="pinCode" placeholder="Pin Code">
+    </div>
+  </div>
+</div>
+<!-- Buttons -->
+<div class="form-row">
+  <div class="form-group">
+    <button type="submit" class="btn btn-signup">Sign Up</button>
+  </div>
+  <div class="form-group">
+    <button type="button" id="clearAllBtn" class="btn btn-clear">Clear All</button>
+  </div>
+  <div class="form-group">
+    <button type="button" id="cancelBtn" class="btn btn-cancel">Cancel</button>
+  </div>
+</div>
 
-          <label for="state">State<span class="required">*</span></label>
-          <select id="state" name="state">
-            <option value="">Select State</option>
-            <option value="01 Jammu & Kashmir">Jammu & Kashmir</option>
-            <option value="02 Himachal Pradesh">Himachal Pradesh</option>
-            <option value="03 Punjab">Punjab</option>
-            <option value="04 Chandigarh">Chandigarh</option>
-            <option value="05 Uttarakhand">Uttarakhand</option>
-            <option value="06 Haryana">Haryana</option>
-            <option value="07 Delhi">Delhi</option>
-            <option value="08 Rajasthan">Rajasthan</option>
-            <option value="09 Uttar Pradesh">Uttar Pradesh</option>
-            <option value="10 Bihar">Bihar</option>
-            <option value="11 Sikkim">Sikkim</option>
-            <option value="12 Arunachal Pradesh">Arunachal Pradesh</option>
-            <option value="13 Nagaland">Nagaland</option>
-            <option value="14 Manipur">Manipur</option>
-            <option value="15 Mizoram">Mizoram</option>
-            <option value="16 Tripura">Tripura</option>
-            <option value="17 Meghalaya">Meghalaya</option>
-            <option value="18 Assam">Assam</option>
-            <option value="19 West Bengal">West Bengal</option>
-            <option value="20 Jharkhand">Jharkhand</option>
-            <option value="21 Odisha">Odisha</option>
-            <option value="22 Chhattisgarh">Chhattisgarh</option>
-            <option value="23 Madhya Pradesh">Madhya Pradesh</option>
-            <option value="24 Gujarat">Gujarat</option>
-            <option value="26 Dadra &">Dadra & Nagar Haveli & Daman & Diu</option>
-            <option value="27">Maharashtra</option>
-            <option value="29">Karnataka</option>
-            <option value="30">Goa</option>
-            <option value="31">Lakshdweep</option>
-            <option value="32">Kerala</option>
-            <option value="33">Tamil Nadu</option>
-            <option value="34">Puducherry</option>
-            <option value="35">Andaman & Nicobar Islands</option>
-            <option value="36">Telangana</option>
-            <option value="37">Andhra Pradesh</option>
-            <option value="38">Ladakh</option>
-            <option value="97">Other Territory</option>
-          </select>
 
-          <label for="country">Country<span class="required">*</span></label>
-          <select id="country" name="country">
-            <option value="">Select Country</option>
-            <option value="India">India</option>
-          </select>
-
-          <label for="pinCode">Pin Code<span class="required">*</span></label>
-          <input type="text" id="pinCode" name="pinCode" placeholder="Pin Code">
-        </div>
-
-        <button id="signUpBtn" type="submit" class="btn-orange">Sign Up</button>
       </form>
     </div>
   </div>

@@ -1,22 +1,25 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.entity.LeadStatus;
+import com.example.crm_system_backend.constants.LeadStatus;
+import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ErrorCode;
-import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.helper.LeadExcelHelper;
-import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
+import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -29,10 +32,16 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     private final LeadExcelHelper  leadExcelHelper;
 
-    public LeadHandler(LeadService leadService, UserService userRepo, LeadExcelHelper leadExcelHelper) {
+    private final ModelMapper modelMapper;
+
+    private final UploadHistoryService uploadHistoryService;
+
+    public LeadHandler(LeadService leadService, UserService userRepo, LeadExcelHelper leadExcelHelper, ModelMapper modelMapper, UploadHistoryService uploadHistoryService) {
         this.leadService = leadService;
         this.userService = userRepo;
         this.leadExcelHelper = leadExcelHelper;
+        this.modelMapper = modelMapper;
+        this.uploadHistoryService = uploadHistoryService;
     }
 
     @Override
@@ -52,9 +61,7 @@ public class LeadHandler implements IHandler<LeadDto> {
         lead.setUpdatedAt(new Date());
         lead.setLeadStatus(LeadStatus.ADDED);
         Lead savedLead =  leadService.save(lead);
-        LeadDto savedLeadDto = new LeadDto();
-        BeanUtils.copyProperties(savedLead, savedLeadDto);
-        return savedLeadDto;
+        return modelMapper.map(savedLead,LeadDto.class);
     }
 
     public List<LeadDto> getLeadsByUser(Long userId) {
@@ -65,7 +72,8 @@ public class LeadHandler implements IHandler<LeadDto> {
                 ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         ).stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
-            BeanUtils.copyProperties(lead, leadDto);
+            //BeanUtils.copyProperties(lead, leadDto);
+            modelMapper.map(lead, leadDto);
             return leadDto;
         }).toList();
         return leadList;
@@ -81,7 +89,8 @@ public class LeadHandler implements IHandler<LeadDto> {
     public List<LeadDto> getAll() {
       List<LeadDto> leadList =  leadService.getAllLeads().stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
-            BeanUtils.copyProperties(lead, leadDto);
+           // BeanUtils.copyProperties(lead, leadDto);
+            modelMapper.map(lead, leadDto);
             return leadDto;
         }).toList();
         return leadList;
@@ -92,12 +101,11 @@ public class LeadHandler implements IHandler<LeadDto> {
         Lead oldLead = leadService.getLeadById(leadId).orElseThrow(
                 ()-> new LeadException(ErrorCode.LEAD_NOT_FOUND)
         );
-        Lead lead = new Lead();
-        BeanUtils.copyProperties(oldLead, lead);
-        Lead updatedLead =  leadService.editLead(leadId,lead);
-        LeadDto updatedLeadDto = new LeadDto();
-        BeanUtils.copyProperties(updatedLead, updatedLeadDto);
-        return updatedLeadDto;
+        modelMapper.map(leadDto, oldLead);
+        oldLead.setId(leadId);
+        oldLead.setUpdatedAt(new Date());
+        leadService.editLead(leadId,oldLead);
+        return  modelMapper.map(oldLead,LeadDto.class);
     }
 
     @Override
@@ -107,20 +115,36 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     @Override
     public void bulkUpload(MultipartFile file,Long userId) {
+        UploadHistory  uploadHistory = new UploadHistory();
+        uploadHistory.setFileName(file.getOriginalFilename());
+        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
+        uploadHistory.setUploadedAt(LocalDateTime.now());
         try {
             User user = userService.getUserById(userId).orElseThrow(
                     ()->   new UserException(ErrorCode.USER_NOT_FOUND)
             );
-            List<Lead> leadList = leadExcelHelper.processExcelData(file);
-            leadList.stream().forEach(lead -> {
-                lead.setCreatedAt(new Date());
-                lead.setUpdatedAt(new Date());
-                lead.setLeadStatus(LeadStatus.ADDED);
-                lead.setUser(user);
-            });
-            leadService.bulkUpload(leadList);
+            uploadHistory.setUploadedBy(user.getEmail());
+            List<Lead> leadList = leadExcelHelper.processExcelData(file,uploadHistory);
+            if(!leadList.isEmpty()) {
+                leadList.forEach(lead -> {
+                    lead.setCreatedAt(new Date());
+                    lead.setUpdatedAt(new Date());
+                    lead.setLeadStatus(LeadStatus.ADDED);
+                    lead.setUser(user);
+                });
+                leadService.bulkUpload(leadList);
+                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(uploadHistory);
+            }
+            else {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                uploadHistoryService.save(uploadHistory);
+                throw new LeadException(ErrorCode.FILE_PROCESSING_FAILED);
+            }
         }
         catch (Exception e){
+            uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            uploadHistoryService.save(uploadHistory);
             log.error(e.getMessage());
             e.getStackTrace();
             throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);

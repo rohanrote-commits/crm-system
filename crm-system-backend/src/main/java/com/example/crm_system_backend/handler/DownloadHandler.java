@@ -1,6 +1,6 @@
 package com.example.crm_system_backend.handler;
 
-import com.example.crm_system_backend.exception.ErrorCode;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.FileDownloadException;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.core.io.ClassPathResource;
