@@ -10,6 +10,6 @@ public interface IUploadHistoryService {
     UploadHistory findById(String id);
     UploadHistory update(UploadHistory uploadHistory);
     void deleteById(String id);
-    List<UploadHistory> findAll();
+    List<UploadHistory> findByUser(String email);
 
 }

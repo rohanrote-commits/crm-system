@@ -346,7 +346,7 @@ public class LeadExcelHelper {
                 }
             }
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String errorFilePath = "Error_File_" + timestamp + ".xlsx";
+            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
             try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
                 uploadHistory.setErrorFileName(errorFilePath);
                 errorWorkbook.write(out);

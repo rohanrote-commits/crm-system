@@ -61,5 +61,4 @@ public class LeadController {
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 
-
 }

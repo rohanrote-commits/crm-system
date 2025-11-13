@@ -186,3 +186,28 @@ body {
 #delete-profile:hover {
     background-color: #e15e5e;
 }
+
+/* Make header row background distinct */
+#upload-table thead th {
+    background-color:  #0b2c5a;;   
+    color: #fff;                
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 3px solid  #0b2c5a;; 
+}
+
+/* add space between header and first row */
+#upload-table thead th {
+    text-align: left;           /* align text if needed */
+    letter-spacing: 0.5px;
+}
+
+/*separate body rows more clearly */
+#upload-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+/*hover effect for rows */
+#upload-table tbody tr:hover {
+    background-color: #f5f5f5;
+}

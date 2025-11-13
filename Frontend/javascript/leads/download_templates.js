@@ -14,22 +14,11 @@ $(document).ready(function () {
       }
     });
   });
-  $(".drop-item-template").on("click", function () {
+ $("#downloadTemplate").on("click", function () {
   const token = sessionStorage.getItem("Authorization");
-  const templateName = $(this).text().trim();
-  let downloadUrl = "";
-
-  // Choose correct backend URL based on button
-  if (templateName === "User Template") {
-    downloadUrl = "http://localhost:8080/crm/files/user-template";
-  } else if (templateName === "Lead Template") {
-    downloadUrl = "http://localhost:8080/crm/files/lead-template";
-  } else if (templateName === "Report Template") {
-    downloadUrl = "http://localhost:8080/crm/files/report-template";
-  }
-
+  const templateName = "Lead_Teamplate";
   $.ajax({
-    url: downloadUrl,
+    url: "http://localhost:8080/crm/files/lead-template",
     type: "GET",
     headers: {
       Authorization: "Bearer " + token,
@@ -42,7 +31,6 @@ $(document).ready(function () {
       const blob = new Blob([data], {
         type: xhr.getResponseHeader("Content-Type"),
       });
-
       // Create a download link dynamically
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -52,20 +40,36 @@ $(document).ready(function () {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
-      $("#templateDropdown").slideUp(150);
+       showAlert("File downloded successfully","success")
     },
     error: function (xhr) {
       if (xhr.status === 401) {
-        alert("Session expired. Please login again.");
+        showAlert("Session expired. Please login again.","warning");
         sessionStorage.clear();
         window.location.href = "/Frontend/html/login.html";
       } else {
         console.error("Token used:", token);
-        alert("Error while downloading the template.");
+        showAlert("Error while downloading the template.","danger");
       }
     },
   });
 });
 
 });
+
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }
