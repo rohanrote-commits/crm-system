@@ -1,8 +1,7 @@
 package com.example.crm_system_backend.interceptor;
 
-import com.example.crm_system_backend.exception.ErrorCode;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
-import com.example.crm_system_backend.handler.AuthHandler;
 import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
 import com.example.crm_system_backend.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;

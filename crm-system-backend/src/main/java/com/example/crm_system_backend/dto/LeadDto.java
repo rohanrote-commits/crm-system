@@ -1,8 +1,7 @@
 package com.example.crm_system_backend.dto;
 
 
-import com.example.crm_system_backend.entity.LeadStatus;
-import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.constants.LeadStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

@@ -2,12 +2,9 @@ package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ErrorCode;
-import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.ILeadService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

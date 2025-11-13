@@ -1,39 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Leads</title>
-      <link rel="stylesheet" href="/Frontend/css/lead/upload_lead.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Leads | CRM Lead Management</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/Frontend/css/lead/upload_lead.css" />
+
+  <!-- jQuery & Plugins -->
+  <script src="/Frontend/javascript/jquery.js"></script>
+  <script src="/Frontend/javascript/jquery.validate.min.js"></script>
+  <link rel="stylesheet" href="/Frontend/javascript/datatables.min.css" />
+  <script src="/Frontend/javascript/datatables.min.js"></script>
 </head>
+
 <body>
-    <header class="top-bar">
+
+  <!-- Header -->
+  <header class="top-bar">
     <div class="logo">CRM <span>Lead Management</span></div>
-    <!-- <div class="template-menu">
-    <a href="#" id="templateMenuToggle">Template ⮟</a>
-    <div class="dropdown" id="templateDropdown">
-      <button class="drop-item" id ="userTemplate" >User Template</button>
-      <button class="drop-item" id = "leadTemplate">Lead Template</button>
-      <button class="drop-item" id="reportTemplate">Report Template</button>
-    </div>
-  </div> -->
-    </div>
     <div class="nav-right">
-        <div class="profile-menu">
-            <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
-            <div class="dropdown" id="profileDropdown">
-                <button id = "view-profile" class="drop-item">View Profile</button>
-                <button id = "delete-profile" class="drop-item">Delete Profile</button>
-                <button id = "logout" class="drop-item">Logout</button>
-            </div>
+      <div class="profile-menu">
+        <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
+        <div class="dropdown" id="profileDropdown">
+          <button id="view-profile" class="drop-item">View Profile</button>
+          <button id="back" class="drop-item">Back</button>
+          <button id="delete-profile" class="drop-item">Delete Profile</button>
+          <button id="logout" class="drop-item">Logout</button>
         </div>
+      </div>
     </div>
-    <div class="dashboard-layout">
-         <main class="dashboard-container">
-            
-         </main>
+  </header>
+
+  <!-- Main Section -->
+  <main class="dashboard-container">
+
+    <!-- Upload Leads Section (Top White Container) -->
+    <div class="dashboard-section p-4" style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="m-0">Upload Leads</h3>
+        <div>
+          <button class="btn btn-outline-primary me-2" id="downloadTemplate">
+            <i class="bi bi-download"></i> Download Template
+          </button>
+          <button class="btn btn-success" id="uploadTemplateBtn">
+            <i class="bi bi-upload"></i> Upload Template
+          </button>
+        </div>
+      </div>
+      <p class="text-muted mb-0">Download the Excel template, fill in lead details, and upload it to bulk import leads.</p>
     </div>
-</header>
-    <script src="/Frontend/javascript/leads/upload_lead.js"></script>
+
+    <!-- Upload History Table -->
+    <div class="dashboard-section mt-4 p-4" style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+      <h4 class="mb-3">Upload History</h4>
+      <hr />
+      <div class="upload-history-table-container">
+        <table id="upload-table" class="table table-bordered table-hover align-middle" style="width:100%;">
+          <thead class="table-light">
+            <tr>
+              <th>File Name</th>
+              <th>Uploaded At</th>
+              <th>Uploaded By</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Upload Leads Modal -->
+  <div class="modal fade" id="uploadLeadsModal" tabindex="-1" aria-labelledby="uploadLeadsLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadLeadsLabel">Upload Leads from Excel</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="uploadLeadsForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="leadFile" class="form-label">Select Excel File (.xlsx / .xls)</label>
+              <input type="file" class="form-control" id="leadFile" name="file" accept=".xlsx,.xls" required />
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-success">Upload & Process</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <!-- Profile Modal -->
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Name</label>
+              <p class="form-control-plaintext" id="profileName"></p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Mobile</label>
+              <p class="form-control-plaintext" id="profileMobile"></p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Email</label>
+              <p class="form-control-plaintext" id="profileEmail"></p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Role</label>
+              <p class="form-control-plaintext" id="profileRole"></p>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-bold">Address</label>
+              <p class="form-control-plaintext" id="profileAddress"></p>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">City</label>
+              <p class="form-control-plaintext" id="profileCity"></p>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">State</label>
+              <p class="form-control-plaintext" id="profileState"></p>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Country</label>
+              <p class="form-control-plaintext" id="profileCountry"></p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Pin Code</label>
+              <p class="form-control-plaintext" id="profilePin"></p>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Registered On</label>
+              <p class="form-control-plaintext" id="profileDate"></p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="/Frontend/javascript/leads/upload_lead.js"></script>
+  <script>"/Frontend/javascript/leads/download_template.js"</script>
+  <script src="/Frontend/javascript/dashboard.js"></script>
 </body>
+
 </html>
