@@ -30,10 +30,18 @@ jQuery(function() {
       headers: {
         Authorization: "Bearer " + token,
       },
-      success: function (userList) {
+      success: function (fileList) {
         $("#upload-table").DataTable({
-          data: userList,
+          data: fileList,
           columns: [
+            {
+                data: null, 
+                title: "Sr.No.",
+                orderable: false, 
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
             { data: "fileName" },
             { data: "uploadedAt" },
             { data: "uploadedBy" },
@@ -66,15 +74,21 @@ jQuery(function() {
             },
             {
               data: "errorFileName",
+              title : "Action",
+              orderable:false,
               render: function (data, type, row) {
-                return `<a href="#" class="download-error" data-file="${data}">${data}</a>`;
+                return `
+                  <button class="btn btn-sm btn-secondary download-error" data-file="${data}">
+                                    <i class="bi bi-download"></i>
+                                </button>
+                `;
               },
             },
             {
               data: null,
               title: "Action",
               orderable: false, // Prevent sorting on this column,
-              visible: false,
+              visible: false, // hiden for now
               render: function (data, type, row) {
                 return `
                             <div class="d-flex justify-content-center gap-2">
@@ -126,7 +140,7 @@ jQuery(function() {
               a.click();
               a.remove();
               window.URL.revokeObjectURL(url);
-              showAlert("File downloded successfully", "success");
+              showAlert("Error File downloded successfully", "success");
             },
             error: function (xhr) {
               if (xhr.status === 401) {

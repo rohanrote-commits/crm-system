@@ -261,6 +261,7 @@ body {
 #lead-table thead th {
     text-align: left;           /* align text if needed */
     letter-spacing: 0.5px;
+    margin: 20px;
 }
 
 /*separate body rows more clearly */

@@ -1,5 +1,8 @@
 
 $(document).ready(function () {
+    $("#header").load("/Frontend/html/components/header.html");
+    $("#profile-model").load("/Frontend/html/models/profile_model.html");
+    $("#add_edit_model").load("/Frontend/html/models/addEdit_lead_model.html");
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -53,29 +56,10 @@ $(document).ready(function () {
 
     });
 
-    // Toggle dropdown when profile image is clicked
-  $("#profilePic").on("click", function (e) {
-    e.stopPropagation(); // Prevent click from bubbling up
-    $("#profileDropdown").toggleClass("show"); // Toggle visibility
-  });
 
-  // Hide dropdown when clicking anywhere outside
-  $(document).on("click", function (e) {
-    if (!$(e.target).closest(".profile-menu").length) {
-      $("#profileDropdown").removeClass("show");
-    }
-  });
 
-    $("#addLeadBtn").on("click", function () {
-        $("#leadDropdown").toggleClass("show");
-    });
 
-// Optional: close dropdown when clicking outside
-    $(document).on("click", function (e) {
-        if (!$(e.target).closest(".section-buttons").length) {
-            $("#leadDropdown").removeClass("show");
-        }
-    })
+
 
     $("#importLead").click(function (event) {
           window.location.href = "leads/upload_lead.html";
