@@ -1,5 +1,5 @@
 jQuery(function() {
-
+  $("#header").load("/Frontend/html/components/header.html");
       function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -34,6 +34,9 @@ jQuery(function() {
         $("#upload-table").DataTable({
           data: fileList,
           columns: [
+            {data:"id",
+              visible:false,
+            },
             {
                 data: null, 
                 title: "Sr.No.",
@@ -81,6 +84,9 @@ jQuery(function() {
                   <button class="btn btn-sm btn-secondary download-error" data-file="${data}">
                                     <i class="bi bi-download"></i>
                                 </button>
+                      <button class="btn btn-sm btn-secondary view-error-info" data-lead="${data}">
+                            <i class="bi bi-eye"></i>
+                        </button>              
                 `;
               },
             },
@@ -154,5 +160,17 @@ jQuery(function() {
             },
           });
         });
+
+      //Function to save id of each row in session storage and use it on next storage
+      $("#upload-table").on("click", ".view-error-info", function () {
+        const row = $("#upload-table")
+          .DataTable()
+          .row($(this).closest("tr"))
+          .data();
+
+        sessionStorage.setItem("id", row.id);
+        window.location.href = "/Frontend/html/leads/view_error_lead.html";
+      });
+
 
 });

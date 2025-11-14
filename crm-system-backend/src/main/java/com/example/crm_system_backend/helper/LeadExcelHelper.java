@@ -2,13 +2,16 @@ package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,12 +26,14 @@ import java.util.*;
 public class LeadExcelHelper {
 
 
-    List<Lead> validLeads = new ArrayList<>();
-    List<Row> errorRows = new ArrayList<>();
+    @Autowired
+    private ErrorRecordHandler errorRecordHandler;
 
     public List<Lead> processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
 
         Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads
+        List<Lead> validLeads = new ArrayList<>();
+        List<Row> errorRows = new ArrayList<>();
 
         if(!this.validateExcelHeader(file)){
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
@@ -64,6 +69,9 @@ public class LeadExcelHelper {
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
                 writeErrorFile(errorRows,uploadHistory);
+                List<Lead> errorList = errorRows.stream().map(this::extractLead
+                        ).toList();
+                errorRecordHandler.saveErrorRecord(errorList,uploadHistory);
             }
 
         } catch (IOException e) {
@@ -131,29 +139,6 @@ public class LeadExcelHelper {
         return lead;
     }
 
-//    private boolean validateExcelHeader(MultipartFile file)  {
-//        File tempFile = new File("crm-system-backend\\src\\main\\resources\\Lead Template.xlsx");
-//        try (
-//            Workbook workbook = new XSSFWorkbook(file.getInputStream());
-//            Workbook tempWorkbook = new XSSFWorkbook(tempFile.getAbsolutePath())){
-//            Sheet sheet = workbook.getSheetAt(1);
-//            for (Row row : sheet) {
-//                if (row.getRowNum() == 1) {
-//                    for (Cell cell : row) {
-//                        if (!cell.getCellType().toString().equals(headers.get(cell.getColumnIndex()))) {
-//                            return false;
-//                        }
-//                    }
-//                    return true;
-//                }
-//            }
-//            return true;
-//        }
-//        catch (IOException ioException) {
-//            log.error(ioException.getMessage());
-//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
-//        }
-//    }
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
 

@@ -2,6 +2,7 @@ package com.example.crm_system_backend.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -44,5 +45,16 @@ public class GlobalExceptionHandler {
                 exception.errorCode.getStatus()
         );
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(ExcelException.class)
+    public ResponseEntity<ErrorResponse> handleExcelException(ExcelException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                ex.errorCode.getMessage(),
+                ex.errorCode.getStatus()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

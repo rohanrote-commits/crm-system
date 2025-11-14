@@ -25,7 +25,7 @@ public enum ErrorCode {
     FILE_NOT_FOUND_EXCEPTION("FNF","File Not Found", HttpStatus.NOT_FOUND),
     FILE_HISTORY_NOT_FOUND("FHN","File History Not Found", HttpStatus.NOT_FOUND),
     FILE_PROCESSING_FAILED("FPF","File Processing Failed", HttpStatus.NOT_ACCEPTABLE),
-
+    NO_ERROR_RECORDS("NER","No Error Records", HttpStatus.NOT_FOUND),
     USER_NOT_PRESENT_WITH_EMAIL("UNPE","User Not Present With Email", HttpStatus.NOT_FOUND),
     EMAIL_ALREADY_EXISTS("EAE","Email Already Exists", HttpStatus.CONFLICT),
     MOBILE_NUMBER_ALREADY_EXISTS("MNAE","Mobile Number Already Exists", HttpStatus.CONFLICT),

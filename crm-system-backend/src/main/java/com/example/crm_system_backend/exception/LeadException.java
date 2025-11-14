@@ -6,7 +6,7 @@ public class LeadException extends RuntimeException{
 
     ErrorCode errorCode;
     public LeadException(ErrorCode message) {
-        super(message.name());
-        this.errorCode = message;
+        super(message.getMessage());
+        this.errorCode = errorCode;
     }
 }
