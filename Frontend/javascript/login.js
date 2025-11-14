@@ -38,7 +38,7 @@ $(document).ready(function () {
                 contentType: 'application/json',
                 data: JSON.stringify(user),
                 success: function (token) {
-                    alert(" Login Successful");
+                    showAlert(" Login Successful","successful");
                     sessionStorage.setItem("Authorization", token);
                     window.location.href = "/Frontend/html/dashboard.html";
                     
@@ -46,9 +46,9 @@ $(document).ready(function () {
                 error: function (xhr) {
                     if(xhr.status === 404){
                         console.log(xhr);
-                        showAlert("Invalid Credentials","warinig");
+                        showAlert("Invalid Credentials","danger");
                     }else{
-                        alert("Server Side Error");
+                        showAlert("Server Side Error","danger");
                     }
 
     
@@ -90,4 +90,3 @@ $(document).ready(function() {
         alert.alert('close');
       }, 5000);
     }
-

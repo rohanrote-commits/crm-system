@@ -123,12 +123,28 @@ $.validator.addMethod("passwordPattern", function (value) {
                     window.location.href = "/Frontend/html/login.html";
                 },
                 error: function(xhr) {
-                    if (xhr.status === 409) alert("Email already registered");
-                    else if (xhr.status === 400) alert("Passwords do not match");
-                    else alert("Sign Up Failed: " + (xhr.responseText || "Server error"));
+                    if (xhr.status === 409) showAlertlert("Email already registered","warning");
+                    else if (xhr.status === 400) showAlert("Passwords do not match","danger");
+                    else showAlert("Sign Up Failed: " + (xhr.responseText || "Server error"),"danger");
                 }
             });
         }
     });
 
 });
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }

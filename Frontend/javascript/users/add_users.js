@@ -270,7 +270,7 @@ $.validator.addMethod("passwordPattern", function (value) {
     });
 
 });
-// Function to show bootstrap alert dynamically
+    // Function to show bootstrap alert dynamically
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`

@@ -21,6 +21,26 @@ body {
   font-size: 22px;
   font-weight: 700;
 }
+.settings-icon{
+    font-size: 32px; /* Increase size as needed */
+    cursor: pointer;
+    color: #ffffff; /* Optional: change color */
+}
+.profile-icon {
+    font-size: 32px;            /* Same size as your settings icon */
+    color: #ffffff;             /* White icon visible on dark background */
+    cursor: pointer;            /* Pointer on hover */
+    margin-left: 10px;          /* Optional spacing */
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);      /* Slight zoom on hover */
+    color: #f0f0f0;             /* Optional: lighter color on hover */
+}
+
+
+
 
 .logo span {
   color: #f46a28;
@@ -41,6 +61,7 @@ body {
   height: 40px;
   border-radius: 50%;
   cursor: pointer;
+  margin-left: 10px;
 }
 .modal-header {
     border-bottom: 2px solid  #f5f5f5;
