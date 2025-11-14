@@ -199,6 +199,7 @@ public class UserHandler implements IHandler<UserDTO> {
         User savedUser  = userService.getUserById(id).orElseThrow(
                 ()-> new UserException(ErrorCode.USER_NOT_FOUND)
         );
+        uploadHistory.setUploadedBy(savedUser.getEmail());
 
         try {
             List<User> users = userExcelHelper.processExcelData(file, savedUser.getRole().name(),uploadHistory);

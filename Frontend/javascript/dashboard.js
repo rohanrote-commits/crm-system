@@ -61,6 +61,10 @@ $(document).ready(function () {
     $("#profileDropdown").toggleClass("show"); // Toggle visibility
   });
   
+
+  $("#manage-users").click(function() {
+    window.location.href = "/Frontend/html/users/user-dashboard.html"
+  })
   // Hide dropdown when clicking anywhere outside
   $(document).on("click", function (e) {
     if (!$(e.target).closest(".profile-menu").length) {

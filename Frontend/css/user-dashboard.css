@@ -95,6 +95,9 @@ body {
   box-shadow: 0 0 15px rgba(0,0,0,0.05);
   text-align: center;
 }
+.top-container{
+  justify-content: center;
+}
 .top-section{
     /* flex-wrap: wrap; */
   /* overflow-x: auto;  */
@@ -103,6 +106,9 @@ body {
   padding: 30px;
   box-shadow: 0 0 15px rgba(0,0,0,0.05);
   text-align: center;
+  height: 80px;
+  margin: 0 auto; 
+
 }
 
 .section-buttons {
@@ -123,9 +129,11 @@ body {
     color: white;
     padding: 10px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 16px;
     cursor: pointer;
     transition: transform 0.2s, background 0.3s;
+    margin-bottom: 20px;
+    width: 100px;
 }
 
 .btn-section:hover {
@@ -165,7 +173,7 @@ body {
   border-radius: 8px;
 }
 .btn-orange:hover {
-  background-color: #ff854f;
+  background-color: #df4502;
 }
 
 .template-menu {
@@ -270,23 +278,29 @@ textarea.valid {
   background-color: #f6fff8;
 }
 
-/* Optional wrapper for password fields (if you’re using eye icon etc.) */
 .password-wrapper {
   position: relative;
 }
 
-.password-wrapper .toggle-password {
+.pw-toggle {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  color: #666;
 }
 
-.password-wrapper .toggle-password:hover {
-  color: #000;
+.password-wrapper input {
+  padding-right: 40px; 
 }
+
+.eye-icon {
+  fill: #6c757d;
+}
+
 /* Make header row background distinct */
 #user-table thead th {
     background-color: #0b2a5b;   /* dark blue or any color you like */
@@ -311,4 +325,22 @@ textarea.valid {
 /* Optional: hover effect for rows */
 #user-table tbody tr:hover {
     background-color: #f5f5f5;
+}
+.btn-clear {
+  background-color: #6c757d; /* grey */
+  border: none;
+}
+
+.btn-green {
+  background-color: #01a10c; /* green */
+  border: none;
+}
+
+/* Optional: hover effects */
+.btn-clear:hover {
+  background-color: #5a6268;
+}
+
+.btn-green:hover {
+  background-color: #05681a;
 }
