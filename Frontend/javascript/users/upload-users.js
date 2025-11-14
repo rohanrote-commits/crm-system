@@ -36,7 +36,7 @@ $(document).ready(function() {
 
 });
 
-// Function to show bootstrap alert dynamically
+    // Function to show bootstrap alert dynamically
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`

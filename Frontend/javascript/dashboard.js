@@ -3,7 +3,6 @@ $(document).ready(function () {
     $("#header").load("/Frontend/html/components/header.html");
     $("#profile-model").load("/Frontend/html/models/profile_model.html");
     $("#add_edit_model").load("/Frontend/html/models/addEdit_lead_model.html");
-
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -56,6 +55,7 @@ $(document).ready(function () {
         }
 
     });
+
     // Toggle dropdown when profile image is clicked
   $("#profilePic").on("click", function (e) {
     $("#profileDropdown").toggleClass("show"); // Toggle visibility
@@ -202,6 +202,7 @@ $(document).ready(function () {
     });
 
     $("#view-profile").click(function () {
+
 
         $.ajax({
             url: `http://localhost:8080/crm/user/get-user`,

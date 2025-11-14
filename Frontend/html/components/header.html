@@ -2,13 +2,14 @@
     <div class="logo">CRM <span>Lead Management</span></div>
     <div class="nav-right">
         <div class="profile-menu">
-            <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
+                <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
             <div class="dropdown" id="profileDropdown">
                 <button id = "view-profile" class="drop-item">View Profile</button>
                 <button id = "delete-profile" class="drop-item">Delete Profile</button>
-                   <button id ="manage-users" class="drop-item">Manage Users</button>
+                   <button id ="manage-users" class="drop-item" onclick="window.location.href='/Frontend/html/users/user-dashboard.html'"">Manage Users</button>
                 <button id = "logout" class="drop-item">Logout</button>
             </div>
         </div>
     </div>
+    
 </header>

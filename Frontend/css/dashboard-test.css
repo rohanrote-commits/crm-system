@@ -320,3 +320,8 @@ body {
 .dropdown {
   display: inline-block;
 }
+.settings-icon {
+    font-size: 32px; /* Increase size as needed */
+    cursor: pointer;
+    color: #ffffff; /* Optional: change color */
+}
