@@ -1,12 +1,16 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.helper.UserExcelHelper;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +34,9 @@ public class UserHandler implements IHandler<UserDTO> {
     private AuthHandler authHandler;
     @Autowired
     private UserExcelHelper userExcelHelper;
+
+    @Autowired
+    private UploadHistoryService uploadHistoryService;
 
     @Override
     public UserDTO save(UserDTO userDTO) {
@@ -184,16 +192,37 @@ public class UserHandler implements IHandler<UserDTO> {
     }
     @Override
     public void bulkUpload(MultipartFile file,Long id) {
+        UploadHistory uploadHistory = new UploadHistory();
+        uploadHistory.setFileName(file.getOriginalFilename());
+        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
+        uploadHistory.setUploadedAt(LocalDateTime.now());
         User savedUser  = userService.getUserById(id).orElseThrow(
                 ()-> new UserException(ErrorCode.USER_NOT_FOUND)
         );
-        List<User> users = userExcelHelper.processExcelData(file,savedUser.getRole().name());
-        users.stream().forEach(user -> {
-            if(userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
-            user.setRegisteredBy(id);
-            user.setRegisteredOn(java.time.LocalDateTime.now());
-            userService.registerUser(user);
-        });
+
+        try {
+            List<User> users = userExcelHelper.processExcelData(file, savedUser.getRole().name(),uploadHistory);
+            if (!users.isEmpty()) {
+                users.stream().forEach(user -> {
+                    if (userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
+                    user.setRegisteredBy(id);
+                    user.setRegisteredOn(java.time.LocalDateTime.now());
+                    userService.registerUser(user);
+                });
+                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(uploadHistory);
+            } else {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                uploadHistoryService.save(uploadHistory);
+                throw new LeadException(ErrorCode.FILE_PROCESSING_FAILED);
+            }
+        }catch (Exception e){
+            uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            uploadHistoryService.save(uploadHistory);
+            log.error(e.getMessage());
+            e.getStackTrace();
+            throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
     }
 
 }
