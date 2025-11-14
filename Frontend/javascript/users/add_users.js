@@ -56,6 +56,14 @@ $('#userModal').on('hidden.bs.modal', function () {
 
     $('#userModal').find('.password-wrapper + .error-message, .password-wrapper + label.error').remove();
 });
+    $('.pw-toggle').on('click', function() {
+    const input = $(this).siblings('input'); // input inside same wrapper
+    const isHidden = input.attr('type') === 'password';
+    input.attr('type', isHidden ? 'text' : 'password');
+
+    $(this).attr('aria-pressed', isHidden);
+    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+  });
 
     // Show Add User Modal
     $("#addUser").click(function () {
@@ -250,15 +258,31 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: () => {
-                    alert(editUserId ? "User Updated Successfully" : "User Created Successfully");
+                    showAlert(editUserId ? "User Updated Successfully" : "User Created Successfully","info");
                     location.reload();
                 },
                 error: xhr => {
                     if (xhr.status === 409) alert("Email or Mobile already exists");
-                    else alert("Failed to save user");
+                    else showAlert("Failed to save user","danger");
                 }
             });
         }
     });
 
 });
+// Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }

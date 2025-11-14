@@ -42,7 +42,7 @@ public class RequestInterceptor implements HandlerInterceptor {
             if(jwtUtil.isTokenExpired(token)){
                 userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
-                throw new UserException(ErrorCode.SESSION_EXPIRED);
+                return false;
             }
             //check  if session is already present
             String email = jwtUtil.getEmail(token);

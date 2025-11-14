@@ -1,6 +1,8 @@
 package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -8,17 +10,21 @@ import com.example.crm_system_backend.exception.ExcelProcessingError;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Component
 public class UserExcelHelper {
+
     private static  final String NAME_REGEX = "^[A-Za-z ]{1,50}$";
 
     private static  final String ADDRESS_REGEX = "^[A-Za-z0-9 ,./#\\-]{1,100}$";
@@ -30,15 +36,16 @@ public class UserExcelHelper {
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,16}$";
 
     private static final String PIN_CODE_REGEX = "^[0-9]{6}$";
-    public List<User> processExcelData(MultipartFile file, String userRole) {
+    public List<User> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
         int countDown = 5;
-        boolean isThereError = false;
+
 
         if (!this.validateExcelHeader(file)) {
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
-        List<User> users = new ArrayList<>();
+        List<User> users = new ArrayList<>(); //valid users
+        List<Row> errorRows = new ArrayList<>(); //error rows
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(is)) {
@@ -103,6 +110,9 @@ public class UserExcelHelper {
                     user.setEmail(email);
                 }
 
+
+
+
                 if (isEmpty(role) || ("ADMIN".equals(userRole) && !"Basic".equals(role))) {
                     markError(row.getCell(10), "Invalid Role", errorStyle);
                     hasError = true;
@@ -129,20 +139,31 @@ public class UserExcelHelper {
                 if (!hasError) {
                     users.add(user);
                 } else {
-                    isThereError = true;
+                    errorRows.add(row);
                 }
             }
-
-            if (isThereError) {
-                log.error("Error in file processing");
-
-                throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
+            if (!errorRows.isEmpty()) {
+                if(!users.isEmpty()){
+                    uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+                }
+                uploadHistory.setInvalidRecords(errorRows.size());
+                writeErrorFile(errorRows,uploadHistory);
             }
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//            if (isThereError) {
+//                log.error("Error in file processing");
+//
+//                throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
+//            }
 
+        } catch (IOException e) {
+            uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            log.error(e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+        uploadHistory.setTotalRecords((users.size()+ errorRows.size()));
+        uploadHistory.setInvalidRecords(errorRows.size());
+        uploadHistory.setValidRecords(users.size());
         return users;
     }
 
@@ -245,5 +266,67 @@ public class UserExcelHelper {
     }
 
 
+    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) throws IOException {
+        File templateFile =  new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+
+        try (
+                FileInputStream fis = new FileInputStream(templateFile);
+                Workbook errorWorkbook = new XSSFWorkbook(fis)
+        ) {
+            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+
+            int startRow = 2; // after header
+            for (Row sourceRow : errorRows) {
+                Row targetRow = templateSheet.createRow(startRow++);
+
+                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+                    Cell sourceCell = sourceRow.getCell(i);
+                    if (sourceCell == null) continue;
+
+                    Cell targetCell = targetRow.createCell(i);
+
+                    // Copy cell value
+                    switch (sourceCell.getCellType()) {
+                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
+                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
+                        default -> targetCell.setCellValue(getCellValue(sourceCell));
+                    }
+
+                    // If source has error style, apply it
+                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
+                        CellStyle style = errorWorkbook.createCellStyle();
+                        style.cloneStyleFrom(sourceCell.getCellStyle());
+                        targetCell.setCellStyle(style);
+
+                        // Copy comments if any
+                        if (sourceCell.getCellComment() != null) {
+                            CreationHelper factory = errorWorkbook.getCreationHelper();
+                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
+                            ClientAnchor anchor = factory.createClientAnchor();
+                            anchor.setCol1(i);
+                            anchor.setRow1(targetRow.getRowNum());
+
+                            Comment comment = drawing.createCellComment(anchor);
+                            comment.setString(factory.createRichTextString(
+                                    sourceCell.getCellComment().getString().getString()));
+                            targetCell.setCellComment(comment);
+                        }
+                    }
+                }
+            }
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String errorFilePath = "Error_File_" + timestamp + ".xlsx";
+            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
+                uploadHistory.setErrorFileName(errorFilePath);
+                errorWorkbook.write(out);
+            }
+
+            log.info("Error file generated with {} invalid rows", errorRows.size());
+
+        } catch (IOException e) {
+            log.error("Error writing error file: {}", e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
 
 }
