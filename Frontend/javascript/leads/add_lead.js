@@ -95,7 +95,7 @@ $(document).ready(function (params) {
   $.validator.addMethod(
     "gstinPattern",
     (value) => /^[A-Z0-9]{15}$/.test(value),
-    "GSTIN must be 15 uppercase alphanumeric characters"
+    "Enter valid GSTIN"
   );
 
   $.validator.addMethod(
@@ -162,17 +162,33 @@ $(document).ready(function (params) {
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
-          alert(
-            isEdit ? "Lead updated successfully!" : "Lead added successfully!"
+          showAlert(
+            isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
           );
           $("#leadModal").modal("hide");
           $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
-          console.log(err);
-          alert("Something went wrong. Please try again.");
+          showAlert("Something went wrong. Please try again.","warning");
         },
       });
     },
   });
 });
+
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }

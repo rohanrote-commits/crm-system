@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -126,14 +127,17 @@ public class LeadHandler implements IHandler<LeadDto> {
             uploadHistory.setUploadedBy(user.getEmail());
             List<Lead> leadList = leadExcelHelper.processExcelData(file,uploadHistory);
             if(!leadList.isEmpty()) {
-                leadList.forEach(lead -> {
+                Consumer<Lead> leadConsumer = lead -> {
                     lead.setCreatedAt(new Date());
                     lead.setUpdatedAt(new Date());
                     lead.setLeadStatus(LeadStatus.ADDED);
                     lead.setUser(user);
-                });
-                leadService.bulkUpload(leadList);
-                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                };
+                leadList.forEach(leadConsumer);
+               List<Lead> savedLead =  leadService.bulkUpload(leadList);
+               if(savedLead.isEmpty()) {
+                   uploadHistory.setUploadStatus(UploadStatus.FAILED);
+               }
                 uploadHistoryService.save(uploadHistory);
             }
             else {

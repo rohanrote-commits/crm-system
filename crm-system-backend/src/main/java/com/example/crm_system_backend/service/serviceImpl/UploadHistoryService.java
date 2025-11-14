@@ -48,7 +48,9 @@ public class UploadHistoryService implements IUploadHistoryService {
     }
 
     @Override
-    public List<UploadHistory> findAll() {
-        return List.of();
+    public List<UploadHistory> findByUser(String email) {
+        return iUploadHistoryRepository.findByUploadedBy(email).orElseThrow(
+                ()-> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
+        );
     }
 }

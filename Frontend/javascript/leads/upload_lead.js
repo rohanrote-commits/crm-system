@@ -19,7 +19,7 @@ $(document).ready(function() {
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
-    alert("⚠ Unauthorized. Please login.");
+    showAlert("⚠ Unauthorized. Please login.","danger");
     window.location.href = "/Frontend/html/login.html";
     return;
   }
@@ -40,32 +40,49 @@ $(document).ready(function() {
     });
 
   // Open Modal on Button Click
-  $('#importLeadBtn').on('click', function() {
-    $('#importLeadsModal').modal('show');
+  $('#uploadTemplateBtn').on('click', function() {
+    $('#uploadLeadsModal').modal('show');
   });
 
   // Handle Excel File Upload
-  $('#importLeadsForm').on('submit', function(e) {
+  $('#uploadLeadsForm').on('submit', function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
 
     $.ajax({
-      url: `http://localhost:8080/crm/lead/file/${payload.sub}`, 
+      url: `http://localhost:8080/crm/lead/import/${payload.sub}`, 
       type: 'POST',
+      headers: { Authorization: "Bearer " + token },
       data: formData,
       contentType: false,
       processData: false,
       success: function(response) {
-        alert('Leads imported successfully!');
+        showAlert('Leads imported successfully!',"success");
         $('#importLeadsModal').modal('hide');
         $('#importLeadsForm')[0].reset();
         $('#leadTable').DataTable().ajax.reload();
       },
       error: function(err) {
-        alert('Error importing leads: ' + err.responseText);
+        showAlert('Error importing leads: ' + err.responseText,"danger");
       }
     });
   });
 
 });
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }

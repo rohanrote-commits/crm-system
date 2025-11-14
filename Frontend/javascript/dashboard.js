@@ -17,7 +17,7 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-        alert("Unauthorized. Please login.");
+        showAlert("Unauthorized. Please login.","danger");
         window.location.href = "/Frontend/html/login.html";
         return;
     }
@@ -101,7 +101,7 @@ $(document).ready(function () {
                 "Authorization": "Bearer " + token
             },
             success: function (response) {
-                alert(response);
+                showAlert(response,"success");
 
                 // remove token after success
                 localStorage.removeItem("Authorization");
@@ -110,7 +110,7 @@ $(document).ready(function () {
                 window.location.href = "/Frontend/html/login.html";
             },
             error: function (xhr) {
-                alert("Failed to delete user: " + xhr.responseText);
+                showAlert("Failed to delete user: " + xhr.responseText,"danger");
             }
         });
     });
@@ -128,7 +128,7 @@ $(document).ready(function () {
                 "Authorization": "Bearer " + token
             },
             success: function (response) {
-                alert(response);
+                showAlert(response,"success");
 
                 // remove token
                 localStorage.removeItem("Authorization");
@@ -137,7 +137,7 @@ $(document).ready(function () {
                 window.location.href = "/Frontend/html/login.html";
             },
             error: function (xhr) {
-                alert("Failed to logout: " + xhr.responseText);
+                showAlert("Failed to logout: " + xhr.responseText,"warning");
             }
         });
     });
@@ -157,11 +157,11 @@ $(document).ready(function () {
                 },
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
-                    alert("Lead deleted successfully.");
+                    showAlert("Lead deleted successfully.","success");
                     $('#lead-table').DataTable().reload();
                 },
                 error: function() {
-                    alert("Error deleting lead.");
+                    showAlert("Error deleting lead.","warning");
                 }
             });
             $('#lead-table').DataTable().ajax.reload();
@@ -183,11 +183,11 @@ $(document).ready(function () {
                 data : JSON.stringify(user),
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
-                    alert("User deleted successfully.");
+                   showAlert("User deleted successfully.","success");
                     $('#user-table').DataTable().ajax.reload();
                 },
                 error: function() {
-                    alert("Error deleting lead.");
+                    showAlert("Error deleting lead.","warning");
                 }
             });
         }
@@ -218,7 +218,7 @@ $(document).ready(function () {
                 $("#profileModal").modal("show");
             },
             error: function () {
-                alert("Failed to fetch profile");
+                showAlert("Failed to fetch profile","info");
             }
         });
     });
@@ -242,7 +242,6 @@ $(document).ready(function () {
 });
 
 function loadUsers(token){
-    console.log(token);
     $.ajax({
         url: "http://localhost:8080/crm/user/users",
         type: "GET",
@@ -301,12 +300,12 @@ function loadLeads(payload, token) {
         },
         error: function (xhr) {
             if (xhr.status === 401) {
-                alert("Session expired. Login again.");
+                showAlert("Session expired. Login again.","warning");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
             } else {
-                console.error("token is : " + token);
-                alert("Error loading leads.");
+                //console.error("token is : " + token);
+                showAlert("Error loading leads.","danger");
             }
         }
     });
@@ -383,3 +382,22 @@ function initializeLeadTable(data) {
         info: true
     });
 }
+
+
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }
+

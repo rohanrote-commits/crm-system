@@ -240,14 +240,6 @@ public class LeadExcelHelper {
             markError(row.getCell(6), "No Modules Selected", errorStyle);
             hasError = true;
         }
-//        else {
-//            for (String module : lead.getInterestedModules()) {
-//                if (!ALLOWED_MODULES.contains(module.toUpperCase())) {
-//                    markError(row.getCell(6), "Invalid Module: " + module, errorStyle);
-//                    hasError = true;
-//                }
-//            }
-//        }
 
         // 7. Address
         if (!isEmpty(lead.getBusinessAddress())){
@@ -346,7 +338,7 @@ public class LeadExcelHelper {
                 }
             }
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String errorFilePath = "Error_File_" + timestamp + ".xlsx";
+            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
             try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
                 uploadHistory.setErrorFileName(errorFilePath);
                 errorWorkbook.write(out);
