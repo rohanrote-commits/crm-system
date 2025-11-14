@@ -63,7 +63,7 @@ $(document).ready(function () {
   });
 
   $("#manage-users").click(function() {
-    window.location.href = "/Frontend/html/user-dashboard.html"
+    window.location.href = "/Frontend/html/users/user-dashboard.html"
   })
   // Hide dropdown when clicking anywhere outside
   $(document).on("click", function (e) {

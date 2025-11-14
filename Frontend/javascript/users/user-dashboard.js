@@ -90,7 +90,7 @@ $(document).ready(function () {
   // Click Bulk Import
   $("#importUser").click(function () {
     $dropdown.hide();
-    window.location.href = "/Frontend/html/bulk-upload.html"
+    window.location.href = "bulk-upload.html"
   });
 
   const payload = parseJwt(token);

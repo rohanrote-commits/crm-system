@@ -212,7 +212,7 @@ label.error {
 
 /* Cancel - Red */
 .btn-cancel {
-  background-color: #c91002;
+  background-color: #f34c05;
 }
 .btn-cancel:hover {
   background-color: #d32f2f;
@@ -227,4 +227,19 @@ label.error {
 
 .form-group {
   flex: 1; /* optional: make buttons same width */
+}
+/* Right-aligned smaller buttons */
+.button-row-right {
+  display: flex;
+  justify-content: flex-end; /* Move to right */
+  gap: 10px;
+  margin-top: 15px;
+  margin-left: 479px;
+}
+
+/* Small version of buttons */
+.btn-small {
+  padding: 8px 16px;       /* smaller padding */
+  font-size: 0.9rem;       /* slightly smaller text */
+  width: 100px;             /* not full width */
 }

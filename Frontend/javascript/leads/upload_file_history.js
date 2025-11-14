@@ -20,9 +20,10 @@ jQuery(function() {
         window.location.href = "/Frontend/html/login.html";
         return;
     }
-
+    
     const payload = parseJwt(token);
     const userRole = payload?.role?.trim();
+    console.log(payload.email)
 
     $.ajax({
       url: `http://localhost:8080/crm/history/${payload?.email}`,
