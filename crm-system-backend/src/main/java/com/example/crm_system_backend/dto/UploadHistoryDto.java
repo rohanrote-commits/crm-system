@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class UploadHistoryDto {
+    private String id;
     private String fileName;
     private LocalDateTime uploadedAt;
     private String uploadedBy;

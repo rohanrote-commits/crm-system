@@ -3,6 +3,7 @@ $(document).ready(function () {
     $("#header").load("/Frontend/html/components/header.html");
     $("#profile-model").load("/Frontend/html/models/profile_model.html");
     $("#add_edit_model").load("/Frontend/html/models/addEdit_lead_model.html");
+
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -55,12 +56,11 @@ $(document).ready(function () {
         }
 
     });
-
     // Toggle dropdown when profile image is clicked
   $("#profilePic").on("click", function (e) {
-   
     $("#profileDropdown").toggleClass("show"); // Toggle visibility
   });
+  
 
   $("#manage-users").click(function() {
     window.location.href = "/Frontend/html/users/user-dashboard.html"
@@ -72,6 +72,10 @@ $(document).ready(function () {
     }
   });
 
+
+  $("#manage-users").click(function() {
+    window.location.href = "/Frontend/html/user-dashboard.html"
+  })
 
 
     $("#addLeadBtn").on("click", function () {
@@ -198,7 +202,6 @@ $(document).ready(function () {
     });
 
     $("#view-profile").click(function () {
-
 
         $.ajax({
             url: `http://localhost:8080/crm/user/get-user`,
@@ -392,12 +395,13 @@ function initializeLeadTable(data) {
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-${type} small-alert alert-dismissible fade show" role="alert">
           ${message}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       `);
       alertContainer.append(alert);
+      alertContainer.show();
 
       // Auto remove after 5 seconds
       setTimeout(() => {
