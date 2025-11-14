@@ -196,10 +196,10 @@ label.error {
 
 /* Sign Up - Orange */
 .btn-signup {
-  background-color: hwb(19 0% 0%);
+    background-color: #1fa907;
 }
 .btn-signup:hover {
-  background-color: #fb4b00;
+  background-color: #167e03;
 }
 
 /* Clear All - Gray */

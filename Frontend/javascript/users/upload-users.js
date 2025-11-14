@@ -19,7 +19,7 @@ $(document).ready(function() {
           processData: false,
           headers: { "Authorization": "Bearer " + token },
           success: function(response) {
-              alert('Users imported successfully.');
+              showAlert('Users imported successfully.',"info");
 
               const modalEl = document.getElementById('importUsersModal');
               const modal = bootstrap.Modal.getInstance(modalEl);
@@ -29,9 +29,26 @@ $(document).ready(function() {
               $('#user-table').DataTable().ajax.reload();
           },
           error: function(err) {
-              alert('Error importing User: ' + err.responseText);
+              showAlert('Error importing User: ' + err.responseText,"danger");
           }
       });
   });
 
 });
+
+// Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }

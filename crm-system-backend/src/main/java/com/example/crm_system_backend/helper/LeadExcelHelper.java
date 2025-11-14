@@ -287,7 +287,7 @@ public class LeadExcelHelper {
         }
     }
 
-    private void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
+    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
 
         try (

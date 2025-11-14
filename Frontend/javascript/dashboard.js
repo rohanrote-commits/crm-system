@@ -56,14 +56,34 @@ $(document).ready(function () {
 
     });
 
+    // Toggle dropdown when profile image is clicked
+  $("#profilePic").on("click", function (e) {
+   
+    $("#profileDropdown").toggleClass("show"); // Toggle visibility
+  });
+
+  $("#manage-users").click(function() {
+    window.location.href = "/Frontend/html/user-dashboard.html"
+  })
+  // Hide dropdown when clicking anywhere outside
+  $(document).on("click", function (e) {
+    if (!$(e.target).closest(".profile-menu").length) {
+      $("#profileDropdown").removeClass("show");
+    }
+  });
 
 
+
+    $("#addLeadBtn").on("click", function () {
+        $("#leadDropdown").toggleClass("show");
+    });
 
 
 
     $("#importLead").click(function (event) {
           window.location.href = "leads/upload_lead.html";
     });
+
 
 
     //delete profile
