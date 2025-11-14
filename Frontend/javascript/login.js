@@ -46,7 +46,7 @@ $(document).ready(function () {
                 error: function (xhr) {
                     if(xhr.status === 404){
                         console.log(xhr);
-                        alert("Invalid Credentials");
+                        showAlert("Invalid Credentials","warinig");
                     }else{
                         alert("Server Side Error");
                     }
@@ -71,3 +71,23 @@ $(document).ready(function() {
 
 
 });
+
+
+
+    // Function to show bootstrap alert dynamically
+    function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }
+

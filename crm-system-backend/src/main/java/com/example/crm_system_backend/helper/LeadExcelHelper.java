@@ -240,14 +240,6 @@ public class LeadExcelHelper {
             markError(row.getCell(6), "No Modules Selected", errorStyle);
             hasError = true;
         }
-//        else {
-//            for (String module : lead.getInterestedModules()) {
-//                if (!ALLOWED_MODULES.contains(module.toUpperCase())) {
-//                    markError(row.getCell(6), "Invalid Module: " + module, errorStyle);
-//                    hasError = true;
-//                }
-//            }
-//        }
 
         // 7. Address
         if (!isEmpty(lead.getBusinessAddress())){

@@ -11,5 +11,5 @@ public interface ILeadService {
     List<Lead> getAllLeads();
     Lead editLead(Long leadId,Lead leadDto);
     void deleteLead(Long leadId);
-    void bulkUpload(List<Lead> leads);
+    List<Lead> bulkUpload(List<Lead> leads);
 }

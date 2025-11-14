@@ -95,7 +95,7 @@ $(document).ready(function (params) {
   $.validator.addMethod(
     "gstinPattern",
     (value) => /^[A-Z0-9]{15}$/.test(value),
-    "GSTIN must be 15 uppercase alphanumeric characters"
+    "Enter valid GSTIN"
   );
 
   $.validator.addMethod(
@@ -169,7 +169,6 @@ $(document).ready(function (params) {
           $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
-          console.log(err);
           showAlert("Something went wrong. Please try again.","warning");
         },
       });
