@@ -1,4 +1,5 @@
 $(document).ready(function (params) {
+  $("#update-modal").load("/Frontend/html/models/update_confirmation.html")
   function parseJwt(token) {
     try {
       const base64Url = token.split(".")[1];
@@ -71,6 +72,37 @@ $(document).ready(function (params) {
 
     $("#leadModal").modal("show");
   });
+
+  
+
+  // Open Update Modal
+$(document).on("click", ".edit-lead", function () {
+    const id = $(this).data("id");
+    $("#confirmUpdateBtn").data("id", id);
+    $("#updateConfirmModal").modal("show");
+});
+
+// Confirm Update
+$("#confirmUpdateBtn").on("click", function () {
+    const id = $(this).data("id");
+    console.log("Update confirmed for ID:", id);
+    // Your update AJAX call here
+    $("#updateConfirmModal").modal("hide");
+});
+
+
+
+    $("#addLeadBtn").click(function () {
+        $("#leadDropdown").slideToggle(200);
+    });
+
+    // Clicking outside closes dropdown
+    $(document).click(function (e) {
+        if (!$(e.target).closest(".section-buttons").length) {
+            $("#leadDropdown").slideUp(200);
+        }
+    });
+
 
 
   //Validation methods

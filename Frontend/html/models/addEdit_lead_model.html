@@ -1,0 +1,100 @@
+<div class="modal fade" id="leadModal" tabindex="-1" aria-labelledby="leadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header  text-white" >
+                <h5 class="modal-title" id="leadModalLabel">Add Lead</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="leadForm">
+                    <input type="hidden" id="leadId" name="leadId">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name<span class="required">*</span></label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name<span class="required">*</span></label>
+                            <input type="text" id="lastName" name="lastName" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email<span class="required">*</span></label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mobileNumber" class="form-label">Mobile<span class="required">*</span></label>
+                            <input type="text" id="mobileNumber" name="mobileNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gstin" class="form-label">GSTIN<span class="required">*</span></label>
+                            <input type="text" id="gstin" name="gstin" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="leadStatus" class="form-label">Status</label>
+                            <select id="leadStatus" name="leadStatus" class="form-select">
+                                <option value="ADDED">ADDED</option>
+                                <option value="CONTACTED">CONTACTED</option>
+                                <option value="CONVERTED">CONVERTED</option>
+                                <option value="NOT_CONVERTED">NOT CONVERTED</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="businessAddress" class="form-label">Address</label>
+                            <textarea id="businessAddress" name="businessAddress" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interested Modules<span class="required">*</span></label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="GSTR" id="modGSTR" name="interestedModules">
+                                        <label class="form-check-label" for="modGSTR">GSTR</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ITC Reconsilation" id="modITC" name="interestedModules">
+                                        <label class="form-check-label" for="modITC">ITC Reconciliation</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="E Invoice" id="modEInvoice" name="interestedModules">
+                                        <label class="form-check-label" for="modEInvoice">E-Invoice</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="EWay Bill" id="modEWay" name="interestedModules">
+                                        <label class="form-check-label" for="modEWay">E-Way Bill</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="LMS" id="modLMS" name="interestedModules">
+                                        <label class="form-check-label" for="modLMS">LMS</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="Third Eye" id="modThirdEye" name="interestedModules">
+                                        <label class="form-check-label" for="modThirdEye">Third Eye</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="Safe Sign" id="modSafeSign" name="interestedModules">
+                                        <label class="form-check-label" for="modSafeSign">Safe Sign</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>

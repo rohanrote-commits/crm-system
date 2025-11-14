@@ -42,8 +42,6 @@ public class LeadExcelHelper {
             errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            boolean hasError = false;
-
             for (Row row : sheet) {
                 if (row.getRowNum() == 0 || row.getRowNum()==1) continue;// skip header
                 if(isRowEmpty(row)){
