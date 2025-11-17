@@ -1,13 +1,12 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.dto.UploadHistoryDto;
-import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.handler.UploadedHistoryHandler;
-import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +23,7 @@ import java.util.List;
 public class UploadHistoryController {
 
 
+    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
     private final UploadedHistoryHandler uploadedHistoryHandler;
 
     private  final  ModelMapper modelMapper;
@@ -36,7 +36,9 @@ public class UploadHistoryController {
      */
     @GetMapping("/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
+        log.info("Enter: UploadHistoryController.getUploadHistoryByUser");
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findLeadUploadHistoryByEmail(email);
+        log.info("Exit: UploadHistoryController.getUploadHistoryByUser");
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
 
@@ -49,13 +51,16 @@ public class UploadHistoryController {
      */
     @GetMapping("/error/{filename}")
     public ResponseEntity<byte []> getErrorFile(@PathVariable String filename){
+        log.info("Enter: UploadHistoryController.getErrorFile");
         File file = new File(filename);
         byte[] fileBytes = null;
         try {
             fileBytes = FileUtils.readFileToByteArray(file);
         } catch (IOException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+        log.info("Exit: UploadHistoryController.getErrorFile");
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))

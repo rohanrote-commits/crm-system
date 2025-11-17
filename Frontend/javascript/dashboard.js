@@ -49,31 +49,81 @@ $(document).ready(function () {
 
     });
 
-    // Toggle dropdown when profile image is clicked
-  $("#profilePic").on("click", function (e) {
-    $("#profileDropdown").toggleClass("show"); // Toggle visibility
+  $("#profilePic").click(function () {
+    $("#profileDropdown").toggle();
   });
-  
 
-  $("#manage-users").click(function() {
-    window.location.href = "/Frontend/html/users/user-dashboard.html"
-  })
-  // Hide dropdown when clicking anywhere outside
-  $(document).on("click", function (e) {
-    if (!$(e.target).closest(".profile-menu").length) {
-      $("#profileDropdown").removeClass("show");
+  const $dropdown = $("#userDropdown");
+
+  // Toggle dropdown when clicking the main button
+  $("#addUserBtn").click(function (e) {
+    e.stopPropagation();
+    $dropdown.toggle();
+  });
+
+  // Delete profile
+  $("#delete-profile").click(function () {
+    if (!token) {
+      showAlert("User not logged in!", "danger");
+      return;
     }
+
+    if (
+      !confirm(
+        "Are you sure you want to delete your profile? This action is irreversible."
+      )
+    ) {
+      return;
+    }
+
+    $.ajax({
+      url: `http://localhost:8080/crm/user/delete-user`,
+      type: "DELETE",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      success: function (response) {
+        showAlert(response.message || response, "info");
+
+        localStorage.removeItem("Authorization");
+        window.location.href = "/Frontend/html/login.html";
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to delete user";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+      },
+    });
   });
 
+  $("#clearUserBtn").click(function () {
+    $("#userForm")[0].reset();
+    $("#addressFields").slideUp();
+  });
 
-  $("#manage-users").click(function() {
-    window.location.href = "/Frontend/html/user-dashboard.html"
-  })
+//   // Close dropdown if clicked outside
+//   $(document).click(function (event) {
+//     if (!$(event.target).closest("#userDropdown, #addUserBtn").length) {
+//       $dropdown.hide();
+//     }
+//   });
 
 
-    $("#addLeadBtn").on("click", function () {
-        $("#leadDropdown").toggleClass("show");
-    });
+
+
+    // Toggle dropdown on button click
+$("#addLeadBtn").on("click", function (e) {
+    e.stopPropagation(); // prevent click from closing instantly
+    $("#leadDropdown").toggleClass("show");
+});
+
+// Close dropdown when clicking outside
+$(document).on("click", function () {
+    $("#leadDropdown").removeClass("show");
+});
+
 
 
 
@@ -82,39 +132,38 @@ $(document).ready(function () {
     });
 
 
+    // //delete profile
+    // $("#delete-profile").click(function () {
 
-    //delete profile
-    $("#delete-profile").click(function () {
+    //     if (!token) {
+    //         alert("User not logged in!");
+    //         return;
+    //     }
 
-        if (!token) {
-            alert("User not logged in!");
-            return;
-        }
+    //     if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
+    //         return;
+    //     }
 
-        if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
-            return;
-        }
+    //     $.ajax({
+    //         url: `http://localhost:8080/crm/user/delete-user`,
+    //         type: "DELETE",
+    //         headers: {
+    //             "Authorization": "Bearer " + token
+    //         },
+    //         success: function (response) {
+    //             showAlert(response,"success");
 
-        $.ajax({
-            url: `http://localhost:8080/crm/user/delete-user`,
-            type: "DELETE",
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (response) {
-                showAlert(response,"success");
+    //             // remove token after success
+    //             localStorage.removeItem("Authorization");
 
-                // remove token after success
-                localStorage.removeItem("Authorization");
-
-                // redirect to login page
-                window.location.href = "/Frontend/html/login.html";
-            },
-            error: function (xhr) {
-                showAlert("Failed to delete user: " + xhr.responseText,"danger");
-            }
-        });
-    });
+    //             // redirect to login page
+    //             window.location.href = "/Frontend/html/login.html";
+    //         },
+    //         error: function (xhr) {
+    //             showAlert("Failed to delete user: " + xhr.responseText,"danger");
+    //         }
+    //     });
+    // });
 
 //logout
     $("#logout").click(function () {

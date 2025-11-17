@@ -10,6 +10,8 @@ import com.example.crm_system_backend.exception.ExcelException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,15 +21,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
-@Slf4j
+
+
 @Component
 public class LeadExcelHelper {
 
 
-
+    private static final Logger log = LoggerFactory.getLogger(LeadExcelHelper.class);
 
     public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
-
+        log.info("Enter: LeadExcelHelper.processExcelData");
         Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads
         List<Lead> validLeads = new ArrayList<>();
         List<Row> errorRows = new ArrayList<>();
@@ -37,6 +40,7 @@ public class LeadExcelHelper {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistory.setValidRecords(0);
             uploadHistory.setInvalidRecords(0);
+            log.error("Exit: LeadExcelHelper.processExcelData: Invalid Excel Header");
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
@@ -76,6 +80,7 @@ public class LeadExcelHelper {
             }
 
         } catch (IOException e) {
+            log.error("Exit : LeadExcelHelper.processExcelData -->${}",e);
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             log.error(e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
@@ -84,6 +89,7 @@ public class LeadExcelHelper {
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(validLeads.size());
         leadList.setValidLeadList(validLeads);
+        log.info("Exit: LeadExcelHelper.processExcelData");
         return leadList;
     }
 
