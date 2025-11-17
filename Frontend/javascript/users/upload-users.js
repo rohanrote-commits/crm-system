@@ -1,9 +1,9 @@
 $(document).ready(function() {
 
-  $('#bulkUpload').on('click', function() {
-      const modal = new bootstrap.Modal(document.getElementById('importUsersModal'));
-      modal.show();
-  });
+  // $('#bulkUpload').on('click', function() {
+  //     const modal = new bootstrap.Modal(document.getElementById('importUsersModal'));
+  //     modal.show();
+  // });
 
   const token = sessionStorage.getItem("Authorization");
 
