@@ -7,6 +7,7 @@ import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.ExcelProcessingError;
+import com.example.crm_system_backend.exception.UserException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -25,17 +26,98 @@ import java.util.List;
 @Component
 public class UserExcelHelper {
 
-    private static  final String NAME_REGEX = "^[A-Za-z ]{1,50}$";
+    private static final String NAME_REGEX = "^[A-Za-z ]{1,50}$";
 
-    private static  final String ADDRESS_REGEX = "^[A-Za-z0-9 ,./#\\-]{1,100}$";
+    private static final String ADDRESS_REGEX = "^[A-Za-z0-9 ,./#\\-]{1,200}$";
 
-    private static  final String MOBILE_REGEX = "^[789]\\d{9}$";
+    private static final String MOBILE_REGEX = "^[789]\\d{9}$";
 
-    private static  final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,16}$";
 
     private static final String PIN_CODE_REGEX = "^[0-9]{6}$";
+
+    /**
+     * Extracts and returns the value of a given cell as a String. Handles numeric, date-formatted,
+     * and string cell types. If the cell is null, an empty String is returned.
+     *
+     * @param cell the cell from which to extract the value, may be null
+     * @return the cell value as a String; an empty String if the cell is null
+     */
+    private static String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        if (cell.getCellType() == CellType.NUMERIC) {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return cell.getLocalDateTimeCellValue().toLocalDate().toString();
+            }
+            return String.valueOf((long) cell.getNumericCellValue());
+        }
+        return cell.getStringCellValue().trim();
+    }
+
+    /**
+     * Checks whether a given string is empty or contains only whitespace characters.
+     *
+     * @param value the string to be checked, may be null
+     * @return true if the string is null, empty, or contains only whitespace characters; false otherwise
+     */
+    private static boolean isEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    /**
+     * Marks the given cell as erroneous by applying an error-specific style and attaching
+     * a comment with the provided error message.
+     *
+     * @param cell       the cell to be marked as erroneous; if null, the method does nothing
+     * @param message    the error message to add as a comment to the cell
+     * @param errorStyle the cell style to apply for indicating the error
+     */
+    private static void markError(Cell cell, String message, CellStyle errorStyle) {
+        if (cell == null) return;
+        cell.setCellStyle(errorStyle);
+        Sheet sheet = cell.getSheet();
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(cell.getColumnIndex());
+        anchor.setRow1(cell.getRowIndex());
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(message));
+        cell.setCellComment(comment);
+    }
+
+    /**
+     * Checks whether a given row in an Excel sheet is empty.
+     * A row is considered empty if all its cells are either null or contain a blank value.
+     *
+     * @param row the row to be checked, must not be null
+     * @return true if the row is empty; false otherwise
+     */
+    private static boolean isRowEmpty(Row row) {
+        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Processes the given Excel file to extract user information, validate the data,
+     * and populate a list of successfully validated users. Errors encountered during
+     * processing are marked in the Excel file.
+     *
+     * @param file          the Excel file to be processed, containing user information
+     * @param userRole      the role of the user performing the upload, used for validation
+     * @param uploadHistory an object to track the upload process, storing the status
+     *                      and counts of valid and invalid records
+     * @return a list of valid {@code User} objects extracted from the Excel file
+     * @throws ExcelException if the file has invalid headers or if there are issues
+     *                        during file processing
+     */
     public List<User> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
         int countDown = 5;
 
@@ -110,7 +192,56 @@ public class UserExcelHelper {
                     user.setEmail(email);
                 }
 
+                boolean isAddressPresent = !isEmpty(address);
+                boolean isAnyLocationFieldPresent =
+                        !isEmpty(city) || !isEmpty(state) || !isEmpty(country) || !isEmpty(pinCode);
 
+                if (isAddressPresent) {
+
+                    if (!address.matches(ADDRESS_REGEX)) {
+                        markError(row.getCell(5), "Invalid Address", errorStyle);
+                        hasError = true;
+                    } else {
+                        user.setAddress(address);
+                    }
+
+                    if (isEmpty(city) || !city.matches(NAME_REGEX)) {
+                        markError(row.getCell(6), "City required", errorStyle);
+                        hasError = true;
+                    } else {
+                        user.setCity(city);
+                    }
+
+                    if (isEmpty(state) || !state.matches(NAME_REGEX)) {
+                        markError(row.getCell(7), "State required", errorStyle);
+                        hasError = true;
+                    } else {
+                        user.setState(state);
+                    }
+
+                    if (isEmpty(country) || !country.matches(NAME_REGEX)) {
+                        markError(row.getCell(8), "Country required", errorStyle);
+                        hasError = true;
+                    } else {
+                        user.setCountry(country);
+                    }
+
+                    if (isEmpty(pinCode) || !pinCode.matches(PIN_CODE_REGEX)) {
+                        markError(row.getCell(9), "Invalid Pincode", errorStyle);
+                        hasError = true;
+                    } else {
+                        user.setPinCode(pinCode);
+                    }
+
+                } else if (isAnyLocationFieldPresent) {
+
+                    markError(row.getCell(5), "Address required", errorStyle);
+                    markError(row.getCell(6), "City requires Address", errorStyle);
+                    markError(row.getCell(7), "State requires Address", errorStyle);
+                    markError(row.getCell(8), "Country requires Address", errorStyle);
+                    markError(row.getCell(9), "Pincode requires Address", errorStyle);
+                    hasError = true;
+                }
 
 
                 if (isEmpty(role) || ("ADMIN".equals(userRole) && !"Basic".equals(role))) {
@@ -143,30 +274,35 @@ public class UserExcelHelper {
                 }
             }
             if (!errorRows.isEmpty()) {
-                if(!users.isEmpty()){
+                if (!users.isEmpty()) {
                     uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
-                writeErrorFile(errorRows,uploadHistory);
+                writeErrorFile(errorRows, uploadHistory);
             }
 
-//            if (isThereError) {
-//                log.error("Error in file processing");
-//
-//                throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING,getErrorFileAsBytes(workbook));
-//            }
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             log.error(e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
-        uploadHistory.setTotalRecords((users.size()+ errorRows.size()));
+        uploadHistory.setTotalRecords((users.size() + errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(users.size());
         return users;
     }
 
+    /**
+     * Creates and returns the content of the given Excel workbook as a byte array.
+     * Writes the workbook data to an in-memory output stream and converts it to a byte array.
+     * If an error occurs during processing, an {@code ExcelException} is thrown with a relevant error code.
+     *
+     * @param workbook the Excel workbook to be converted to a byte array; must not be null
+     * @return a byte array representation of the workbook's content
+     * @throws ExcelException if an I/O error occurs while writing the workbook data
+     */
     private byte[] getErrorFileAsBytes(Workbook workbook) {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             workbook.write(out);
@@ -176,8 +312,15 @@ public class UserExcelHelper {
         }
     }
 
-
-
+    /**
+     * Validates if the header of the provided Excel file matches the template header.
+     * Compares each column in the first row of the given file against the predefined template.
+     * If the headers do not match, logs the discrepancy and returns false.
+     *
+     * @param file the Excel file to be validated, must not be null
+     * @return true if the Excel file's header matches the template; false otherwise
+     * @throws ExcelException if an error occurs while processing the file
+     */
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/UsersTemplate.xlsx");
 
@@ -227,47 +370,21 @@ public class UserExcelHelper {
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
-    private static String getCellValue(Cell cell) {
-        if (cell == null) return "";
-        if (cell.getCellType() == CellType.NUMERIC) {
-            if (DateUtil.isCellDateFormatted(cell)) {
-                return cell.getLocalDateTimeCellValue().toLocalDate().toString();
-            }
-            return String.valueOf((long) cell.getNumericCellValue());
-        }
-        return cell.getStringCellValue().trim();
-    }
 
-    private static boolean isEmpty(String value) {
-        return value == null || value.trim().isEmpty();
-    }
-
-    private static void markError(Cell cell, String message, CellStyle errorStyle) {
-        if (cell == null) return;
-        cell.setCellStyle(errorStyle);
-        Sheet sheet = cell.getSheet();
-        Drawing<?> drawing = sheet.createDrawingPatriarch();
-        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
-        ClientAnchor anchor = factory.createClientAnchor();
-        anchor.setCol1(cell.getColumnIndex());
-        anchor.setRow1(cell.getRowIndex());
-        Comment comment = drawing.createCellComment(anchor);
-        comment.setString(factory.createRichTextString(message));
-        cell.setCellComment(comment);
-    }
-    private static boolean isRowEmpty(Row row) {
-        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
-            Cell cell = row.getCell(c);
-            if (cell != null && cell.getCellType() != CellType.BLANK) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) throws IOException {
-        File templateFile =  new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+    /**
+     * Generates an error file in Excel format to record invalid rows encountered
+     * during an upload process. The invalid rows are copied into a new sheet
+     * within a predefined template and styled with error-specific formatting.
+     * The generated file is saved with a timestamped name and its path is set
+     * in the provided {@code UploadHistory} object.
+     *
+     * @param errorRows     a list of invalid rows to be included in the error file
+     * @param uploadHistory an object used to track the upload process, where the
+     *                      path of the generated error file is stored
+     * @throws IOException if there is an issue accessing or writing to the file
+     */
+    public void writeErrorFile(List<Row> errorRows, UploadHistory uploadHistory) throws IOException {
+        File templateFile = new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
 
         try (
                 FileInputStream fis = new FileInputStream(templateFile);

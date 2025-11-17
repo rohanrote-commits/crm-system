@@ -15,18 +15,19 @@ $(document).ready(function () {
       return null;
     }
   }
-  //
+
   $("#back").click(function () {
     window.location.href = "/Frontend/html/dashboard.html";
   });
 
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
-    if (!token) {
-        showAlert("Unauthorized. Please login.","danger");
-        window.location.href = "/Frontend/html/login.html";
-        return;
-    }
+  if (!token) {
+    showAlert("Unauthorized. Please login.", "danger");
+    window.location.href = "/Frontend/html/login.html";
+    return;
+  }
+
   $("#profilePic").click(function () {
     $("#profileDropdown").toggle();
   });
@@ -35,14 +36,14 @@ $(document).ready(function () {
 
   // Toggle dropdown when clicking the main button
   $("#addUserBtn").click(function (e) {
-    e.stopPropagation(); // prevent document click from closing immediately
+    e.stopPropagation();
     $dropdown.toggle();
   });
 
-  //delete profile
+  // Delete profile
   $("#delete-profile").click(function () {
     if (!token) {
-      showAlert("User not logged in!","danger");
+      showAlert("User not logged in!", "danger");
       return;
     }
 
@@ -61,16 +62,17 @@ $(document).ready(function () {
         Authorization: "Bearer " + token,
       },
       success: function (response) {
-        showrAlert(response,"info");
+        showAlert(response.message || response, "info");
 
-        // remove token after success
         localStorage.removeItem("Authorization");
-
-        // redirect to login page
         window.location.href = "/Frontend/html/login.html";
       },
       error: function (xhr) {
-        showAlert("Failed to delete user: " + xhr.responseText,"warning");
+        let errorMsg = "Failed to delete user";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
       },
     });
   });
@@ -90,18 +92,17 @@ $(document).ready(function () {
   // Click Bulk Import
   $("#importUser").click(function () {
     $dropdown.hide();
-    window.location.href = "bulk-upload.html"
+    window.location.href = "bulk-upload.html";
   });
 
   const payload = parseJwt(token);
   const userRole = payload?.role?.trim();
   console.log("Decoded Token:", payload);
 
-  // Load users only if role is ADMIN or MASTER_ADMIN
   if (userRole === "ADMIN" || userRole === "MASTER_ADMIN") {
     loadUsers(token);
   } else {
-    showAlert("Access Denied: Only admins can view users.","warning");
+    showAlert("Access Denied: Only admins can view users.", "warning");
     return;
   }
 
@@ -117,192 +118,162 @@ $(document).ready(function () {
         data: JSON.stringify(user),
         headers: { Authorization: "Bearer " + token },
         success: function () {
-          showAlert("User deleted successfully.","success");
+          showAlert("User deleted successfully.", "success");
           loadUsers(token);
         },
-        error: function () {
-          showAlertlert("Error deleting user.","warning");
+        error: function (xhr) {
+          let errorMsg = "Error deleting user";
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMsg = xhr.responseJSON.message;
+          }
+          showAlert(errorMsg, "danger");
         },
       });
     }
   });
-  //logout
-    $("#logout").click(function () {
-        if (!token) {
-            window.location.href = "/Frontend/html/login.html";
-            return;
-        }
-        $.ajax({
-            url: `http://localhost:8080/crm/user/logout`,
-            type: "GET",
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (response) {
-                showAlert(response,"success");
 
-                // remove token
-                localStorage.removeItem("Authorization");
-
-                // redirect to login
-                window.location.href = "/Frontend/html/login.html";
-            },
-            error: function (xhr) {
-                showAlert("Failed to logout: " + xhr.responseText,"warning");
-            }
-        });
-    });
-
-   $("#view-profile").click(function () {
+  // Logout
+  $("#logout").click(function () {
+    if (!token) {
+      window.location.href = "/Frontend/html/login.html";
+      return;
+    }
     $.ajax({
-        url: `http://localhost:8080/crm/user/get-user`,
-        type: "GET",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        success: function (user) {
-
-            // Load values into input fields
-            $("#profileName").val(user.firstName + " " + user.lastName);
-            $("#profileEmail").val(user.email);
-            $("#profileMobile").val(user.mobileNumber);
-            $("#profileAddress").val(user.address || "");
-            $("#profileCity").val(user.city || "");
-            $("#profileState").val(user.state || "");
-            $("#profileCountry").val(user.country || "");
-            $("#profilePin").val(user.pinCode || "");
-            $("#profileRole").val(user.role);
-            $("#profileDate").val(user.registeredOn);
-
-            
-
-            // Ensure all fields stay READONLY initially
-            $("#profileModal input, #profileModal textarea").prop("readonly", true);
-
-            // Reset buttons
-            $("#editProfileBtn").removeClass("d-none");
-            $("#saveProfileBtn").addClass("d-none");
-
-            $("#profileModal").modal("show");
-        },
-        error: function () {
-            showAlert("Failed to fetch profile", "info");
+      url: `http://localhost:8080/crm/user/logout`,
+      type: "GET",
+      headers: { Authorization: "Bearer " + token },
+      success: function (response) {
+        showAlert(response.message || response, "success");
+        localStorage.removeItem("Authorization");
+        window.location.href = "/Frontend/html/login.html";
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to logout";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
         }
+        showAlert(errorMsg, "danger");
+      },
     });
-});
-$("#editProfileBtn").click(function () {
+  });
 
-    // Make ONLY required fields editable
-    $("#profileMobile").prop("readonly", false);
-    $("#profileAddress").prop("readonly", false);
-    $("#profileCity").prop("readonly", false);
-    $("#profileState").prop("readonly", false);
-    $("#profileCountry").prop("readonly", false);
-    $("#profilePin").prop("readonly", false);
+  // View profile
+  $("#view-profile").click(function () {
+    $.ajax({
+      url: `http://localhost:8080/crm/user/get-user`,
+      type: "GET",
+      headers: { Authorization: "Bearer " + token },
+      success: function (user) {
+        $("#profileName").val(user.firstName + " " + user.lastName);
+        $("#profileEmail").val(user.email);
+        $("#profileMobile").val(user.mobileNumber);
+        $("#profileAddress").val(user.address || "");
+        $("#profileCity").val(user.city || "");
+        $("#profileState").val(user.state || "");
+        $("#profileCountry").val(user.country || "");
+        $("#profilePin").val(user.pinCode || "");
+        $("#profileRole").val(user.role);
+        $("#profileDate").val(user.registeredOn);
 
-    // Toggle buttons
+        $("#profileModal input, #profileModal textarea").prop("readonly", true);
+        $("#editProfileBtn").removeClass("d-none");
+        $("#saveProfileBtn").addClass("d-none");
+        $("#profileModal").modal("show");
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to load profile";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+      },
+    });
+  });
+
+  // Edit profile
+  $("#editProfileBtn").click(function () {
+    $("#profileMobile, #profileAddress, #profileCity, #profileState, #profileCountry, #profilePin").prop("readonly", false);
     $("#editProfileBtn").addClass("d-none");
     $("#saveProfileBtn").removeClass("d-none");
-});
+  });
 
-    $.validator.addMethod("mobilePattern", function(value, element) {
-        return this.optional(element) || /^[789]\d{9}$/.test(value);
-    }, "Mobile must start with 7/8/9 and be 10 digits");
+  $.validator.addMethod("mobilePattern", function (value, element) {
+    return this.optional(element) || /^[789]\d{9}$/.test(value);
+  }, "Mobile must start with 7/8/9 and be 10 digits");
 
-    $.validator.addMethod("addressPattern", function(value, element) {
-        return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,200}$/.test(value);
-    }, "Address can contain letters, numbers, ,./#- (max 100)");
+  $.validator.addMethod("addressPattern", function (value, element) {
+    return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,200}$/.test(value);
+  }, "Address can contain letters, numbers, ,./#- (max 100)");
 
-    $.validator.addMethod("pinPattern", function(value, element) {
-        return this.optional(element) || /^[0-9]{6}$/.test(value);
-    }, "Pin code must be 6 digits");
+  $.validator.addMethod("pinPattern", function (value, element) {
+    return this.optional(element) || /^[0-9]{6}$/.test(value);
+  }, "Pin code must be 6 digits");
 
-    $("#profileForm").validate({
+  $("#profileForm").validate({
     rules: {
-        profileMobile: { required: true, mobilePattern: true },
-        profileAddress: { required: true, addressPattern: true }
+      profileMobile: { required: true, mobilePattern: true },
+      profileAddress: { required: true, addressPattern: true }
     }
-});
+  });
 
-$("#saveProfileBtn").click(function () {
+  // Save profile
+  $("#saveProfileBtn").click(function () {
+    if (!$("#profileForm").valid()) return;
 
-    // Validate form first
-    if (!$("#profileForm").valid()) {
-        return; // Stop if validation fails
-    }
-
-    // Create object to send to backend
     const updatedProfile = {
-        email: $("#profileEmail").val(),          
-        mobileNumber: $("#profileMobile").val(),
-        address: $("#profileAddress").val(),
-        city: $("#profileCity").val(),
-        state: $("#profileState").val(),
-        country: $("#profileCountry").val(),
-        pinCode: $("#profilePin").val()
+      email: $("#profileEmail").val(),
+      mobileNumber: $("#profileMobile").val(),
+      address: $("#profileAddress").val(),
+      city: $("#profileCity").val(),
+      state: $("#profileState").val(),
+      country: $("#profileCountry").val(),
+      pinCode: $("#profilePin").val()
     };
 
     $.ajax({
-        url: `http://localhost:8080/crm/user/update`,
-        type: "POST",
-        headers: {
-            "Authorization": "Bearer " + token,
-            "Content-Type": "application/json"
-        },
-        data: JSON.stringify(updatedProfile),
-
-        success: function () {
-            alert("Profile updated successfully", "success");
-
-            // Make editable fields readonly again
-            $("#profileModal input, #profileModal textarea").prop("readonly", true);
-
-            // Toggle buttons back
-            $("#editProfileBtn").removeClass("d-none");
-            $("#saveProfileBtn").addClass("d-none");
-
-            // Hide modal
-            $("#profileModal").modal("hide");
-        },
-
-        error: function () {
-            showAlert("Failed to update profile", "danger");
+      url: `http://localhost:8080/crm/user/update`,
+      type: "POST",
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      data: JSON.stringify(updatedProfile),
+      success: function () {
+        showAlert("Profile updated successfully", "success");
+        $("#profileModal input, #profileModal textarea").prop("readonly", true);
+        $("#editProfileBtn").removeClass("d-none");
+        $("#saveProfileBtn").addClass("d-none");
+        $("#profileModal").modal("hide");
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to update profile";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
         }
+        showAlert(errorMsg, "danger");
+      }
     });
-});
+  });
 
-
-
-    // Function to show bootstrap alert dynamically
-    function showAlert(message, type) {
-      const alertContainer = $("#alert-container");
-      const alert = $(`
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-          ${message}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      `);
-      alertContainer.append(alert);
-
-      // Auto remove after 5 seconds
-      setTimeout(() => {
-        alert.alert('close');
-      }, 5000);
-    }
+  // Show bootstrap alert dynamically
+  function showAlert(message, type) {
+    const alertContainer = $("#alert-container");
+    const alert = $(`
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `);
+    alertContainer.append(alert);
+    setTimeout(() => { alert.alert('close'); }, 5000);
+  }
 
   // LOAD ALL USERS FUNCTION
-
   function loadUsers(token) {
-    console.log(token);
     $.ajax({
       url: "http://localhost:8080/crm/user/users",
       type: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+      headers: { Authorization: "Bearer " + token },
       success: function (userList) {
         $("#user-table").DataTable({
-          pageLength: 5, // show 5 rows per page by default
+          pageLength: 5,
           autoWidth: false,
           fixedHeader: true,
           ordering: true,
@@ -310,8 +281,8 @@ $("#saveProfileBtn").click(function () {
           data: userList,
           columns: [
             {
-              data: null, 
-              title: "S.No", // Column header
+              data: null,
+              title: "S.No",
               orderable: false,
               searchable: false,
               render: function (data, type, row, meta) {
@@ -327,27 +298,32 @@ $("#saveProfileBtn").click(function () {
             {
               data: null,
               title: "Action",
-              orderable: false, // Prevent sorting on this column
+              orderable: false,
               render: function (data, type, row) {
                 return `
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger delete-user" data-email="${row.email}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        `;
+                  <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-user" data-email="${row.email}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                `;
               },
             },
           ],
-          columnDefs: [
-            { targets: [3, 5], searchable: false }, //
-          ],
+          columnDefs: [{ targets: [3, 5], searchable: false }],
           destroy: true,
         });
       },
+      error: function (xhr) {
+        let errorMsg = "Failed to load users";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+      }
     });
   }
 });

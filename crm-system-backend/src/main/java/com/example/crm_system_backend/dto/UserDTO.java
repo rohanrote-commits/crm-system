@@ -19,7 +19,6 @@ public class UserDTO {
     private String country;
     private String pinCode;
     private Roles role;
-
     private long registeredBy;
     private String emailOfAdminRegistered;
 }

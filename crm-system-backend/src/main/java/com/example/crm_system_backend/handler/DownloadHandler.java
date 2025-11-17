@@ -12,6 +12,11 @@ import java.io.InputStream;
 @Component
 public class DownloadHandler {
 
+    /**
+     * Downloads the user template Excel file from the application's resources and returns its content as a byte array.
+     * @return a byte array containing the data of the user template Excel file
+     * @throws FileDownloadException if an error occurs during file retrieval or reading
+     */
     public byte[] downloadUserTemplate() throws FileDownloadException {
         ClassPathResource resource = new ClassPathResource("templates/UsersTemplate.xlsx");
 
@@ -33,6 +38,12 @@ public class DownloadHandler {
     return fileBytes;
     }
 
+    /**
+     * Downloads the lead template Excel file from the application's resources and returns its content as a byte array.
+     *
+     * @return a byte array containing the data of the lead template Excel file
+     * @throws FileDownloadException if an error occurs during file retrieval or reading
+     */
     public byte[] downloadLeadTemplate() throws FileDownloadException {
         ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
 

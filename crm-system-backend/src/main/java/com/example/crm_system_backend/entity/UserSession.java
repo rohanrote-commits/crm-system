@@ -13,13 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserSession {
-
-
     @Id
     private String email;
 
     private String token;
-
-
 
 }

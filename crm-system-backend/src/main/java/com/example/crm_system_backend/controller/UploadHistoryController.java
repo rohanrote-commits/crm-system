@@ -27,18 +27,31 @@ public class UploadHistoryController {
 
     ModelMapper modelMapper;
 
+    /**
+     * Retrieves the upload history associated with a specific user based on their email.
+     *
+     * @param email the email address of the user whose upload history is to be retrieved
+     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
+     */
     @GetMapping("/{email}")
-    public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
-     List<UploadHistoryDto>  uploadHistoryDtos =  uploadHistoryService.findByUser(email).stream().map( uploadHistory ->
-     {
-         return modelMapper.map(uploadHistory,UploadHistoryDto.class);
-     }).toList();
+    public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email) {
+        List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().map(uploadHistory ->
+        {
+            return modelMapper.map(uploadHistory, UploadHistoryDto.class);
+        }).toList();
 
         return new ResponseEntity<>(uploadHistoryDtos, HttpStatus.OK);
     }
 
+    /**
+     * Retrieves the error file specified by the filename from the server.
+     *
+     * @param filename the name of the file to be retrieved
+     * @return a ResponseEntity containing the file as a byte array along with the appropriate
+     * HTTP headers and content type for a file download
+     */
     @GetMapping("/error/{filename}")
-    public ResponseEntity<byte []> getErrorFile(@PathVariable String filename){
+    public ResponseEntity<byte[]> getErrorFile(@PathVariable String filename) {
         File file = new File(filename);
         byte[] fileBytes = null;
         try {
@@ -47,7 +60,7 @@ public class UploadHistoryController {
             throw new RuntimeException(e);
         }
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(fileBytes);
     }

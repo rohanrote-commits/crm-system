@@ -18,7 +18,6 @@ $(document).ready(function () {
         unhighlight: function (element) { $(element).removeClass("error"); },
         errorPlacement: function (error, element) {
             if (element.attr("name") === "loginPassword") {
-                // Place error after the wrapper div
                 error.insertAfter(element.closest(".password-wrapper"));
             } else {
                 error.insertAfter(element);
@@ -38,43 +37,31 @@ $(document).ready(function () {
                 contentType: 'application/json',
                 data: JSON.stringify(user),
                 success: function (token) {
-                    showAlert(" Login Successful","successful");
+                    showAlert("Login Successful", "success");
                     sessionStorage.setItem("Authorization", token);
                     window.location.href = "/Frontend/html/dashboard.html";
-                    
                 },
                 error: function (xhr) {
-                    if(xhr.status === 404){
-                        console.log(xhr);
-                        showAlert("Invalid Credentials","danger");
-                    }else{
-                        showAlert("Server Side Error","danger");
+                    if (xhr.status === 404) {
+                        showAlert("Invalid Credentials", "danger");
+                    } else {
+                        showAlert("Server Side Error", "danger");
                     }
-
-    
                 }
             });
         }
     });
 
-$(document).ready(function() {
-  $('.pw-toggle').on('click', function() {
-    const input = $('#loginPassword');
-    const isHidden = input.attr('type') === 'password';
-    input.attr('type', isHidden ? 'text' : 'password');
-    
-    // Update aria attributes for accessibility
-    $(this).attr('aria-pressed', isHidden);
-    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
-  });
-});
-
+    $('.pw-toggle').on('click', function () {
+        const input = $('#loginPassword');
+        const isHidden = input.attr('type') === 'password';
+        input.attr('type', isHidden ? 'text' : 'password');
+        $(this).attr('aria-pressed', isHidden);
+        $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
 
 });
 
-
-
-    // Function to show bootstrap alert dynamically
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`

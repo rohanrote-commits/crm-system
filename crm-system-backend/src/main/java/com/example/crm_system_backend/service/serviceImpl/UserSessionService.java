@@ -11,27 +11,53 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserSessionService implements IUserSessionService {
     @Autowired
     private UserSessionRepo userSessionRepo;
+
+    /**
+     * Checks if a session exists for a user with the specified email address.
+     *
+     * @param email the email address of the user whose session existence needs to be verified
+     * @return true if a session exists for the specified email, false otherwise
+     */
     @Override
     public boolean findSessionByEmail(String email) {
         return userSessionRepo.existsByEmail(email);
     }
 
-
-
+    /**
+     * Deletes a user session associated with the provided email address.
+     * <p>
+     * This method removes the session data linked to the specified email
+     * by delegating the operation to the repository layer. It operates within
+     * a transactional context to ensure consistency and atomicity of the operation.
+     *
+     * @param email the email address of the user whose session is to be deleted
+     */
     @Override
     @Transactional
     public void deleteSessionByEmail(String email) {
-           userSessionRepo.deleteByEmail(email);
+        userSessionRepo.deleteByEmail(email);
     }
 
+    /**
+     * Saves a user session into the repository.
+     *
+     * @param userSession the user session to be saved
+     */
     @Override
     public void saveSession(UserSession userSession) {
         userSessionRepo.save(userSession);
     }
 
+    /**
+     * Checks if a user session exists with the specified token and email address.
+     *
+     * @param token the unique token associated with the user session
+     * @param email the email address of the user whose session existence needs to be verified
+     * @return true if a session exists for the specified token and email, false otherwise
+     */
     @Override
-    public boolean findSessionByToken(String token,String email) {
-        return userSessionRepo.existsByTokenAndEmail(token,email);
+    public boolean findSessionByToken(String token, String email) {
+        return userSessionRepo.existsByTokenAndEmail(token, email);
     }
 
 

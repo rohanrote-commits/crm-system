@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity(name = "user")
-public class User{
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +40,6 @@ public class User{
     private Roles role;
     private long registeredBy;
     private LocalDateTime registeredOn;
-
 
 
 }
