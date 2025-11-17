@@ -114,6 +114,7 @@ public class LeadHandler implements IHandler<LeadDto> {
         uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
+        uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
         try {
             User user = userService.getUserById(userId).orElseThrow(
                     ()->   new UserException(ErrorCode.USER_NOT_FOUND)

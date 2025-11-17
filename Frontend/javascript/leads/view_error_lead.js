@@ -1,148 +1,129 @@
 jQuery(function () {
- 
-  const token = sessionStorage.getItem("Authorization");
+
+    const token = sessionStorage.getItem("Authorization");
+      // Parse JWT
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+    if (!token) {
+        showAlert("Unauthorized. Please login.","danger");
+        window.location.href = "/Frontend/html/login.html";
+        return;
+    }
+
+   const payload = parseJwt(token);
   const id = sessionStorage.getItem("id");
   let docId;
   let uploadHistoryId;
   let oldEmail;
-  //load the error data
-  $.ajax({
-    url: `http://localhost:8080/crm/error/records/${id}`,
-    type: "GET",
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-    success: function (response) {
-       console.log("Leads fetched:", response);
-       docId = response.id;
-       uploadHistoryId = response.uploadHistoryId;
-   const errorsList = response.errorsList || [];
-    // If table already exists → update it
-    if ($.fn.DataTable.isDataTable("#lead-table")) {
-      $("#lead-table").DataTable().clear().rows.add(errorsList).draw(); 
-      return;
-    }
 
-    // Initialize error  DataTable
-    $("#lead-table").DataTable({
-      data: errorsList,
-      columns: [
+  let errorTable = $("#lead-table").DataTable({
+    ajax: {
+        url: `http://localhost:8080/crm/error/records/${id}`,
+        type: "GET",
+        headers: {
+            Authorization: "Bearer " + token,
+        },
+
+        dataSrc: function (response) {
+            console.log("Leads fetched:", response);
+
+            docId = response.id;
+            uploadHistoryId = response.uploadHistoryId;
+
+            return response.errorsList || [];
+        },
+
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                showAlert("Session expired. Login again.", "warning");
+                sessionStorage.clear();
+                window.location.href = "/Frontend/html/login.html";
+                return;
+            }
+            if(xhr.status===400){
+              showAlert("No Invalid Leads for the Record","info")
+            }
+            else{
+            showAlert("No Invalid Leads Found.", "danger");
+            }
+        }
+    },
+
+    columns: [
         {
-          data: null,
-          title: "Sr.No.",
-          orderable: false,
-          render: function (data, type, row, meta) {
-            return meta.row + meta.settings._iDisplayStart + 1;
-          },
+            data: null,
+            title: "Sr.No.",
+            orderable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
         },
-        { data: "firstName", title: "First Name" ,
-          render: function (data,type,row){
-            if (! /^[A-Za-z ]{1,50}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-        },
-        { data: "lastName", title: "Last Name" ,
-             render: function (data,type,row){
-            if (! /^[A-Za-z ]{1,50}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-        },
-        { data: "email", title: "Email",
-             render: function (data,type,row){
-            if (! /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-         },
-        { data: "mobileNumber", title: "Mobile",
-             render: function (data,type,row){
-            if (!/^[789]\d{9}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-         },
-        { data: "gstin", title: "GSTIN",
-             render: function (data,type,row){
-            if (! /^[A-Z0-9]{15}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-         },
-        { data: "description", title: "Description", 
-             render: function (data,type,row){
-            if (! /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-         },
-        { data: "businessAddress", title: "Address",
-             render: function (data,type,row){
-            if (!  /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(data)) {
-              return `<span class="text-danger fw-bold">${data}</span>`;
-            }
-            return data;
-          }
-         },
+
+        { data: "firstName", title: "First Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
+        { data: "lastName", title: "Last Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
+        { data: "email", title: "Email", render: validateText(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/) },
+        { data: "mobileNumber", title: "Mobile", render: validateText(/^[789]\d{9}$/) },
+        { data: "gstin", title: "GSTIN", render: validateText(/^[A-Z0-9]{15}$/) },
+        { data: "description", title: "Description", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
+        { data: "businessAddress", title: "Address", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
+
         {
-          data: "interestedModules",
-          title: "Interested Modules",
-          orderable: false,
-          render: function (data) {
-            return data && data.length ? data.join(", ") : "-";
-          },
+            data: "interestedModules",
+            title: "Interested Modules",
+            orderable: false,
+            render: function (data) {
+                return data && data.length ? data.join(", ") : "-";
+            }
         },
+
         {
-          data: null,
-          title: "Action",
-          orderable: false,
-          render: function (data, type, row) {
-            const leadData = JSON.stringify(row).replace(/"/g, "&quot;");
-            return `
-              <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="edit error record">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}" title ="delete error record">
-                  <i class="bi bi-trash"></i>
-                </button>
-      
-              </div>`;
-          },
-        },
-      ],
-      destroy: true,
-      responsive: true,
-      searching: true,
-      paging: true,
-      ordering: true,
-      info: true,
-      pageList: 10,
-      language: {
+            data: null,
+            title: "Action",
+            orderable: false,
+            render: function (row) {
+                return `
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="Edit error record">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}" title="Delete error record">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>`;
+            }
+        }
+    ],
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    destroy: true,
+    responsive: true,
+    searching: true,
+    paging: true,
+    ordering: true,
+    info: true,
+    language: {
         emptyTable: "No error records found",
-      },
-    });
-    },
-    error: function (xhr) {
-      if (xhr.status === 401) {
-        showAlert("Session expired. Login again.", "warning");
-        sessionStorage.clear();
-        window.location.href = "/Frontend/html/login.html";
-      } else {
+    }
+});
 
-        showAlert("No Invalid Leads Found.", "danger");
-        
-      }
-    },
-  });
-
+function validateText(regex) {
+    return function (data) {
+        if (!regex.test(data)) {
+            return `<span class="text-danger fw-bold">${data}</span>`;
+        }
+        return data;
+    };
+}
 
        //Edit Lead
         $("#lead-table").on("click", ".edit-lead", function () {
@@ -230,6 +211,7 @@ jQuery(function () {
     errorElement: "span",
     errorClass: "text-danger",
     submitHandler: function () {
+      console.log(oldEmail ,uploadHistoryId)
       const leadId = $("#leadId").val();
       const leadData = {
         firstName: $("#firstName").val(),
@@ -247,11 +229,11 @@ jQuery(function () {
           })
           .get(),
           
+          
       };
  
       //Edit Lead
       const url =  `http://localhost:8080/crm/error/${oldEmail}/${uploadHistoryId}`;
-
       $.ajax({
         url,
         type: "PUT",
@@ -266,6 +248,7 @@ jQuery(function () {
           $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
+          console.log(err);
           showAlert("Something went wrong. Please try again.","warning");
         },
       });

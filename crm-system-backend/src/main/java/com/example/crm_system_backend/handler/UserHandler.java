@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.constants.Roles;
@@ -297,7 +298,7 @@ public class UserHandler implements IHandler<UserDTO> {
                 () -> new UserException(ErrorCode.USER_NOT_FOUND)
         );
         uploadHistory.setUploadedBy(savedUser.getEmail());
-
+        uploadHistory.setFileTemplateType(FileTemplateType.USER);
         try {
             List<User> users = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
             if (!users.isEmpty()) {
