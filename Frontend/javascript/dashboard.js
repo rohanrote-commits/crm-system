@@ -2,7 +2,6 @@
 $(document).ready(function () {
     $("#header").load("/Frontend/html/components/header.html");
     $("#profile-model").load("/Frontend/html/models/profile_model.html");
-    $("#add_edit_model").load("/Frontend/html/models/addEdit_lead_model.html");
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -32,12 +31,6 @@ $(document).ready(function () {
     loadLeads(payload,token);
 
 
-// Hide Users tab for non-admin roles
-    if (userRole !== "ADMIN" && userRole !== "MASTER_ADMIN") {
-        $(".sidebar-btn[data-target='users']").hide();
-    } else {
-        $(".sidebar-btn[data-target='users']").show();
-    }
 
     // Sidebar navigation
     $(".sidebar-btn").click(function () {
@@ -151,38 +144,37 @@ $(document).ready(function () {
     });
 
 
+//delete lead
+let deleteEmail = null;
+$(document).on("click", ".delete-lead", function () {
+    deleteEmail = $(this).data("email");
+    $("#deleteConfirmModal").modal("show");
+});
+// confirm delete
+$("#confirmDeleteBtn").click(function () {
+    if (!deleteEmail) return;
 
-    // Delete button click
-    $('#lead-table').on('click', '.delete-lead', function() {
-        const email = $(this).data('email');
-
-        if (confirm("Are you sure you want to delete this lead?")) {
-            $.ajax({
-                url: `http://localhost:8080/crm/lead/`,
-                type: 'DELETE',
-                data :{
-                    email : email
-                },
-                headers: { "Authorization": "Bearer " + token },
-                success: function() {
-                    showAlert("Lead deleted successfully.","success");
-                    $('#lead-table').DataTable().reload();
-                },
-                error: function() {
-                    showAlert("Error deleting lead.","warning");
-                }
-            });
-            $('#lead-table').DataTable().ajax.reload();
+    $.ajax({
+        url: "http://localhost:8080/crm/lead/",
+        type: "DELETE",
+        data: { email: deleteEmail },
+        headers: { "Authorization": "Bearer " + token },
+        success: function () {
+            showAlert("Lead deleted successfully.", "success");
+            $("#lead-table").DataTable().ajax.reload(null, false);
+        },
+        error: function () {
+            showAlert("Error deleting lead.", "warning");
         }
     });
+
+    $("#deleteConfirmModal").modal("hide");
+});
 
     $('#user-table').on('click', '.delete-user', function() {
         const user = {
             email : $(this).data('email')
         };
-
-
-
         if (confirm("Are you sure you want to delete this User?")) {
             $.ajax({
                 url: `http://localhost:8080/crm/user/delete-sub_user`,
@@ -202,7 +194,6 @@ $(document).ready(function () {
     });
 
     $("#view-profile").click(function () {
-
 
         $.ajax({
             url: `http://localhost:8080/crm/user/get-user`,
@@ -253,6 +244,7 @@ function loadUsers(token){
     $.ajax({
         url: "http://localhost:8080/crm/user/users",
         type: "GET",
+        
         headers: {
             "Authorization":"Bearer "+ token
         },
@@ -296,15 +288,17 @@ function loadUsers(token){
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
-    $.ajax({
+
+    $("#lead-table").DataTable({
+    ajax: {
         url: `http://localhost:8080/crm/lead/by/${payload.sub}`,
         type: "GET",
         headers: {
             "Authorization": "Bearer " + token
         },
-        success: function (response) {
-            console.log(" Leads fetched:", response);
-            initializeLeadTable(response);
+        dataSrc: function (response) {
+            console.log("Leads fetched:", response);
+            return response;   // must return array
         },
         error: function (xhr) {
             if (xhr.status === 401) {
@@ -312,61 +306,56 @@ function loadLeads(payload, token) {
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
             } else {
-                //console.error("token is : " + token);
+                if (xhr.status === 23) {
+                    showAlert("Session expired. Login again.","warning");
+                    sessionStorage.clear();
+                    window.location.href = "/Frontend/html/login.html";
+                }
                 showAlert("Error loading leads.","danger");
             }
         }
-    });
-}
+    },
 
+    columns: [
+        { data: "firstName", title: "First Name" },
+        { data: "lastName", title: "Last Name" },
+        { data: "email", title: "Email" },
+        { data: "mobileNumber", title: "Mobile", visible: false },
+        { data: "gstin", title: "GSTIN" },
+        { data: "description", title: "Description", visible: false },
+        { data: "businessAddress", title: "Address", visible: false },
 
-// Initialize DataTable with dynamic data
-function initializeLeadTable(data) {
-    if ($.fn.DataTable.isDataTable("#lead-table")) {
-        $("#lead-table").DataTable().clear().rows.add(data).draw();
-        return;
-    }
-    $("#lead-table").DataTable({
-        data: data,
-        columns: [
-            { data: "firstName", title: "First Name" },
-            { data: "lastName", title: "Last Name" },
-            { data: "email", title: "Email" },
-            { data: "mobileNumber", title: "Mobile", visible: false },
-            { data: "gstin", title: "GSTIN" },
-            { data: "description", title: "Description", visible: false  },
-            { data: "businessAddress", title: "Address", visible: false  },
-            {
-                data: "leadStatus",
-                title: "Status",
-                orderable: false,
-                render: function (data) {
-                    let badgeClass = "";
-                    switch (data) {
-                        case "ADDED": badgeClass = "bg-primary"; break;
-                        case "CONTACTED": badgeClass = "bg-warning"; break;
-                        case "CONVERTED": badgeClass = "bg-success"; break;
-                        case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
-                        default: badgeClass = "bg-secondary";
-                    }
-                    return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED"?"NOT CONVERTED":data}</span>`;
+        {
+            data: "leadStatus",
+            title: "Status",
+            orderable: false,
+            render: function (data) {
+                let badgeClass = "";
+                switch (data) {
+                    case "ADDED": badgeClass = "bg-primary"; break;
+                    case "CONTACTED": badgeClass = "bg-warning"; break;
+                    case "CONVERTED": badgeClass = "bg-success"; break;
+                    case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
+                    default: badgeClass = "bg-secondary";
                 }
-            },
-            {
-                data: "interestedModules",
-                title: "Interested Modules",
-                orderable: false,
-                render: function (data) {
-                    return data && data.length ? data.join(`,\n`) : "-";
-                }
-            },
-            {
-                data: null,
-                title: "Action",
-                orderable: false, // Prevent sorting on this column
-                render: function (data, type, row) {
-                    const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
-                    return `
+                return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED" ? "NOT CONVERTED" : data}</span>`;
+            }
+        },
+
+        {
+            data: "interestedModules",
+            title: "Interested Modules",
+            orderable: false,
+            render: (data) => data?.length ? data.join(", ") : "-"
+        },
+
+        {
+            data: null,
+            title: "Action",
+            orderable: false,
+            render: function (data, type, row) {
+                const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
+                return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
@@ -379,18 +368,19 @@ function initializeLeadTable(data) {
                         </button>
                     </div>
                 `;
-                }
             }
-        ],
-        destroy: true,
-        responsive: true,
-        searching: true,
-        paging: true,
-        ordering: true,
-        info: true
-    });
-}
+        }
+    ],
 
+    destroy: true,
+    responsive: true,
+    searching: true,
+    paging: true,
+    ordering: true,
+    info: true
+});
+
+}
 
     // Function to show bootstrap alert dynamically
     function showAlert(message, type) {

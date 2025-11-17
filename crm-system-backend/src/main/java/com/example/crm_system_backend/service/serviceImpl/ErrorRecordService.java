@@ -34,4 +34,7 @@ public class ErrorRecordService implements IErrorRecordService {
     public Optional<ErrorRecord> findErrorRecordById(String id){
       return  errorRecordRepository.findErrorRecordById(id);
     }
+    public void deleteErrorRecordById(String id){
+        errorRecordRepository.deleteById(id);
+    }
 }

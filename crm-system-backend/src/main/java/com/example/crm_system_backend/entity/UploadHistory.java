@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.entity;
 
+import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.constants.UploadStatus;
 import jakarta.persistence.*;
@@ -22,4 +23,6 @@ public class UploadHistory {
    private int validRecords;
    private  int invalidRecords;
    private String errorFileName;
+   @Enumerated(EnumType.STRING)
+   private FileTemplateType fileTemplateType;
 }

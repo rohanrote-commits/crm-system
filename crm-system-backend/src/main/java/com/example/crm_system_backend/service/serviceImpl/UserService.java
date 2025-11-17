@@ -165,4 +165,9 @@ public class UserService implements IUserService {
     public Optional<User> getUserByEmail(String email) {
         return userRepo.getUserByEmail(email);
     }
+
+    public Optional<List<User>> getAllUsersRegisterById(Long id) {
+        List<User> users = userRepo.findUsersByRegisteredBy(id);
+        return Optional.ofNullable(users);
+    }
 }

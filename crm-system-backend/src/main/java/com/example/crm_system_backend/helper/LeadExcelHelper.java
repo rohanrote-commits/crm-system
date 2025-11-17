@@ -1,17 +1,15 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.LeadList;
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
-import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,17 +24,19 @@ import java.util.*;
 public class LeadExcelHelper {
 
 
-    @Autowired
-    private ErrorRecordHandler errorRecordHandler;
 
-    public List<Lead> processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
+
+    public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
 
         Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads
         List<Lead> validLeads = new ArrayList<>();
         List<Row> errorRows = new ArrayList<>();
+        LeadList leadList = new LeadList();
 
         if(!this.validateExcelHeader(file)){
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            uploadHistory.setValidRecords(0);
+            uploadHistory.setInvalidRecords(0);
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
@@ -71,7 +71,8 @@ public class LeadExcelHelper {
                 writeErrorFile(errorRows,uploadHistory);
                 List<Lead> errorList = errorRows.stream().map(this::extractLead
                         ).toList();
-                errorRecordHandler.saveErrorRecord(errorList,uploadHistory);
+                leadList.setInvalidLeadList(errorList);
+               // errorRecordHandler.saveErrorRecord(errorList,uploadHistory);
             }
 
         } catch (IOException e) {
@@ -82,7 +83,8 @@ public class LeadExcelHelper {
         uploadHistory.setTotalRecords((validLeads.size()+ errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(validLeads.size());
-        return validLeads;
+        leadList.setValidLeadList(validLeads);
+        return leadList;
     }
 
     // Helper to read any cell as string safely

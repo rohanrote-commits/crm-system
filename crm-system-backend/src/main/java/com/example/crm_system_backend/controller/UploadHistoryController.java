@@ -2,6 +2,7 @@ package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.entity.UploadHistory;
+import com.example.crm_system_backend.handler.UploadedHistoryHandler;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ import java.util.List;
 public class UploadHistoryController {
 
 
-    private final UploadHistoryService uploadHistoryService;
+    private final UploadedHistoryHandler uploadedHistoryHandler;
 
     ModelMapper modelMapper;
 
@@ -34,13 +35,9 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
      */
     @GetMapping("/{email}")
-    public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email) {
-        List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().map(uploadHistory ->
-        {
-            return modelMapper.map(uploadHistory, UploadHistoryDto.class);
-        }).toList();
-
-        return new ResponseEntity<>(uploadHistoryDtos, HttpStatus.OK);
+    public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
+        List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUploadHistoryByEmail(email);
+        return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
 
     /**
@@ -51,7 +48,7 @@ public class UploadHistoryController {
      * HTTP headers and content type for a file download
      */
     @GetMapping("/error/{filename}")
-    public ResponseEntity<byte[]> getErrorFile(@PathVariable String filename) {
+    public ResponseEntity<byte []> getErrorFile(@PathVariable String filename){
         File file = new File(filename);
         byte[] fileBytes = null;
         try {
@@ -60,7 +57,7 @@ public class UploadHistoryController {
             throw new RuntimeException(e);
         }
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(fileBytes);
     }

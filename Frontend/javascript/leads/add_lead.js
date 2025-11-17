@@ -40,17 +40,16 @@ $(document).ready(function (params) {
   });
 
   //Edit Lead
-  $("#lead-table").on("click", ".edit-lead", function () {
+  $("#confirmUpdateBtn").click(function () {
+
+    const rowData = $(this).data("row");
+
     isEdit = true;
-    const rowData = $("#lead-table")
-      .DataTable()
-      .row($(this).parents("tr"))
-      .data();
 
     $("#leadModalLabel").text("Edit Lead");
     $("#saveLeadBtn").text("Update Lead");
 
-    // Fill data
+    // Fill form
     $("#leadId").val(rowData.id);
     $("#firstName").val(rowData.firstName);
     $("#lastName").val(rowData.lastName);
@@ -60,35 +59,43 @@ $(document).ready(function (params) {
     $("#leadStatus").val(rowData.leadStatus);
     $("#businessAddress").val(rowData.businessAddress);
     $("#description").val(rowData.description);
-    rowData.interestedModules.forEach((mod) => {
-      $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+
+    // Clear old module selection
+    $("input[name='interestedModules']").prop("checked", false);
+
+    // Set new selected modules
+    rowData.interestedModules.forEach(mod => {
+        $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
     });
-    console.log(rowData.interestedModules);
-    
-    if (rowData.id != null) {
-      $("#email").prop("readOnly", true);
-      $("#gstin").prop("readOnly", true);
+
+    if (rowData.id) {
+        $("#email").prop("readOnly", true);
+        $("#gstin").prop("readOnly", true);
     }
 
+    $("#updateConfirmModal").modal("hide");
     $("#leadModal").modal("show");
-  });
+});
 
   
 
   // Open Update Modal
 $(document).on("click", ".edit-lead", function () {
-    const id = $(this).data("id");
-    $("#confirmUpdateBtn").data("id", id);
+
+    const table = $("#lead-table").DataTable();
+    const rowData = table.row($(this).closest("tr")).data();
+
+    $("#confirmUpdateBtn").data("row", rowData); 
     $("#updateConfirmModal").modal("show");
 });
 
-// Confirm Update
-$("#confirmUpdateBtn").on("click", function () {
-    const id = $(this).data("id");
-    console.log("Update confirmed for ID:", id);
-    // Your update AJAX call here
-    $("#updateConfirmModal").modal("hide");
-});
+// // Confirm Update
+// $("#confirmUpdateBtn").on("click", function () {
+//     const id = $(this).data("id");
+//     console.log("Update confirmed for ID:", id);
+//     // Your update AJAX call here
+//     $("#updateConfirmModal").modal("hide");
+// });
 
 
 
@@ -130,17 +137,21 @@ $("#confirmUpdateBtn").on("click", function () {
     "Enter valid GSTIN"
   );
 
-  $.validator.addMethod(
-    "addressPattern",
-    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
-    "Address can include letters, numbers & special chars (max 100 chars)"
-  );
+ $.validator.addMethod(
+  "addressPattern",
+  function (value, element) {
+    return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+  },
+  "Address can include letters, numbers & special chars (max 100 chars)"
+);
 
-  $.validator.addMethod(
-    "descriptionPattern",
-    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
-    "Description can include letters, numbers & special chars (max 100 chars)"
-  );
+$.validator.addMethod(
+  "descriptionPattern",
+  function (value, element) {
+    return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+  },
+  "Description can include letters, numbers & special chars (max 100 chars)"
+);
 
   // Add Lead or edit lead call
   $("#leadForm").validate({
@@ -198,12 +209,13 @@ $("#confirmUpdateBtn").on("click", function () {
             isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
           );
           $("#leadModal").modal("hide");
-          $("#lead-table").DataTable().ajax.reload();
+            $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
           showAlert("Something went wrong. Please try again.","warning");
         },
       });
+      isEdit = false;
     },
   });
 });
