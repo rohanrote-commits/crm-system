@@ -19,7 +19,25 @@ public class RequestInterceptor implements HandlerInterceptor {
     @Autowired
     private JwtUtil jwtUtil;
 
-
+    /**
+     * Intercepts HTTP requests to perform pre-processing and authorization checks for requests
+     * targeting resources with a URI that starts with "/crm/".
+     * <ul>
+     * - Validates the presence of a bearer token in the "Authorization" header.
+     * - Checks if the token has expired and deletes the session in case of expiration.
+     * - Verifies the presence of an active session associated with the token and user email.
+     * - Extracts user role, ID, and email from the token and sets them as attributes in the request.
+     * </ul>
+     *
+     * Failure to meet these conditions will result in an HTTP status code of 401 Unauthorized or other
+     * relevant error codes.
+     *
+     * @param request  the HttpServletRequest object of the ongoing request
+     * @param response the HttpServletResponse object for modifying the response
+     * @param handler  the handler object to execute (can be used to retrieve additional metadata if needed)
+     * @return true if the request passes all validations and the handler can proceed, otherwise false
+     * @throws Exception if an underlying error or issue occurs during processing
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
@@ -39,21 +57,21 @@ public class RequestInterceptor implements HandlerInterceptor {
             token = token.substring(7).trim();
 
             //check expiry of token
-            if(jwtUtil.isTokenExpired(token)){
+            if (jwtUtil.isTokenExpired(token)) {
                 userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
-                return false;
+                throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
             //check  if session is already present
             String email = jwtUtil.getEmail(token);
-            if (email == null || !userSessionService.findSessionByToken(token,email)) {
+            if (email == null || !userSessionService.findSessionByToken(token, email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return false;
+                throw new UserException(ErrorCode.ANOTHER_SESSION_ACTIVE_FOR_USER);
             }
             String role = jwtUtil.getRole(token);
-            if(role == null){
+            if (role == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return false;
+                throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
             Long id = jwtUtil.getId(token);
             request.setAttribute("role", role);

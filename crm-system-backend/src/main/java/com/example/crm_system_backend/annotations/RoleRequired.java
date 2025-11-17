@@ -1,4 +1,5 @@
 package com.example.crm_system_backend.annotations;
+
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

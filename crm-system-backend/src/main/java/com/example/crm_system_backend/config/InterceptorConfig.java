@@ -16,15 +16,21 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Autowired
     private RoleInterceptor roleInterceptor;
 
+    /**
+     * addInterceptord method of WenMvcConfigurer interface to register the interceptor.
+     * @param registry InterceptorRegistry
+     * registering the interceptor for the path patterns.
+     *registering the interceptor for checking the role
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestInterceptor)
-                .addPathPatterns("/crm/user/**","/crm/lead/**")
-                .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up","/crm/user/forget");
+                .addPathPatterns("/crm/user/**", "/crm/lead/**")
+                .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up", "/crm/user/forget");
 
         registry.addInterceptor(roleInterceptor)
                 .addPathPatterns("/crm/user/**")
-                .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up","/crm/user/forget");
+                .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up", "/crm/user/forget");
 
     }
 }

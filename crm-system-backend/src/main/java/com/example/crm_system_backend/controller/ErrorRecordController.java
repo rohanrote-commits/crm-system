@@ -21,6 +21,7 @@ public class ErrorRecordController {
     @Autowired
     private ErrorRecordHandler errorRecordHandler;
 
+
     @GetMapping("/records/{uploadHistoryId}")
     public ResponseEntity<ErrorRecord> findErrorRecordByUploadHistoryId(@PathVariable String uploadHistoryId){
       ErrorRecord errorRecordList = errorRecordHandler.findErrorRecordByUploadHistoryId(uploadHistoryId);

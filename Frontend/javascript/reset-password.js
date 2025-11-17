@@ -48,12 +48,13 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(user),
                 success: function () {
-                    alert("Password reset successfully");
+                    showAlert("Password reset successfully","success");
                     window.location.href = "login.html";
                 },
                 error: function (xhr) {
-                    if (xhr.status === 404) alert(" Email not found");
-                    else alert("Password reset failed. Server error.");
+                    let error = xhr.responseJSON;
+                    if (xhr.status === 404) showAlert(" Email not found","warning");
+                    else showAlert(error.message,"danger");
                 }
             });
         }

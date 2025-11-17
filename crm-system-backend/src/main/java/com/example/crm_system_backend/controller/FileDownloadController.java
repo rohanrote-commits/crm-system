@@ -16,6 +16,16 @@ public class FileDownloadController {
     @Autowired
     private DownloadHandler downloadHandler;
 
+    /**
+     * Downloads the user template file and returns it as a response entity
+     * to allow the client to download it. The file is returned as a byte array
+     * with appropriate response headers.
+     *
+     * @return a {@code ResponseEntity<byte[]>} containing the user template file
+     *         with the file name set as "user-template.xlsx" and the Content-Type
+     *         set as "application/octet-stream".
+     * @throws FileDownloadException if an error occurs during file download.
+     */
     @GetMapping("/user-template")
     public ResponseEntity<byte[]> downloadUserTemplate() throws FileDownloadException {
         return ResponseEntity.ok()
@@ -24,6 +34,16 @@ public class FileDownloadController {
                 .body(downloadHandler.downloadUserTemplate());
     }
 
+    /**
+     * Downloads the lead template file and returns it as a response entity
+     * to allow the client to download it. The file is delivered as a byte array
+     * with appropriate response headers, including the file name "lead-template.xlsx"
+     * and the Content-Type set as "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".
+     *
+     * @return a {@code ResponseEntity<byte[]>} containing the lead template file in binary format
+     *         along with appropriate HTTP headers for file download.
+     * @throws FileDownloadException if an error occurs while downloading the lead template file.
+     */
     @GetMapping("/lead-template")
     public ResponseEntity<byte[]> downloadLeadTemplate() throws FileDownloadException {
         byte[] fileBytes = downloadHandler.downloadLeadTemplate();

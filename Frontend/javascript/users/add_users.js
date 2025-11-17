@@ -17,7 +17,7 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-        alert("⚠ Unauthorized. Please login.");
+        showAlert("⚠ Unauthorized. Please login.", "danger");
         window.location.href = "/Frontend/html/login.html";
         return;
     }
@@ -28,58 +28,50 @@ $(document).ready(function () {
 
     let editUserId = null; // store user id when editing
 
+    // Reset form and validation when modal closes
+    $('#userModal').on('hidden.bs.modal', function () {
+        const form = $("#userForm");
+        if (form.length) form[0].reset();
 
-$('#userModal').on('hidden.bs.modal', function () {
-    const form = $("#userForm");
+        const validator = form.data('validator') || form.validate();
+        if (validator) {
+            validator.resetForm();
+            validator.errorList = [];
+            validator.errorMap = {};
+        }
 
+        form.find(".error, .is-invalid").removeClass("error is-invalid");
+        form.find("[aria-invalid]").removeAttr("aria-invalid");
+        $('#userModal').find('.error-message, label.error').remove();
 
-    if (form.length) form[0].reset();
+        $("#addressFields").addClass("d-none");
+        editUserId = null;
+        $("#userModalLabel").text("Add User");
+        $("#saveUserBtn").text("Save User");
+        $('#userModal').find('.password-wrapper + .error-message, .password-wrapper + label.error').remove();
+    });
 
-    const validator = form.data('validator') || form.validate(); // get existing validator or create one
-    if (validator) {
-        validator.resetForm();          // removes error labels and errorClass (for many setups)
-        // also clear validator's errorList & errorMap just in case
-        validator.errorList = [];
-        validator.errorMap = {};
-    }
-
-    form.find(".error, .is-invalid").removeClass("error is-invalid");   // your errorClass + bootstrap invalid class
-    form.find("[aria-invalid]").removeAttr("aria-invalid");
-
-
-    $('#userModal').find('.error-message, label.error').remove();
-
-    $("#addressFields").addClass("d-none");
-    editUserId = null;
-    $("#userModalLabel").text("Add User");
-    $("#saveUserBtn").text("Save User");
-
-    $('#userModal').find('.password-wrapper + .error-message, .password-wrapper + label.error').remove();
-});
-    $('.pw-toggle').on('click', function() {
-    const input = $(this).siblings('input'); // input inside same wrapper
-    const isHidden = input.attr('type') === 'password';
-    input.attr('type', isHidden ? 'text' : 'password');
-
-    $(this).attr('aria-pressed', isHidden);
-    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
-  });
+    // Toggle password visibility
+    $('.pw-toggle').on('click', function () {
+        const input = $(this).siblings('input');
+        const isHidden = input.attr('type') === 'password';
+        input.attr('type', isHidden ? 'text' : 'password');
+        $(this).attr('aria-pressed', isHidden);
+        $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
 
     // Show Add User Modal
     $("#addUser").click(function () {
-        editUserId = null; 
+        editUserId = null;
         $("#userForm")[0].reset();
         $("#userModalLabel").text("Add User");
         $("#saveUserBtn").text("Save User");
-        $("#addressFields").addClass("d-none"); 
+        $("#addressFields").addClass("d-none");
 
-        // Make all fields editable
         $("#userFirstName, #userLastName, #userEmail, #userRole, #userPassword, #userConfirmPassword").prop("readonly", false);
         $("#userPassword, #userConfirmPassword").prop("required", true).closest(".col-md-6").show();
 
-        var userModalEl = document.getElementById('userModal');
-        var userModal = new bootstrap.Modal(userModalEl);
-        userModal.show();
+        new bootstrap.Modal(document.getElementById('userModal')).show();
     });
 
     // Edit User functionality
@@ -87,24 +79,22 @@ $('#userModal').on('hidden.bs.modal', function () {
         const rowData = $("#user-table").DataTable().row($(this).parents("tr")).data();
 
         if (!rowData) {
-            alert("Failed to get user data");
+            showAlert("Failed to get user data", "danger");
             return;
         }
 
-        editUserId = rowData.id; 
+        editUserId = rowData.id;
         console.log("Editing user:", rowData);
 
         $("#userModalLabel").text("Edit User");
         $("#saveUserBtn").text("Update User");
 
-        // Fill form fields
         $("#userFirstName").val(rowData.firstName).prop("readonly", true);
         $("#userLastName").val(rowData.lastName).prop("readonly", true);
         $("#userEmail").val(rowData.email).prop("readonly", true);
         $("#userMobileNumber").val(rowData.mobileNumber).prop("readonly", false);
         $("#userAddress").val(rowData.address || "").prop("readonly", false);
 
-        // Show/hide address fields
         if (rowData.address && rowData.address.trim() !== "") {
             $("#addressFields").removeClass('d-none');
             $("#userCity, #userState, #userCountry, #userPinCode").prop('required', true).prop("readonly", false);
@@ -119,16 +109,12 @@ $('#userModal').on('hidden.bs.modal', function () {
         $("#userCountry").val(rowData.country || "");
         $("#userRole").val(rowData.role).prop("readonly", true);
 
-        // Hide password fields in edit mode
         $("#userPassword, #userConfirmPassword").val("").prop("required", false).closest(".col-md-6").hide();
 
-        // Show modal
-        var userModalEl = document.getElementById('userModal');
-        var userModal = new bootstrap.Modal(userModalEl);
-        userModal.show();
+        new bootstrap.Modal(document.getElementById('userModal')).show();
     });
 
-    // Show/hide address fields on input
+    // Show/hide address fields dynamically
     $("#userAddress").on('input', function () {
         if ($(this).val().trim() !== "") {
             $("#addressFields").removeClass('d-none');
@@ -139,7 +125,7 @@ $('#userModal').on('hidden.bs.modal', function () {
         }
     });
 
-    // Populate Role dropdown based on logged-in user's role
+    // Populate Role dropdown
     const roleSelect = $("#userRole");
     if (role === "MASTER_ADMIN") {
         roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="USER">USER</option>`);
@@ -150,45 +136,45 @@ $('#userModal').on('hidden.bs.modal', function () {
     }
 
     // Custom validation methods
-   $.validator.addMethod("namePattern", function(value, element) {
+    $.validator.addMethod("namePattern", function (value, element) {
         return this.optional(element) || /^[A-Za-z ]{1,50}$/.test(value);
     }, "Name can contain letters and spaces only (max 50)");
 
-    $.validator.addMethod("emailPattern", function(value, element) {
+    $.validator.addMethod("emailPattern", function (value, element) {
         return this.optional(element) || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value);
     }, "Enter a valid email");
 
-$.validator.addMethod("passwordPattern", function (value) {
-    return value.length >= 8 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/.test(value);
-}, "Password should have at least one upper case, one lower case, one number and one special char");
+    $.validator.addMethod("passwordPattern", function (value) {
+        return value.length >= 8 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/.test(value);
+    }, "Password should have at least one upper case, one lower case, one number and one special char");
 
-    $.validator.addMethod("mobilePattern", function(value, element) {
+    $.validator.addMethod("mobilePattern", function (value, element) {
         return this.optional(element) || /^[789]\d{9}$/.test(value);
     }, "Mobile must start with 7/8/9 and be 10 digits");
 
-    $.validator.addMethod("addressPattern", function(value, element) {
+    $.validator.addMethod("addressPattern", function (value, element) {
         return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,200}$/.test(value);
     }, "Address can contain letters, numbers, ,./#- (max 100)");
 
-    $.validator.addMethod("pinPattern", function(value, element) {
+    $.validator.addMethod("pinPattern", function (value, element) {
         return this.optional(element) || /^[0-9]{6}$/.test(value);
     }, "Pin code must be 6 digits");
 
     // Form validation & submission
     $("#userForm").validate({
- rules: {
+        rules: {
             firstName: { required: true, namePattern: true },
             lastName: { required: true, namePattern: true },
             email: { required: true, emailPattern: true },
-            password: { required: true, passwordPattern: true , minlength : 8, maxlength : 16},
+            password: { required: true, passwordPattern: true, minlength: 8, maxlength: 16 },
             confirmPassword: { required: true, equalTo: "#userPassword" },
             mobileNumber: { required: true, mobilePattern: true },
             address: { required: false, addressPattern: true },
-            city: { required: function() { return $("#address").val().trim() !== ""; } },
-            state: { required: function() { return $("#address").val().trim() !== ""; } },
-            country: { required: function() { return $("#address").val().trim() !== ""; } },
-            pinCode: { 
-                required: function() { return $("#address").val().trim() !== ""; },
+            city: { required: function () { return $("#userAddress").val().trim() !== ""; } },
+            state: { required: function () { return $("#userAddress").val().trim() !== ""; } },
+            country: { required: function () { return $("#userAddress").val().trim() !== ""; } },
+            pinCode: {
+                required: function () { return $("#userAddress").val().trim() !== ""; },
                 pinPattern: true
             }
         },
@@ -196,8 +182,8 @@ $.validator.addMethod("passwordPattern", function (value) {
             firstName: { required: "Please enter your first name" },
             lastName: { required: "Please enter your last name" },
             email: { required: "Please enter your email" },
-            password: { required: "Please enter password", maxlength : "Password should not have more than 16 characters"},
-            confirmPassword: { required: "Confirm your password", equalTo: "Passwords do not match"},
+            password: { required: "Please enter password", maxlength: "Password should not have more than 16 characters" },
+            confirmPassword: { required: "Confirm your password", equalTo: "Passwords do not match" },
             mobileNumber: { required: "Enter mobile number" },
             address: { required: "Enter address" },
             city: { required: "Enter city" },
@@ -207,20 +193,18 @@ $.validator.addMethod("passwordPattern", function (value) {
         },
         errorClass: "error-message",
         errorPlacement: function (error, element) {
-    error.insertAfter(element);
-},
-
-        highlight: function(element) {
+            error.insertAfter(element);
+        },
+        highlight: function (element) {
             $(element).addClass('error');
         },
-        unhighlight: function(element) {
+        unhighlight: function (element) {
             $(element).removeClass('error');
         },
         submitHandler: function () {
             let url, method, payload;
 
             if (editUserId) {
-                // Edit mode → send only email, mobileNumber, address fields
                 payload = {
                     email: $("#userEmail").val(),
                     mobileNumber: $("#userMobileNumber").val(),
@@ -233,7 +217,6 @@ $.validator.addMethod("passwordPattern", function (value) {
                 url = `http://localhost:8080/crm/user/update-sub_user`;
                 method = "PUT";
             } else {
-            
                 payload = {
                     firstName: $("#userFirstName").val(),
                     lastName: $("#userLastName").val(),
@@ -258,31 +241,36 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: () => {
-                    showAlert(editUserId ? "User Updated Successfully" : "User Created Successfully","info");
+                    showAlert(editUserId ? "User Updated Successfully" : "User Created Successfully", "info");
                     location.reload();
                 },
                 error: xhr => {
-                    if (xhr.status === 409) alert("Email or Mobile already exists");
-                    else showAlert("Failed to save user","danger");
+                    let message = "Failed to save user";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.status === 409) {
+                        message = "Email or Mobile already exists";
+                    }
+                    showAlert(message, "danger");
                 }
             });
         }
     });
 
 });
-    // Function to show bootstrap alert dynamically
-    function showAlert(message, type) {
-      const alertContainer = $("#alert-container");
-      const alert = $(`
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-          ${message}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      `);
-      alertContainer.append(alert);
 
-      // Auto remove after 5 seconds
-      setTimeout(() => {
+// Function to show bootstrap alert dynamically
+function showAlert(message, type) {
+    const alertContainer = $("#alert-container");
+    const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    alertContainer.append(alert);
+
+    setTimeout(() => {
         alert.alert('close');
-      }, 5000);
-    }
+    }, 5000);
+}
