@@ -20,6 +20,17 @@ jQuery(function () {
         return;
     }
 
+  $(".profile-pic").click(function () {
+    $("#profileDropdown").toggleClass("show");
+  });
+
+    // Close profile dropdown when clicked outside
+    $(document).click(function (event) {
+        if (!$(event.target).closest(".profile-menu").length) {
+            $("#profileDropdown").removeClass("show");
+        }
+    });
+
    const payload = parseJwt(token);
   const id = sessionStorage.getItem("id");
   let docId;
@@ -44,6 +55,7 @@ jQuery(function () {
         },
 
         error: function (xhr) {
+          errorTable.clear().draw();
             if (xhr.status === 401) {
                 showAlert("Session expired. Login again.", "warning");
                 sessionStorage.clear();
@@ -127,30 +139,48 @@ function validateText(regex) {
 
        //Edit Lead
         $("#lead-table").on("click", ".edit-lead", function () {
-          const rowData = $("#lead-table")
-            .DataTable()
-            .row($(this).parents("tr"))
-            .data();
 
-          $("#leadModalLabel").text("Edit Lead");
-          $("#saveLeadBtn").text("Update Lead");
+          
+    const table = $("#lead-table").DataTable();
+    const rowData = table.row($(this).closest("tr")).data();
 
-          // Fill data
-          $("#leadId").val(rowData.id);
-          $("#firstName").val(rowData.firstName);
-          $("#lastName").val(rowData.lastName);
-          $("#email").val(rowData.email);
-          $("#mobileNumber").val(rowData.mobileNumber);
-          $("#gstin").val(rowData.gstin);
-          $("#leadStatus").val(rowData.leadStatus);
-          $("#businessAddress").val(rowData.businessAddress);
-          $("#description").val(rowData.description);
-          rowData.interestedModules.forEach((mod) => {
-            $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
-          });
-          oldEmail = rowData.email;
-          $("#leadModal").modal("show");
+    $("#confirmUpdateBtn").data("row", rowData); 
+    $("#updateConfirmModal").modal("show");
         });
+    //Edit Lead
+  $("#confirmUpdateBtn").click(function () {
+
+    const rowData = $(this).data("row");
+
+    isEdit = true;
+
+    $("#leadModalLabel").text("Edit Lead");
+    $("#saveLeadBtn").text("Update Lead");
+
+    // Fill form
+    $("#leadId").val(rowData.id);
+    $("#firstName").val(rowData.firstName);
+    $("#lastName").val(rowData.lastName);
+    $("#email").val(rowData.email);
+    $("#mobileNumber").val(rowData.mobileNumber);
+    $("#gstin").val(rowData.gstin);
+    $("#leadStatus").val(rowData.leadStatus);
+    $("#businessAddress").val(rowData.businessAddress);
+    $("#description").val(rowData.description);
+
+    // Clear old module selection
+    $("input[name='interestedModules']").prop("checked", false);
+
+    // Set new selected modules
+    rowData.interestedModules.forEach(mod => {
+        $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+    });
+
+     oldEmail = rowData.email;
+    $("#updateConfirmModal").modal("hide");
+    $("#leadModal").modal("show");
+});
+      
 
 
          //Validation methods
@@ -177,16 +207,19 @@ function validateText(regex) {
     (value) => /^[A-Z0-9]{15}$/.test(value),
     "Enter valid GSTIN"
   );
-
   $.validator.addMethod(
     "addressPattern",
-    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    function (value, element) {
+      return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+    },
     "Address can include letters, numbers & special chars (max 100 chars)"
   );
 
   $.validator.addMethod(
     "descriptionPattern",
-    (value) => /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value),
+    function (value, element) {
+      return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+    },
     "Description can include letters, numbers & special chars (max 100 chars)"
   );
 

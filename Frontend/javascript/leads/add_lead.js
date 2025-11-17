@@ -1,5 +1,4 @@
 $(document).ready(function (params) {
-  $("#update-modal").load("/Frontend/html/models/update_confirmation.html")
   function parseJwt(token) {
     try {
       const base64Url = token.split(".")[1];

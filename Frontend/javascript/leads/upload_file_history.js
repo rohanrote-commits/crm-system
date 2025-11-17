@@ -1,5 +1,4 @@
 jQuery(function() {
-  $("#header").load("/Frontend/html/components/header.html");
       function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -102,7 +101,8 @@ jQuery(function() {
           }
       ],
 
-      pageLength: 5,
+    pageLength: 10,          // 👈 default selected option
+    lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
       destroy: true,
       responsive: true,
       searching: true,

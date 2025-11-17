@@ -21,10 +21,24 @@
 </head>
 
 <body>
+    <!-- Header -->
+  <header class="top-bar">
+    <div class="logo">CRM <span>Lead Management</span></div>
+    <div class="nav-right">
+      <div class="profile-menu">
+        <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
+        <div class="dropdown" id="profileDropdown">
+          <button id="back" class="drop-item">Back</button>
+          <button id="delete-profile" class="drop-item">Delete Profile</button>
+          <button id="logout" class="drop-item">Logout</button>
 
-  <!-- Header -->
-  <div id="header"></div>
-
+        </div>
+        
+      </div>
+       <img src="/Frontend/assests/profile.png" class="profile-pic" id="view-profile"></div>
+    </div>
+  </header>
+  
   <!-- Main Section -->
   <main class="dashboard-container">
      <!-- Alert container -->
@@ -74,7 +88,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="uploadLeadsLabel">Upload Leads from Excel</h5>
+          <h5 class="modal-title text-white" id="uploadLeadsLabel">Upload Leads from Excel</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
@@ -103,7 +117,7 @@
       <div class="modal-content">
 
         <div class="modal-header text-white">
-          <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+          <h5 class="modal-title text-white" id="profileModalLabel">User Profile</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 

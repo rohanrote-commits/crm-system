@@ -38,6 +38,7 @@ body {
 /* Profile menu */
 .profile-menu {
     position: relative;
+    z-index: 3;
 }
 
 .profile-pic {
@@ -45,6 +46,8 @@ body {
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
+     margin-left: 10px;
+ 
 }
 
 /* Layout */
@@ -156,10 +159,6 @@ body {
     margin-top: 20px;
     overflow-x: auto;
 }
-#lead-table{
-    /* margin-top: 60px; */
-}
-
 
 
 .modal-header {
@@ -207,14 +206,9 @@ body {
     position: relative;
 }
 
-.section-buttons {
-    position: relative;
-    border-radius: 8px;
-}
-
 .dropdown {
     position: absolute;
-    top: 100%; /* dropdown opens below button */
+    top: 100%;
     right: 0;
     background-color: white;
     border: 1px solid #fffbfb;
@@ -227,7 +221,7 @@ body {
 }
 
 .dropdown.show {
-    display: flex;
+    display: block;
 }
 
 .drop-item {
@@ -317,9 +311,6 @@ body {
   z-index: 5; /* ensures dropdown isn't hidden */
 }
 
-.dropdown {
-  display: inline-block;
-}
 .settings-icon {
     font-size: 32px; /* Increase size as needed */
     cursor: pointer;

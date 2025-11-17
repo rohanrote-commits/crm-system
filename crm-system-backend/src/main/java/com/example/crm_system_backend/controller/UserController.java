@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -85,7 +84,6 @@ public class UserController {
     /**
      * Retrieves a list of all user details accessible to the requester. The request
      * is authorized based on the role "MASTER_ADMIN".
-     *
      * @param request the HTTP servlet request containing attributes like the `userId` of the requester
      * @return a ResponseEntity containing a list of UserDTOs representing user details and an HTTP status of OK
      */
