@@ -15,6 +15,7 @@ jQuery(function() {
 
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
+    let fileName = "";
     if (!token) {
         showAlert("Unauthorized. Please login.","danger");
         window.location.href = "/Frontend/html/login.html";
@@ -35,9 +36,7 @@ jQuery(function() {
         $("#upload-table").DataTable({
           data: fileList,
           columns: [
-            {data:"id",
-              visible:false,
-            },
+      
             {
                 data: null, 
                 title: "Sr.No.",
@@ -89,24 +88,6 @@ jQuery(function() {
                             <i class="bi bi-eye"></i>
                         </button>              
                 `;
-              },
-            },
-            {
-              data: null,
-              title: "Action",
-              orderable: false, // Prevent sorting on this column,
-              visible: false, // hiden for now
-              render: function (data, type, row) {
-                return `
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
-                                    <i class="bi bi-download"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger delete-user" data-email="${row.email}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        `;
               },
             },
           ],
@@ -170,6 +151,7 @@ jQuery(function() {
           .data();
 
         sessionStorage.setItem("id", row.id);
+        sessionStorage.setItem("file",row.errorFileName)
         window.location.href = "/Frontend/html/leads/view_error_lead.html";
       });
 
