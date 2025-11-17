@@ -89,15 +89,6 @@ $(document).on("click", ".edit-lead", function () {
     $("#updateConfirmModal").modal("show");
 });
 
-// // Confirm Update
-// $("#confirmUpdateBtn").on("click", function () {
-//     const id = $(this).data("id");
-//     console.log("Update confirmed for ID:", id);
-//     // Your update AJAX call here
-//     $("#updateConfirmModal").modal("hide");
-// });
-
-
 
     $("#addLeadBtn").click(function () {
         $("#leadDropdown").slideToggle(200);

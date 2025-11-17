@@ -26,7 +26,7 @@ public class UploadHistoryController {
 
     private final UploadedHistoryHandler uploadedHistoryHandler;
 
-    ModelMapper modelMapper;
+    private  final  ModelMapper modelMapper;
 
     /**
      * Retrieves the upload history associated with a specific user based on their email.
@@ -36,7 +36,7 @@ public class UploadHistoryController {
      */
     @GetMapping("/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
-        List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUploadHistoryByEmail(email);
+        List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findLeadUploadHistoryByEmail(email);
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
 

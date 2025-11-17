@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
@@ -20,12 +21,13 @@ public class UploadedHistoryHandler {
 
 
 
-    public List<UploadHistoryDto> findUploadHistoryByEmail(String email)
+
+    public List<UploadHistoryDto> findLeadUploadHistoryByEmail(String email)
     {
-        List<UploadHistoryDto> uploadHistoryDtos =  uploadHistoryService.findByUser(email).stream().map(uploadHistory ->
-        {
-            return modelMapper.map(uploadHistory,UploadHistoryDto.class);
-        }).toList();
+        List<UploadHistoryDto> uploadHistoryDtos =  uploadHistoryService.findByUser(email).stream().
+                filter(uploadHistory -> uploadHistory.getFileTemplateType().name().equalsIgnoreCase(FileTemplateType.LEAD.name())).map(
+                        uploadHistory -> modelMapper.map(uploadHistory,UploadHistoryDto.class)
+                ).toList();
         return uploadHistoryDtos;
     }
 
