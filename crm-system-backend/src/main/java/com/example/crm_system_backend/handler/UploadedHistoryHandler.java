@@ -4,7 +4,11 @@ import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.entity.UploadHistory;
+<<<<<<< Updated upstream
 import com.example.crm_system_backend.exception.LeadException;
+=======
+import com.example.crm_system_backend.exception.UserException;
+>>>>>>> Stashed changes
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +34,7 @@ public class UploadedHistoryHandler {
 
     public List<UploadHistoryDto> findLeadUploadHistoryByEmail(String email)
     {
+<<<<<<< Updated upstream
         log.info("Enter : findLeadUploadHistoryByEmail");
         try {
         List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().
@@ -42,6 +47,35 @@ public class UploadedHistoryHandler {
         catch (Exception ex){
             log.info("Exit : findLeadUploadHistoryByEmail ${e}",ex);
             throw new  LeadException(ErrorCode.FILE_HISTORY_NOT_FOUND);
+=======
+        try {
+            List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().
+                    filter(uploadHistory -> uploadHistory.getFileTemplateType().name().equalsIgnoreCase(FileTemplateType.LEAD.name())).map(
+                            uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class)
+                    ).toList();
+            return uploadHistoryDtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+        }
+
+    }
+
+    public List<UploadHistoryDto> findUserUploadHistoryByEmail(String email) {
+        try {
+            List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream()
+                    .filter(uploadHistory -> {
+                        FileTemplateType templateType = uploadHistory.getFileTemplateType();
+                        return templateType != null &&
+                                templateType.name().equalsIgnoreCase(FileTemplateType.USER.name());
+                    })
+                    .map(uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class))
+                    .toList();
+            return uploadHistoryDtos;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+>>>>>>> Stashed changes
         }
     }
 

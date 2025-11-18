@@ -1,9 +1,11 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
@@ -38,6 +40,9 @@ public class UserHandler implements IHandler<UserDTO> {
 
     @Autowired
     private UploadHistoryService uploadHistoryService;
+
+    @Autowired
+    private ErrorRecordHandler errorRecordHandler;
 
     /**
      * Saves a new user based on the provided {@code UserDTO}.
@@ -294,32 +299,64 @@ public class UserHandler implements IHandler<UserDTO> {
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
-        User savedUser = userService.getUserById(id).orElseThrow(
-                () -> new UserException(ErrorCode.USER_NOT_FOUND)
-        );
+
+        User savedUser = userService.getUserById(id)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         uploadHistory.setUploadedBy(savedUser.getEmail());
         uploadHistory.setFileTemplateType(FileTemplateType.USER);
+
         try {
-            List<User> users = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
-            if (!users.isEmpty()) {
-                users.stream().forEach(user -> {
-                    if (userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
-                    user.setRegisteredBy(id);
-                    user.setRegisteredOn(java.time.LocalDateTime.now());
-                    userService.registerUser(user);
-                });
-                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-                uploadHistoryService.save(uploadHistory);
-            } else {
-                uploadHistory.setUploadStatus(UploadStatus.FAILED);
-                uploadHistoryService.save(uploadHistory);
-                throw new UserException(ErrorCode.FILE_PROCESSING_FAILED);
+            UserList userList = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
+
+            // Process valid users
+
+            for (User user : userList.getValidUserList()) {
+                if (userRepo.existsByEmail(user.getEmail())) {
+                    log.warn("Skipping duplicate user: {}", user.getEmail());
+                    continue; // skip duplicates
+                }
+                user.setRegisteredBy(id);
+                user.setRegisteredOn(LocalDateTime.now());
+                userService.registerUser(user);
             }
+
+
+            // Process invalid users
+            if (!userList.getInvalidUserList().isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                UploadHistory savedUploadHistory = uploadHistoryService.save(uploadHistory);
+
+                ErrorRecord errorRecord = new ErrorRecord();
+                errorRecord.setUplodedBy(savedUser.getEmail());
+                errorRecord.setUploadHistoryId(savedUploadHistory.getId());
+                errorRecord.setErrorUserList(userList.getInvalidUserList());
+                errorRecord.setFileName(file.getOriginalFilename());
+                log.error("Invalid User List: {}", userList.getInvalidUserList());
+                errorRecordHandler.saveErrorRecord(errorRecord);
+
+
+            }
+
+                if(userList.getValidUserList().isEmpty()){
+                    uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                }else if(!userList.getInvalidUserList().isEmpty() && !userList.getValidUserList().isEmpty()){
+                    uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+                }
+                else {
+                    uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                }
+                uploadHistoryService.save(uploadHistory);
+                if(uploadHistory.getUploadStatus()==UploadStatus.PARTIALLY_SUCCESS){
+                    throw new UserException(ErrorCode.DATA_INSERTED_PARTIALLY);
+                }else if(uploadHistory.getUploadStatus()==UploadStatus.FAILED){
+                    throw new UserException(ErrorCode.DATA_NOT_INSERTED);
+                }
+
+
         } catch (Exception e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistoryService.save(uploadHistory);
-            log.error(e.getMessage());
-            e.getStackTrace();
+            log.error("Error during bulk upload", e);
             throw new UserException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }

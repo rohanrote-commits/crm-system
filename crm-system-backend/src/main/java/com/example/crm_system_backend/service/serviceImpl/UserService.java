@@ -1,8 +1,10 @@
 package com.example.crm_system_backend.service.serviceImpl;
 
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,12 @@ public class UserService implements IUserService {
      */
     @Override
     public User registerUser(User user) {
+         if(userRepo.existsByEmail(user.getEmail())){
+             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+         }
+         if(userRepo.existsByMobileNumber(user.getMobileNumber())){
+             throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
+         }
         return userRepo.save(user);
     }
 

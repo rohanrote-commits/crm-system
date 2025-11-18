@@ -14,4 +14,5 @@ public class ErrorRecord {
     private String uplodedBy;
     private String uploadHistoryId;
     private List<Lead> errorsList;
+    private List<User> errorUserList;
 }

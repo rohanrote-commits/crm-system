@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.dto.LeadDto;
+import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.crm_system_backend.dto.UserDTO;
 
 import java.util.List;
 
@@ -37,11 +40,22 @@ public class ErrorRecordController {
        log.info("Exit: ErrorRecordController.updateErrorRecord");
        return new  ResponseEntity<>(leadDto, HttpStatus.OK);
     }
+    @PutMapping("/user/{oldEmail}/{uploadHistoryId}")
+    public ResponseEntity<UserDTO> updateErrorRecord(@PathVariable String oldEmail, @PathVariable String uploadHistoryId , @RequestBody UserDTO errorRecord){
+        UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(oldEmail,uploadHistoryId,errorRecord);
+        return new  ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
     @DeleteMapping("{email}/{uploadHistoryEmail}")
     public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable String email,@PathVariable String uploadHistoryEmail){
         log.info("Enter: ErrorRecordController.deleteErrorRecordByEmail");
         errorRecordHandler.deleteErrorRecordByEmail(email,uploadHistoryEmail);
         log.info("Exit: ErrorRecordController.deleteErrorRecordByEmail");
+        return new  ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("user/{email}/{uploadHistoryEmail}")
+    public ResponseEntity<?> deleteUserErrorRecordByEmail(@PathVariable String email,@PathVariable String uploadHistoryEmail){
+        errorRecordHandler.deleteUserErrorRecordByEmail(email,uploadHistoryEmail);
         return new  ResponseEntity<>(HttpStatus.OK);
     }
 }

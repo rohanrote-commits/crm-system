@@ -34,11 +34,22 @@ public class UploadHistoryController {
      * @param email the email address of the user whose upload history is to be retrieved
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
      */
+<<<<<<< Updated upstream
     @GetMapping("/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
         log.info("Enter: UploadHistoryController.getUploadHistoryByUser");
+=======
+    @GetMapping("/lead/{email}")
+    public ResponseEntity<List<UploadHistoryDto>> getLeadUploadHistoryByUser(@PathVariable String email){
+>>>>>>> Stashed changes
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findLeadUploadHistoryByEmail(email);
         log.info("Exit: UploadHistoryController.getUploadHistoryByUser");
+        return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{email}")
+    public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@PathVariable String email){
+        List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUserUploadHistoryByEmail(email);
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
 
@@ -49,9 +60,14 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
+<<<<<<< Updated upstream
     @GetMapping("/error/{filename}")
     public ResponseEntity<byte []> getErrorFile(@PathVariable String filename){
         log.info("Enter: UploadHistoryController.getErrorFile");
+=======
+    @GetMapping("/lead/error/{filename}")
+    public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String filename){
+>>>>>>> Stashed changes
         File file = new File(filename);
         byte[] fileBytes = null;
         try {
@@ -66,5 +82,21 @@ public class UploadHistoryController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(fileBytes);
     }
+
+    @GetMapping("/user/error/{filename}")
+    public ResponseEntity<byte []> getUserErrorFile(@PathVariable String filename){
+        File file = new File(filename);
+        byte[] fileBytes = null;
+        try {
+            fileBytes = FileUtils.readFileToByteArray(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(fileBytes);
+    }
+
 
 }

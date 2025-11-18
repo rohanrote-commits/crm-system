@@ -322,7 +322,13 @@ $(document).ready(function () {
         if (xhr.responseJSON && xhr.responseJSON.message) {
           errorMsg = xhr.responseJSON.message;
         }
+        console.log(xhr.responseJSON.status);
+        if(xhr.responseJSON.status === "UNAUTHORIZED"){
+           showAlert(errorMsg, "danger");
+           window.location.href = `/Frontend/html/users/login.html`
+        }else{
         showAlert(errorMsg, "danger");
+        }
       }
     });
   }

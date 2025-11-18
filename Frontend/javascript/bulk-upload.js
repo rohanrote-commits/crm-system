@@ -135,7 +135,7 @@ $(document).ready(function () {
 
         const token = sessionStorage.getItem("Authorization");
         if (!token) {
-            alert("⚠ Session expired. Please login again.");
+            showAlert("⚠ Session expired. Please login again.","danger");
             window.location.href = "/Frontend/html/login.html";
             return;
         }
@@ -151,11 +151,13 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function () {
-                alert("✅ Data Inserted Successfully!");
+                showAlert("Data Inserted Successfully!","success");
                 fileInput.val(''); // Clear input
             },
-            error: function () {
-                alert("⚠ Error in uploading file. Please check the file format.");
+            error: function (xhr) {
+                 let error = xhr.responseJSON.message;
+             showAlert(error,"danger");
+             
             }
         });
     });
@@ -185,6 +187,7 @@ $(document).ready(function () {
                 showAlert("File Downloded successfully","success");
             },
             error: function () {
+
                     if (xhr.status === 401) {
         showAlert("Session expired. Please login again.","warning");
         sessionStorage.clear();
@@ -197,5 +200,23 @@ $(document).ready(function () {
         });
 
     });
+
+        function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }
+
+
 
 });

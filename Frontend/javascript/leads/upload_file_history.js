@@ -116,7 +116,7 @@ jQuery(function() {
           e.preventDefault();
           const fileName = $(this).data("file");
           $.ajax({
-            url: `http://localhost:8080/crm/history/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/lead/error/${fileName}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,

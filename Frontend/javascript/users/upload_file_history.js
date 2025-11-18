@@ -26,7 +26,7 @@ jQuery(function() {
     console.log(payload.email)
 
     $.ajax({
-      url: `http://localhost:8080/crm/history/${payload?.email}`,
+      url: `http://localhost:8080/crm/history/user/${payload?.email}`,
       type: "GET",
       headers: {
         Authorization: "Bearer " + token,
@@ -47,7 +47,24 @@ jQuery(function() {
                 }
             },
             { data: "fileName" },
-            { data: "uploadedAt" },
+                         {
+            data: "uploadedAt",
+            render: function (data) {
+              if (!data) return "-";
+
+              const date = new Date(data);
+
+              const options = {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              };
+
+              return date.toLocaleString("en-GB", options);
+            }},
             { data: "uploadedBy" },
             {
               data: "uploadStatus",
@@ -108,7 +125,7 @@ jQuery(function() {
           e.preventDefault();
           const fileName = $(this).data("file");
           $.ajax({
-            url: `http://localhost:8080/crm/history/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/user/error/${fileName}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,
@@ -151,7 +168,8 @@ jQuery(function() {
           .DataTable()
           .row($(this).closest("tr"))
           .data();
-
+        sessionStorage.setItem("file",row.errorFileName)
+    
         sessionStorage.setItem("id", row.id);
         window.location.href = "/Frontend/html/users/view_error_user.html";
       });
