@@ -7,6 +7,7 @@ import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.service.serviceImpl.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -28,6 +29,11 @@ public class LeadExcelHelper {
 
 
     private static final Logger log = LoggerFactory.getLogger(LeadExcelHelper.class);
+    private final ProductService productService;
+
+    public LeadExcelHelper(ProductService productService) {
+        this.productService = productService;
+    }
 
     public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
         log.info("Enter: LeadExcelHelper.processExcelData");
@@ -140,8 +146,8 @@ public class LeadExcelHelper {
         lead.setLastName(getCellValue(row.getCell(2)));
         lead.setMobileNumber(getCellValue(row.getCell(3)));
         lead.setEmail(getCellValue(row.getCell(4)));
-        lead.setGstin(getCellValue(row.getCell(5)));
-        lead.getInterestedModules().add(getCellValue(row.getCell(6)));
+        lead.setGstin(getCellValue(row.getCell(5)).toUpperCase());
+        lead.getInterestedProducts().add(productService.getProductByName(getCellValue(row.getCell(6))));
         lead.setBusinessAddress(getCellValue(row.getCell(7)));
         lead.setDescription(getCellValue(row.getCell(8)));
         return lead;
@@ -227,7 +233,7 @@ public class LeadExcelHelper {
         }
 
         // 6. Interested Modules
-        if (lead.getInterestedModules() == null || lead.getInterestedModules().isEmpty()) {
+        if (lead.getInterestedProducts() == null || lead.getInterestedProducts().isEmpty()) {
             markError(row.getCell(6), "No Modules Selected", errorStyle);
             hasError = true;
         }
@@ -257,7 +263,7 @@ public class LeadExcelHelper {
             Lead existingLead = leadMap.get(emailKey);
 
             // Merge interested modules (avoid duplicates)
-            existingLead.getInterestedModules().addAll(lead.getInterestedModules());
+            existingLead.getInterestedProducts().addAll(lead.getInterestedProducts());
 
             // Optional: If other fields are blank in the first record, fill them from new one
             if (isEmpty(existingLead.getFirstName()) && !isEmpty(lead.getFirstName()))

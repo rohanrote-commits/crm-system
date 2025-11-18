@@ -52,15 +52,7 @@ $(document).ready(function () {
   $("#profilePic").click(function () {
     $("#profileDropdown").toggleClass("show");
   });
-
-  const $dropdown = $("#userDropdown");
-
-  // Toggle dropdown when clicking the main button
-  $("#addUserBtn").click(function (e) {
-    e.stopPropagation();
-    $dropdown.toggle();
-  });
-
+  
   // Delete profile
   $("#delete-profile").click(function () {
     if (!token) {
@@ -103,17 +95,8 @@ $(document).ready(function () {
     $("#addressFields").slideUp();
   });
 
-//   // Close dropdown if clicked outside
-//   $(document).click(function (event) {
-//     if (!$(event.target).closest("#userDropdown, #addUserBtn").length) {
-//       $dropdown.hide();
-//     }
-//   });
 
-
-
-
-    // Toggle dropdown on button click
+// Toggle dropdown on button click
 $("#addLeadBtn").on("click", function (e) {
     e.stopPropagation(); // prevent click from closing instantly
     $("#leadDropdown").toggleClass("show");
@@ -123,8 +106,6 @@ $("#addLeadBtn").on("click", function (e) {
 $(document).on("click", function () {
     $("#leadDropdown").removeClass("show");
 });
-
-
 
 
     $("#importLead").click(function (event) {

@@ -25,4 +25,6 @@ public class UploadHistory {
    private String errorFileName;
    @Enumerated(EnumType.STRING)
    private FileTemplateType fileTemplateType;
+
+   private Error  errorRecord;
 }
