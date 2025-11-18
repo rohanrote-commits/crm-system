@@ -30,12 +30,7 @@ public class UserService implements IUserService {
      */
     @Override
     public User registerUser(User user) {
-         if(userRepo.existsByEmail(user.getEmail())){
-             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
-         }
-         if(userRepo.existsByMobileNumber(user.getMobileNumber())){
-             throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
-         }
+
         return userRepo.save(user);
     }
 

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,14 +110,33 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     public List<UserDTO> getUsers(Long id) {
         log.info("Request for getting users is in user Handler for user id" + id);
-        List<User> users;
+        List<User> users = new ArrayList<>();
+        User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {
+
             log.info("Request for getting users is in user Handler for master admin");
             users = userService.getAllUserByMasterAdmin(id);
         } else {
-            log.info("Request for getting users is in user Handler for admin");
-            users = userService.getAllUsersByAdmin(id);
+            if(userRepo.findRoleById(id)==Roles.ADMIN){
+                users.add(userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+                log.info("Request for getting users is in user Handler for admin");
+                users = userService.getAllUsersByAdmin(id);
+            }
+            else if(userRepo.findRoleById(id)==Roles.USER){
+                users.add(accessingUser);
+                User registeringUser = userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+                if(registeringUser.getRole()==Roles.MASTER_ADMIN) {
+                    users.add(registeringUser);
+                }else{
+                    users.add(registeringUser);
+                    users.add(userService.getUserById(userService.getUserById(accessingUser.getRegisteredBy()).get().getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+                }
+                //users.add(userService.getUserById(userService.getUserById(accessingUser.getRegisteredBy()).get().getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+
+            }
+
         }
+
         return users.stream().map(user -> {
             UserDTO userDTO = new UserDTO();
             userDTO.setEmailOfAdminRegistered(userRepo.findEmailById(user.getRegisteredBy()));
@@ -260,6 +280,11 @@ public class UserHandler implements IHandler<UserDTO> {
 
     }
 
+    @Override
+    public void bulkUpload(MultipartFile file, Long id) {
+
+    }
+
     /**
      * Deletes a sub-user identified by the provided email from the list of users retrieved using the given ID.
      * <p>
@@ -293,8 +318,9 @@ public class UserHandler implements IHandler<UserDTO> {
      * @throws UserException if the initiating user is not found or if the email of any user in the upload already exists
      * @throws LeadException if there is an error during file processing or if an exception occurs during upload
      */
-    @Override
-    public void bulkUpload(MultipartFile file, Long id) {
+
+
+    public String bulkUploadUser(MultipartFile file, Long id) {
         UploadHistory uploadHistory = new UploadHistory();
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
@@ -346,10 +372,13 @@ public class UserHandler implements IHandler<UserDTO> {
                     uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
                 }
                 uploadHistoryService.save(uploadHistory);
-                if(uploadHistory.getUploadStatus()==UploadStatus.PARTIALLY_SUCCESS){
-                    throw new UserException(ErrorCode.DATA_INSERTED_PARTIALLY);
-                }else if(uploadHistory.getUploadStatus()==UploadStatus.FAILED){
-                    throw new UserException(ErrorCode.DATA_NOT_INSERTED);
+
+                if(uploadHistory.getUploadStatus()==UploadStatus.SUCCESS){
+                    return "All the Users are uploaded successfully";
+                }else if(uploadHistory.getUploadStatus() == UploadStatus.PARTIALLY_SUCCESS){
+                    return "Partially the Users are uploaded successfully";
+                }else {
+                    return "The Users are not uploaded successfully";
                 }
 
 
@@ -359,6 +388,7 @@ public class UserHandler implements IHandler<UserDTO> {
             log.error("Error during bulk upload", e);
             throw new UserException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+
     }
 
 }

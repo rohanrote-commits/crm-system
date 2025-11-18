@@ -137,6 +137,8 @@ $('#userRole').html(roleOptions);
 
 // Edit User (Error Record)
 $("#lead-table").on("click", ".edit-lead", function () {
+    showUpdateConfirm().then((ok) => {
+  if (!ok) return;
     const rowData = $("#lead-table")
         .DataTable()
         .row($(this).parents("tr"))
@@ -183,6 +185,7 @@ $("#lead-table").on("click", ".edit-lead", function () {
     oldEmail = rowData.email;
     $("#userModal").modal("show");
 });
+});
 
 // Show/hide dependent address fields dynamically
 $("#userAddress").on('input', function() {
@@ -223,34 +226,34 @@ $.validator.addMethod("pinPattern", function(value, element) {
 // User Form Validation
 $("#userForm").validate({
     rules: {
-        userFirstName: { required: true, namePattern: true },
-        userLastName: { required: true, namePattern: true },
-        userEmail: { required: true, emailPattern: true },
-        userPassword: { required: true, passwordPattern: true, minlength: 8, maxlength: 16 },
-        userConfirmPassword: { required: true, equalTo: "#userPassword" },
-        userMobileNumber: { required: true, mobilePattern: true },
-        userAddress: { required: false, addressPattern: true },
-        userCity: { required: function() { return $("#userAddress").val().trim() !== ""; } },
-        userState: { required: function() { return $("#userAddress").val().trim() !== ""; } },
-        userCountry: { required: function() { return $("#userAddress").val().trim() !== ""; } },
-        userPinCode: { 
+        firstName: { required: true, namePattern: true },
+        lastName: { required: true, namePattern: true },
+        email: { required: true, emailPattern: true },
+        password: { required: true, passwordPattern: true, minlength: 8, maxlength: 16 },
+        confirmPassword: { required: true, equalTo: "#userPassword" },
+        mobileNumber: { required: true, mobilePattern: true },
+        address: { required: false, addressPattern: true },
+        city: { required: function() { return $("#userAddress").val().trim() !== ""; } },
+        state: { required: function() { return $("#userAddress").val().trim() !== ""; } },
+        country: { required: function() { return $("#userAddress").val().trim() !== ""; } },
+        pinCode: { 
             required: function() { return $("#userAddress").val().trim() !== ""; },
             pinPattern: true
         },
-        userRole: { required: true }
+        role: { required: true }
     },
     messages: {
-        userFirstName: { required: "Please enter first name" },
-        userLastName: { required: "Please enter last name" },
-        userEmail: { required: "Please enter email" },
-        userPassword: { required: "Please enter password", maxlength: "Max 16 characters allowed" },
-        userConfirmPassword: { required: "Confirm password", equalTo: "Passwords do not match" },
-        userMobileNumber: { required: "Enter mobile number" },
-        userAddress: { required: "Enter address" },
+        userFirstName: { required: "Please enter first name" , namePattern:true},
+        userLastName: { required: "Please enter last name",namePattern:true },
+        userEmail: { required: "Please enter email",emailPattern:true },
+        userPassword: { required: "Please enter password", maxlength: "Max 16 characters allowed",passwordPattern:true },
+        userConfirmPassword: { required: "Confirm password", equalTo: "Passwords do not match",passwordPattern:true },
+        userMobileNumber: { required: "Enter mobile number",mobilePattern : true },
+        userAddress: { required: "Enter address",addressPattern :true },
         userCity: { required: "Enter city" },
         userState: { required: "Select state" },
         userCountry: { required: "Select country" },
-        userPinCode: { required: "Enter pin code" },
+        userPinCode: { required: "Enter pin code",pinPattern:true },
         userRole: { required: "Select role" }
     },
     errorClass: "error-message",
@@ -307,8 +310,9 @@ $("#userForm").validate({
 
 
       $("#downloadErrorFile").click(function (e) {
-          e.preventDefault();
+        console.log("Now in downloadErrorFile");
           const fileName = sessionStorage.getItem("file");
+          console.log(fileName);
           $.ajax({
             url: `http://localhost:8080/crm/history/user/error/${fileName}`,
             type: "GET",
@@ -350,6 +354,8 @@ $("#userForm").validate({
         //delete error lead
       let deleteEmail = null;
       $(document).on("click", ".delete-lead", function () {
+        showDeleteConfirm().then((ok) => {
+  if (!ok) return;
           deleteEmail = $(this).data("email");
           $("#deleteConfirmModal").modal("show");
       });
@@ -373,6 +379,7 @@ $("#userForm").validate({
           });
 
           $("#deleteConfirmModal").modal("hide");
+        });
       });
 
 
@@ -433,6 +440,52 @@ $('#uploadErrorFile').on('change', function () {
         alert.alert('close');
       }, 5000);
     }
+function showUpdateConfirm() {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById("updateConfirmModal");
+    const modal = new bootstrap.Modal(modalEl);
+
+    const confirmBtn = document.getElementById("confirmUpdateBtn");
+
+    // When user clicks "Yes, Update"
+    confirmBtn.onclick = function () {
+      modal.hide();
+      resolve(true);
+    };
+
+    // When modal closes without confirming
+    modalEl.addEventListener(
+      "hidden.bs.modal",
+      () => resolve(false),
+      { once: true }
+    );
+
+    modal.show();
+  });
+}
+function showDeleteConfirm() {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById("deleteConfirmModal");
+    const modal = new bootstrap.Modal(modalEl);
+
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+
+    // When user clicks "Yes, Delete"
+    confirmBtn.onclick = function () {
+      modal.hide();
+      resolve(true);
+    };
+
+    // When modal closes without confirming
+    modalEl.addEventListener(
+      "hidden.bs.modal",
+      () => resolve(false),
+      { once: true }
+    );
+
+    modal.show();
+  });
+}
 
 
 

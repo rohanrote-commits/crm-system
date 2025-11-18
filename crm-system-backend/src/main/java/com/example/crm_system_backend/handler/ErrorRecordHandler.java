@@ -9,18 +9,20 @@ import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.UserException;
+import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
-<<<<<<< Updated upstream
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-=======
+
 import org.springframework.beans.BeanUtils;
->>>>>>> Stashed changes
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 
@@ -34,14 +36,16 @@ public class ErrorRecordHandler {
     private final LeadService leadService;
     private final ModelMapper modelMapper;
     private final UserService userService;
+    private final IUserRepo userRepo;
 
 
-    public ErrorRecordHandler(ErrorRecordService errorRecordService, UploadHistoryService uploadHistoryService, LeadService leadService, ModelMapper modelMapper, UserService userService){
+    public ErrorRecordHandler(ErrorRecordService errorRecordService, UploadHistoryService uploadHistoryService, LeadService leadService, ModelMapper modelMapper, UserService userService,IUserRepo userRepo){
         this.errorRecordService = errorRecordService;
         this.uploadHistoryService = uploadHistoryService;
         this.leadService = leadService;
         this.modelMapper = modelMapper;
         this.userService = userService;
+        this.userRepo = userRepo;
     }
 
 
@@ -114,6 +118,12 @@ public class ErrorRecordHandler {
         user.setRegisteredBy(parentUser.getId());
 
         // 4. Try saving the corrected user FIRST
+        if(userRepo.existsByEmail(user.getEmail())){
+            throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+        if(userRepo.existsByMobileNumber(user.getMobileNumber())){
+            throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
+        }
         User savedUser = userService.registerUser(user);
 
         // 5. Update upload history counts
@@ -162,4 +172,6 @@ public class ErrorRecordHandler {
         errorRecord.getErrorUserList().removeIf(user -> oldEmail.equalsIgnoreCase(user.getEmail()));
         ErrorRecord savedRecord = errorRecordService.saveErrorRecord(errorRecord);
     }
+
+
 }

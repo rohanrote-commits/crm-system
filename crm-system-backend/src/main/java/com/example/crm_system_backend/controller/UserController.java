@@ -87,7 +87,6 @@ public class UserController {
      * @param request the HTTP servlet request containing attributes like the `userId` of the requester
      * @return a ResponseEntity containing a list of UserDTOs representing user details and an HTTP status of OK
      */
-    @RoleRequired("MASTER_ADMIN")
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getAllUsers(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -189,8 +188,8 @@ public class UserController {
     ResponseEntity<?> bulkUploadUserFile(@RequestParam MultipartFile file, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
-        userHandler.bulkUpload(file, userId);
-        return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
+        String s = userHandler.bulkUploadUser(file, userId);
+        return new ResponseEntity<>(s, HttpStatus.OK);
     }
 
     /**

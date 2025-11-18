@@ -150,8 +150,9 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
-            success: function () {
-                showAlert("Data Inserted Successfully!","success");
+            success: function (response) {
+             
+                showAlert(response,"success");
                 fileInput.val(''); // Clear input
             },
             error: function (xhr) {

@@ -58,4 +58,5 @@ public class ErrorRecordController {
         errorRecordHandler.deleteUserErrorRecordByEmail(email,uploadHistoryEmail);
         return new  ResponseEntity<>(HttpStatus.OK);
     }
+
 }
