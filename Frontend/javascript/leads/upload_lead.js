@@ -27,10 +27,9 @@ $(document).ready(function() {
   const payload = parseJwt(token);
   const userRole = payload?.role?.trim();
   
-      // Profile dropdown
-    $("#profilePic").click(function () {
-        $("#profileDropdown").toggle();
-    });
+    $(".profile-pic").click(function () {
+    $("#profileDropdown").toggleClass("show");
+  });
 
     // Close profile dropdown when clicked outside
     $(document).click(function (event) {
