@@ -119,13 +119,12 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(user),
                 success: function(response) {
-                    alert("Sign Up Successful");
+                    showAlert("Sign Up Successful","success");
                     window.location.href = "/Frontend/html/login.html";
                 },
                 error: function(xhr) {
-                    if (xhr.status === 409) showAlertlert("Email already registered","warning");
-                    else if (xhr.status === 400) showAlert("Passwords do not match","danger");
-                    else showAlert("Sign Up Failed: " + (xhr.responseText || "Server error"),"danger");
+               let error = xhr.responseJSON;
+                 showAlert("Sign Up Failed: " + (error.message|| "Server error"),"danger");
                 }
             });
         }
@@ -133,6 +132,7 @@ $.validator.addMethod("passwordPattern", function (value) {
 
 });
     // Function to show bootstrap alert dynamically
+
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`

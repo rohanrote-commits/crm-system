@@ -26,7 +26,7 @@ $(document).ready(function () {
     const role = payload?.role?.trim();
     console.log("Logged in role:", role);
 
-    let editUserId = null; // store user id when editing
+    let editUserId = null;
 
     // Reset form and validation when modal closes
     $('#userModal').on('hidden.bs.modal', function () {
@@ -71,48 +71,63 @@ $(document).ready(function () {
         $("#userFirstName, #userLastName, #userEmail, #userRole, #userPassword, #userConfirmPassword").prop("readonly", false);
         $("#userPassword, #userConfirmPassword").prop("required", true).closest(".col-md-6").show();
 
+        const roleSelect = $("#userRole");
+        if (role === "MASTER_ADMIN") {
+            roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="USER">USER</option>`);
+        } else if (role === "ADMIN") {
+            roleSelect.append(`<option value="USER">USER</option>`);
+        } else {
+            roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
+        }
+
         new bootstrap.Modal(document.getElementById('userModal')).show();
     });
 
     // Edit User functionality
     $("#user-table").on("click", ".edit-user", function () {
-        const rowData = $("#user-table").DataTable().row($(this).parents("tr")).data();
+        showUpdateConfirm().then((ok) => {
+            if (!ok) return;
 
-        if (!rowData) {
-            showAlert("Failed to get user data", "danger");
-            return;
-        }
+            const rowData = $("#user-table").DataTable().row($(this).parents("tr")).data();
 
-        editUserId = rowData.id;
-        console.log("Editing user:", rowData);
+            if (!rowData) {
+                showAlert("Failed to get user data", "danger");
+                return;
+            }
 
-        $("#userModalLabel").text("Edit User");
-        $("#saveUserBtn").text("Update User");
+            editUserId = rowData.id;
+            console.log("Editing user:", rowData);
 
-        $("#userFirstName").val(rowData.firstName).prop("readonly", true);
-        $("#userLastName").val(rowData.lastName).prop("readonly", true);
-        $("#userEmail").val(rowData.email).prop("readonly", true);
-        $("#userMobileNumber").val(rowData.mobileNumber).prop("readonly", false);
-        $("#userAddress").val(rowData.address || "").prop("readonly", false);
+            $("#userModalLabel").text("Edit User");
+            $("#saveUserBtn").text("Update User");
 
-        if (rowData.address && rowData.address.trim() !== "") {
-            $("#addressFields").removeClass('d-none');
-            $("#userCity, #userState, #userCountry, #userPinCode").prop('required', true).prop("readonly", false);
-        } else {
-            $("#addressFields").addClass('d-none');
-            $("#userCity, #userState, #userCountry, #userPinCode").prop('required', false);
-        }
+            $("#userFirstName").val(rowData.firstName).prop("readonly", true);
+            $("#userLastName").val(rowData.lastName).prop("readonly", true);
+            $("#userEmail").val(rowData.email).prop("readonly", true);
+            $("#userMobileNumber").val(rowData.mobileNumber).prop("readonly", false);
+            $("#userAddress").val(rowData.address || "").prop("readonly", false);
 
-        $("#userCity").val(rowData.city || "");
-        $("#userPinCode").val(rowData.pinCode || "");
-        $("#userState").val(rowData.state || "");
-        $("#userCountry").val(rowData.country || "");
-        $("#userRole").val(rowData.role).prop("readonly", true);
+            if (rowData.address && rowData.address.trim() !== "") {
+                $("#addressFields").removeClass('d-none');
+                $("#userCity, #userState, #userCountry, #userPinCode")
+                    .prop('required', true).prop("readonly", false);
+            } else {
+                $("#addressFields").addClass('d-none');
+                $("#userCity, #userState, #userCountry, #userPinCode")
+                    .prop('required', false);
+            }
 
-        $("#userPassword, #userConfirmPassword").val("").prop("required", false).closest(".col-md-6").hide();
+            $("#userCity").val(rowData.city || "");
+            $("#userPinCode").val(rowData.pinCode || "");
+            $("#userState").val(rowData.state || "");
+            $("#userCountry").val(rowData.country || "");
+            $("#userRole").val(rowData.role).prop("readonly", true);
 
-        new bootstrap.Modal(document.getElementById('userModal')).show();
-    });
+            $("#userPassword, #userConfirmPassword").val("").prop("required", false).closest(".col-md-6").hide();
+
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }); // <-- FIXED missing closing brace for .then()
+    }); // <-- FIXED closing for click()
 
     // Show/hide address fields dynamically
     $("#userAddress").on('input', function () {
@@ -135,7 +150,7 @@ $(document).ready(function () {
         roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
     }
 
-    // Custom validation methods
+    // Validation Methods
     $.validator.addMethod("namePattern", function (value, element) {
         return this.optional(element) || /^[A-Za-z ]{1,50}$/.test(value);
     }, "Name can contain letters and spaces only (max 50)");
@@ -160,7 +175,7 @@ $(document).ready(function () {
         return this.optional(element) || /^[0-9]{6}$/.test(value);
     }, "Pin code must be 6 digits");
 
-    // Form validation & submission
+    // Form Validation
     $("#userForm").validate({
         rules: {
             firstName: { required: true, namePattern: true },
@@ -216,7 +231,9 @@ $(document).ready(function () {
                 };
                 url = `http://localhost:8080/crm/user/update-sub_user`;
                 method = "PUT";
+
             } else {
+
                 payload = {
                     firstName: $("#userFirstName").val(),
                     lastName: $("#userLastName").val(),
@@ -256,10 +273,9 @@ $(document).ready(function () {
             });
         }
     });
-
 });
 
-// Function to show bootstrap alert dynamically
+// Bootstrap Alerts
 function showAlert(message, type) {
     const alertContainer = $("#alert-container");
     const alert = $(`
@@ -273,4 +289,48 @@ function showAlert(message, type) {
     setTimeout(() => {
         alert.alert('close');
     }, 5000);
+}
+
+function showUpdateConfirm() {
+    return new Promise((resolve) => {
+        const modalEl = document.getElementById("updateConfirmModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        const confirmBtn = document.getElementById("confirmUpdateBtn");
+
+        confirmBtn.onclick = function () {
+            modal.hide();
+            resolve(true);
+        };
+
+        modalEl.addEventListener(
+            "hidden.bs.modal",
+            () => resolve(false),
+            { once: true }
+        );
+
+        modal.show();
+    });
+}
+
+function showDeleteConfirm() {
+    return new Promise((resolve) => {
+        const modalEl = document.getElementById("deleteConfirmModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        const confirmBtn = document.getElementById("confirmDeleteBtn");
+
+        confirmBtn.onclick = function () {
+            modal.hide();
+            resolve(true);
+        };
+
+        modalEl.addEventListener(
+            "hidden.bs.modal",
+            () => resolve(false),
+            { once: true }
+        );
+
+        modal.show();
+    });
 }

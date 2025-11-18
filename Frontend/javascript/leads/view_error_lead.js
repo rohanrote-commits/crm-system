@@ -39,7 +39,7 @@ jQuery(function () {
 
   let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url: `http://localhost:8080/crm/error/records/${id}`,
+        url: `http://localhost:8080/crm/error/lead/records/${id}`,
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,

@@ -1,9 +1,11 @@
 package com.example.crm_system_backend.handler;
 
+import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +41,9 @@ public class UserHandler implements IHandler<UserDTO> {
 
     @Autowired
     private UploadHistoryService uploadHistoryService;
+
+    @Autowired
+    private ErrorRecordHandler errorRecordHandler;
 
     /**
      * Saves a new user based on the provided {@code UserDTO}.
@@ -104,14 +110,33 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     public List<UserDTO> getUsers(Long id) {
         log.info("Request for getting users is in user Handler for user id" + id);
-        List<User> users;
+        List<User> users = new ArrayList<>();
+        User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {
+
             log.info("Request for getting users is in user Handler for master admin");
             users = userService.getAllUserByMasterAdmin(id);
         } else {
-            log.info("Request for getting users is in user Handler for admin");
-            users = userService.getAllUsersByAdmin(id);
+            if(userRepo.findRoleById(id)==Roles.ADMIN){
+                users.add(userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+                log.info("Request for getting users is in user Handler for admin");
+                users = userService.getAllUsersByAdmin(id);
+            }
+            else if(userRepo.findRoleById(id)==Roles.USER){
+                users.add(accessingUser);
+                User registeringUser = userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+                if(registeringUser.getRole()==Roles.MASTER_ADMIN) {
+                    users.add(registeringUser);
+                }else{
+                    users.add(registeringUser);
+                    users.add(userService.getUserById(userService.getUserById(accessingUser.getRegisteredBy()).get().getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+                }
+                //users.add(userService.getUserById(userService.getUserById(accessingUser.getRegisteredBy()).get().getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
+
+            }
+
         }
+
         return users.stream().map(user -> {
             UserDTO userDTO = new UserDTO();
             userDTO.setEmailOfAdminRegistered(userRepo.findEmailById(user.getRegisteredBy()));
@@ -255,6 +280,11 @@ public class UserHandler implements IHandler<UserDTO> {
 
     }
 
+    @Override
+    public void bulkUpload(MultipartFile file, Long id) {
+
+    }
+
     /**
      * Deletes a sub-user identified by the provided email from the list of users retrieved using the given ID.
      * <p>
@@ -288,40 +318,77 @@ public class UserHandler implements IHandler<UserDTO> {
      * @throws UserException if the initiating user is not found or if the email of any user in the upload already exists
      * @throws LeadException if there is an error during file processing or if an exception occurs during upload
      */
-    @Override
-    public void bulkUpload(MultipartFile file, Long id) {
+
+
+    public String bulkUploadUser(MultipartFile file, Long id) {
         UploadHistory uploadHistory = new UploadHistory();
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
-        User savedUser = userService.getUserById(id).orElseThrow(
-                () -> new UserException(ErrorCode.USER_NOT_FOUND)
-        );
+
+        User savedUser = userService.getUserById(id)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         uploadHistory.setUploadedBy(savedUser.getEmail());
         uploadHistory.setFileTemplateType(FileTemplateType.USER);
+
         try {
-            List<User> users = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
-            if (!users.isEmpty()) {
-                users.stream().forEach(user -> {
-                    if (userRepo.existsByEmail(user.getEmail())) throw new UserException(ErrorCode.USER_ALREADY_EXISTS);
-                    user.setRegisteredBy(id);
-                    user.setRegisteredOn(java.time.LocalDateTime.now());
-                    userService.registerUser(user);
-                });
-                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-                uploadHistoryService.save(uploadHistory);
-            } else {
-                uploadHistory.setUploadStatus(UploadStatus.FAILED);
-                uploadHistoryService.save(uploadHistory);
-                throw new UserException(ErrorCode.FILE_PROCESSING_FAILED);
+            UserList userList = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
+
+            // Process valid users
+
+            for (User user : userList.getValidUserList()) {
+                if (userRepo.existsByEmail(user.getEmail())) {
+                    log.warn("Skipping duplicate user: {}", user.getEmail());
+                    continue; // skip duplicates
+                }
+                user.setRegisteredBy(id);
+                user.setRegisteredOn(LocalDateTime.now());
+                userService.registerUser(user);
             }
+
+
+            // Process invalid users
+            if (!userList.getInvalidUserList().isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                UploadHistory savedUploadHistory = uploadHistoryService.save(uploadHistory);
+
+                ErrorRecord errorRecord = new ErrorRecord();
+                errorRecord.setUplodedBy(savedUser.getEmail());
+                errorRecord.setUploadHistoryId(savedUploadHistory.getId());
+                errorRecord.setErrorUserList(userList.getInvalidUserList());
+                errorRecord.setFileName(file.getOriginalFilename());
+                log.error("Invalid User List: {}", userList.getInvalidUserList());
+                errorRecordHandler.saveErrorRecord(errorRecord);
+
+
+            }
+
+                if(userList.getValidUserList().isEmpty()){
+                    uploadHistory.setUploadStatus(UploadStatus.FAILED);
+                }else if(!userList.getInvalidUserList().isEmpty() && !userList.getValidUserList().isEmpty()){
+                    uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+                }
+                else {
+                    uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                }
+                uploadHistoryService.save(uploadHistory);
+
+                if(uploadHistory.getUploadStatus()==UploadStatus.SUCCESS){
+                    return "All the Users are uploaded successfully";
+                }else if(uploadHistory.getUploadStatus() == UploadStatus.PARTIALLY_SUCCESS){
+                    return "Partially the Users are uploaded successfully";
+                }else {
+                    return "The Users are not uploaded successfully";
+                }
+
+
         } catch (Exception e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistoryService.save(uploadHistory);
-            log.error(e.getMessage());
-            e.getStackTrace();
+            log.error("Error during bulk upload", e);
             throw new UserException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+
     }
 
 }

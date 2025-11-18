@@ -72,12 +72,14 @@ public class JwtUtil {
      * @param token the JWT as a String from which claims need to be extracted
      * @return the claims object that contains all the extracted claims from the token
      */
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+    public Claims extractAllClaims(String token) throws ExpiredJwtException {
+        return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 
     /**
      * Extracts and returns the user ID from the provided JWT (JSON Web Token).
@@ -120,6 +122,12 @@ public class JwtUtil {
      * @return true if the token has expired, false otherwise
      */
     public boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
+        try {
+            return extractAllClaims(token).getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            // Token is expired, return true without throwing exception
+            return true;
+        }
     }
+
 }

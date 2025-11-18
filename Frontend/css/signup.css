@@ -37,7 +37,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
   margin-bottom: 20px;
 }
 
@@ -46,7 +45,6 @@ body {
   padding: 40px;
   width: 800px; /* Fixed width */
   height: auto;
-  max-height: 700px; /* Optional: prevent extreme height */
 
   box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
   border-radius: 10px;
@@ -234,12 +232,7 @@ label.error {
   justify-content: flex-end; /* Move to right */
   gap: 10px;
   margin-top: 15px;
-  margin-left: 479px;
+  margin-left: 400px;
 }
 
-/* Small version of buttons */
-.btn-small {
-  padding: 8px 16px;       /* smaller padding */
-  font-size: 0.9rem;       /* slightly smaller text */
-  width: 100px;             /* not full width */
-}
+

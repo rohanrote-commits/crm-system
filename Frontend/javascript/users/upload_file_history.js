@@ -1,4 +1,5 @@
 jQuery(function() {
+  $("#header").load("/Frontend/html/components/header.html");
       function parseJwt(token) {
         try {
             const base64Url = token.split('.')[1];
@@ -14,7 +15,6 @@ jQuery(function() {
 
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
-    let fileName = "";
     if (!token) {
         showAlert("Unauthorized. Please login.","danger");
         window.location.href = "/Frontend/html/login.html";
@@ -25,27 +25,29 @@ jQuery(function() {
     const userRole = payload?.role?.trim();
     console.log(payload.email)
 
-      $("#upload-table").DataTable({
-      ajax: {
-          url: `http://localhost:8080/crm/history/${payload?.email}`,
-          type: "GET",
-          headers: {
-              Authorization: "Bearer " + token,
-          },
-          dataSrc: "" 
+    $.ajax({
+      url: `http://localhost:8080/crm/history/user/${payload?.email}`,
+      type: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
       },
-
-      columns: [
-          {
-              data: null,
-              title: "Sr.No.",
-              orderable: false,
-              render: function (data, type, row, meta) {
-                  return meta.row + meta.settings._iDisplayStart + 1;
-              }
-          },
-          { data: "fileName", title: "File Name" },
-                    {
+      success: function (fileList) {
+        $("#upload-table").DataTable({
+          data: fileList,
+          columns: [
+            {data:"id",
+              visible:false,
+            },
+            {
+                data: null, 
+                title: "Sr.No.",
+                orderable: false, 
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { data: "fileName" },
+                         {
             data: "uploadedAt",
             render: function (data) {
               if (!data) return "-";
@@ -63,60 +65,67 @@ jQuery(function() {
 
               return date.toLocaleString("en-GB", options);
             }},
-                    { data: "uploadedBy", title: "Uploaded By" },
-
-          {
+            { data: "uploadedBy" },
+            {
               data: "uploadStatus",
               title: "Status",
               orderable: false,
               render: function (data) {
-                  let badgeClass = "";
-                  switch (data) {
-                      case "PROCESSING": badgeClass = "bg-primary"; break;
-                      case "PARTIALLY_SUCCESS": badgeClass = "bg-warning"; break;
-                      case "SUCCESS": badgeClass = "bg-success"; break;
-                      case "FAILED": badgeClass = "bg-danger"; break;
-                      default: badgeClass = "bg-secondary";
-                  }
-                  return `<span class="badge ${badgeClass}">
-                              ${data === "PARTIALLY_SUCCESS" ? "PARTIALLY SUCCESS" : data}
-                          </span>`;
-              }
-          },
-
-          {
+                let badgeClass = "";
+                switch (data) {
+                  case "PROCESSING":
+                    badgeClass = "bg-primary";
+                    break;
+                  case "PARTIALLY_SUCCESS":
+                    badgeClass = "bg-warning";
+                    break;
+                  case "SUCCESS":
+                    badgeClass = "bg-success";
+                    break;
+                  case "FAILED":
+                    badgeClass = "bg-danger";
+                    break;
+                  default:
+                    badgeClass = "bg-secondary";
+                }
+                return `<span class="badge ${badgeClass}">${
+                  data === "PARTIALLY_SUCCESS" ? "PARTIALLY SUCCESS" : data
+                }</span>`;
+              },
+            },
+            {
               data: "errorFileName",
-              title: "Action",
-              orderable: false,
+              title : "Action",
+              orderable:false,
               render: function (data, type, row) {
-                  return `
-                      <button class="btn btn-sm btn-secondary download-error" data-file="${data}">
-                          <i class="bi bi-download"></i>
-                      </button>
+                return `
+                  <button class="btn btn-sm btn-secondary download-error" data-file="${data}">
+                                    <i class="bi bi-download"></i>
+                                </button>
                       <button class="btn btn-sm btn-secondary view-error-info" data-lead="${data}">
-                          <i class="bi bi-eye"></i>
-                      </button>
-                  `;
-              }
-          }
-      ],
+                            <i class="bi bi-eye"></i>
+                        </button>              
+                `;
+              },
+            },
 
-    pageLength: 10,          // 👈 default selected option
-    lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-      destroy: true,
-      responsive: true,
-      searching: true,
-      paging: true,
-      ordering: true,
-      info: true
-  });
-
+          ],
+          pageLength: 5,
+          destroy: true,
+          responsive: true,
+          searching: true,
+          paging: true,
+          ordering: true,
+          info: true,
+        });
+      },
+    });
 
         $("#upload-table").on("click", ".download-error", function (e) {
           e.preventDefault();
           const fileName = $(this).data("file");
           $.ajax({
-            url: `http://localhost:8080/crm/history/lead/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/user/error/${fileName}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,
@@ -159,10 +168,10 @@ jQuery(function() {
           .DataTable()
           .row($(this).closest("tr"))
           .data();
-
-        sessionStorage.setItem("id", row.id);
         sessionStorage.setItem("file",row.errorFileName)
-        window.location.href = "/Frontend/html/leads/view_error_lead.html";
+    
+        sessionStorage.setItem("id", row.id);
+        window.location.href = "/Frontend/html/users/view_error_user.html";
       });
 
 

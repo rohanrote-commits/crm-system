@@ -210,3 +210,12 @@ body {
     background-color: #f5f5f5;
 }
 
+label.error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+.required {
+  color: red;
+}

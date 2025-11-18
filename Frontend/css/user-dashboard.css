@@ -39,7 +39,9 @@ body {
     color: #f0f0f0;             /* Optional: lighter color on hover */
 }
 
-
+.required {
+  color: red;
+}
 
 
 .logo span {
@@ -365,3 +367,40 @@ textarea.valid {
 .btn-green:hover {
   background-color: #05681a;
 }
+
+/* Target buttons in Action column */
+#user-table .btn-sm {
+    padding: 0.15rem 0.25rem;  /* smaller padding */
+    font-size: 0.75rem;        /* smaller font/icons */
+    line-height: 1;            /* keeps icons centered */
+}
+
+/* Reduce gap between buttons inside the flex container */
+#user-table td .d-flex {
+    gap: 0.2rem;   /* smaller gap, adjust as needed */
+    justify-content: center; /* keep buttons centered */
+}
+
+
+/* Force rows to a smaller height */
+#user-table tbody tr {
+    height: 35px !important; /* adjust as needed */
+    max-height: 35px !important;
+}
+
+/* Ensure the content inside doesn't stretch the row */
+#user-table tbody td, 
+#user-table tbody th {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+/* Set a fixed width for the Action column */
+#user-table th:nth-child(8),
+#user-table td:nth-child(8) {
+    width: 80px;   /* adjust as needed */
+    max-width: 200px;
+    text-align: center;
+    white-space: nowrap;
+}
+

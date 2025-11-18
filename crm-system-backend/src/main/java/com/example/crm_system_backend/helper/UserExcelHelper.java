@@ -1,7 +1,9 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
@@ -118,7 +120,7 @@ public class UserExcelHelper {
      * @throws ExcelException if the file has invalid headers or if there are issues
      *                        during file processing
      */
-    public List<User> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
+    public UserList processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
         int countDown = 5;
 
 
@@ -127,7 +129,8 @@ public class UserExcelHelper {
         }
 
         List<User> users = new ArrayList<>(); //valid users
-        List<Row> errorRows = new ArrayList<>(); //error rows
+        List<Row> errorRows = new ArrayList<>();//error rows
+        UserList userList = new UserList();
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(is)) {
@@ -279,8 +282,11 @@ public class UserExcelHelper {
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
                 writeErrorFile(errorRows, uploadHistory);
-            }
+                List<User> errorUserList = errorRows.stream().map(this::extractUser).toList();
+                userList.setInvalidUserList(errorUserList);
 
+            }
+           userList.setValidUserList(users);
 
         }
         catch (IOException e) {
@@ -291,7 +297,7 @@ public class UserExcelHelper {
         uploadHistory.setTotalRecords((users.size() + errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(users.size());
-        return users;
+        return userList;
     }
 
     /**
@@ -444,6 +450,30 @@ public class UserExcelHelper {
             log.error("Error writing error file: {}", e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+    }
+    private User extractUser(Row row) {
+        User user = new User();
+        user.setFirstName(getCellValue(row.getCell(1)));
+        user.setLastName(getCellValue(row.getCell(2)));
+        user.setMobileNumber(getCellValue(row.getCell(3)));
+        user.setEmail(getCellValue(row.getCell(4)));
+        user.setAddress(getCellValue(row.getCell(5)));
+        user.setCity(getCellValue(row.getCell(6)));
+        user.setState(getCellValue(row.getCell(7)));
+        user.setCountry(getCellValue(row.getCell(8)));
+        user.setPinCode(getCellValue(row.getCell(9)));
+        String role = getCellValue(row.getCell(10));
+        if ("Basic".equals(role)) {
+            user.setRole(Roles.USER);
+        }else{
+            user.setRole(Roles.ADMIN);
+        }
+
+
+        user.setPassword(getCellValue(row.getCell(11)));
+
+
+        return user;
     }
 
 }
