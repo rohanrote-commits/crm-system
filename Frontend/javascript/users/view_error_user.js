@@ -267,8 +267,6 @@ $("#lead-table").on("click", ".edit-lead", function () {
 
     // Set the current role of the record
     $("#userRole").val(rowData.role);
-        console.log(rowData)
-      rowNumber = rowData.rowNumber;
 
     oldEmail = rowData.email;
     $("#userModal").modal("show");
@@ -374,7 +372,7 @@ $("#userForm").validate({
             role: $("#userRole").val()
         };
 
-        const url = `http://localhost:8080/crm/error/user/${(rowNumber)}/${uploadHistoryId}`;
+        const url = `http://localhost:8080/crm/error/user/${(oldEmail)}/${uploadHistoryId}`;
 
         $.ajax({
             url: url,

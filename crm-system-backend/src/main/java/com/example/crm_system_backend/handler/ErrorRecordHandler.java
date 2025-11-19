@@ -65,6 +65,27 @@ public class ErrorRecordHandler {
                 }
         );
     }
+
+
+    //changes are here
+    public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
+        log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
+        UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
+        if (history.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<InvalidLeadError> errorList =
+                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
+
+            return errorList;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate Excel from JSON", e);
+        }
+    }
     public List<InvalidUserError> findUserErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
@@ -85,27 +106,6 @@ public class ErrorRecordHandler {
     }
 
 
-    //changes are here
-    public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
-        log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
-        UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
-        if (history.getErrorRecord() == null) {
-            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
-        }
-
-        try {
-            List<InvalidLeadError> errorList =
-                    objectMapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
-
-            return errorList;
-
-        } catch (Exception e) {
-            log.error(e.toString());
-            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
-            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
-        }
-    }
-
     @Transactional
     public LeadDto updateErrorRecord(int rowNumber, String uploadHistoryId, LeadDto leadDto) {
         log.info("Enter: ErrorRecordHandler.updateErrorRecord");
@@ -114,7 +114,6 @@ public class ErrorRecordHandler {
         if (uploadHistory.getErrorRecord() == null) {
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
-
         try {
             // 1 Read JSON → List<InvalidLeadError>
             List<InvalidLeadError> errorList =
@@ -139,8 +138,8 @@ public class ErrorRecordHandler {
            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
            //if no error record then status is success
            if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
-               uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-               uploadHistoryService.save(uploadHistory);
+               savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+               uploadHistoryService.save(savedUploadHistory1);
            }
 
             // 5 Save corrected lead as valid lead
@@ -246,8 +245,8 @@ public class ErrorRecordHandler {
             UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
             //if no error record then status is success
             if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
-                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-                uploadHistoryService.save(uploadHistory);
+                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(savedUploadHistory1);
             }
         } catch (Exception e) {
             log.error("Exception in updateErrorRecord", e);
@@ -315,8 +314,6 @@ public class ErrorRecordHandler {
             return false;
         }
     }
-
-
 
 
 }

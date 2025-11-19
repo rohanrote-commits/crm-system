@@ -16,7 +16,7 @@ public class AsyncConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(1);
-        executor.setQueueCapacity(100);
+        executor.setQueueCapacity(10);
         executor.setThreadNamePrefix("BulkUpload-");
         executor.initialize();
         return executor;

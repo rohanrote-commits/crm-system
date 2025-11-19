@@ -62,6 +62,7 @@ public class ErrorRecordController {
         UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(rowNumber,uploadHistoryId,errorRecord);
         return new  ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @DeleteMapping("/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.deleteErrorRecordByEmail");

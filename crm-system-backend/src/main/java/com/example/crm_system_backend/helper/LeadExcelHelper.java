@@ -7,6 +7,7 @@ import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.service.serviceImpl.ProductService;
@@ -92,7 +93,7 @@ public class LeadExcelHelper {
                     uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
-                writeErrorFile(errorRows,uploadHistory);
+               // writeErrorFile(errorRows,uploadHistory);
                 List<Lead> errorList = errorRows.stream().map(this::extractLead
                         ).toList();
                 leadList.setInvalidLeadList(errorList);
@@ -319,67 +320,169 @@ public class LeadExcelHelper {
         }
     }
 
-    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
-        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+//    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
+//        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+//
+//        try (
+//                FileInputStream fis = new FileInputStream(templateFile);
+//                Workbook errorWorkbook = new XSSFWorkbook(fis)
+//        ) {
+//            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+//
+//            int startRow = 2; // after header
+//            for (Row sourceRow : errorRows) {
+//                Row targetRow = templateSheet.createRow(startRow++);
+//
+//                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+//                    Cell sourceCell = sourceRow.getCell(i);
+//                    if (sourceCell == null) continue;
+//
+//                    Cell targetCell = targetRow.createCell(i);
+//
+//                    // Copy cell value
+//                    switch (sourceCell.getCellType()) {
+//                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
+//                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
+//                        default -> targetCell.setCellValue(getCellValue(sourceCell));
+//                    }
+//
+//                    // If source has error style, apply it
+//                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
+//                        CellStyle style = errorWorkbook.createCellStyle();
+//                        style.cloneStyleFrom(sourceCell.getCellStyle());
+//                        targetCell.setCellStyle(style);
+//
+//                        // Copy comments if any
+//                        if (sourceCell.getCellComment() != null) {
+//                            CreationHelper factory = errorWorkbook.getCreationHelper();
+//                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
+//                            ClientAnchor anchor = factory.createClientAnchor();
+//                            anchor.setCol1(i);
+//                            anchor.setRow1(targetRow.getRowNum());
+//
+//                            Comment comment = drawing.createCellComment(anchor);
+//                            comment.setString(factory.createRichTextString(
+//                                    sourceCell.getCellComment().getString().getString()));
+//                            targetCell.setCellComment(comment);
+//                        }
+//                    }
+//                }
+//            }
+//            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+//            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
+//            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
+//                uploadHistory.setErrorFileName(errorFilePath);
+//                errorWorkbook.write(out);
+//            }
+//
+//            log.info("Error file generated with {} invalid rows", errorRows.size());
+//
+//        } catch (IOException e) {
+//            log.error("Error writing error file: {}", e.getMessage());
+//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+//        }
+//    }
 
+    public File generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
+        log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
+        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
         try (
                 FileInputStream fis = new FileInputStream(templateFile);
-                Workbook errorWorkbook = new XSSFWorkbook(fis)
+                Workbook workbook = new XSSFWorkbook(fis)
         ) {
-            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+            Sheet sheet = workbook.getSheetAt(1);
 
-            int startRow = 2; // after header
-            for (Row sourceRow : errorRows) {
-                Row targetRow = templateSheet.createRow(startRow++);
+            // Error style (red background)
+            CellStyle errorStyle = workbook.createCellStyle();
+            errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+            errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
-                    Cell sourceCell = sourceRow.getCell(i);
-                    if (sourceCell == null) continue;
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
 
-                    Cell targetCell = targetRow.createCell(i);
+            int rowIndex = 2;
 
-                    // Copy cell value
-                    switch (sourceCell.getCellType()) {
-                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
-                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
-                        default -> targetCell.setCellValue(getCellValue(sourceCell));
-                    }
+            for (InvalidLeadError invalid : invalidLeads) {
 
-                    // If source has error style, apply it
-                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
-                        CellStyle style = errorWorkbook.createCellStyle();
-                        style.cloneStyleFrom(sourceCell.getCellStyle());
-                        targetCell.setCellStyle(style);
+                Lead lead = invalid.getLead();
+                Map<String, String> errors = invalid.getErrors();
 
-                        // Copy comments if any
-                        if (sourceCell.getCellComment() != null) {
-                            CreationHelper factory = errorWorkbook.getCreationHelper();
-                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
-                            ClientAnchor anchor = factory.createClientAnchor();
-                            anchor.setCol1(i);
-                            anchor.setRow1(targetRow.getRowNum());
+                Set<Product> products = lead.getInterestedProducts();
 
-                            Comment comment = drawing.createCellComment(anchor);
-                            comment.setString(factory.createRichTextString(
-                                    sourceCell.getCellComment().getString().getString()));
-                            targetCell.setCellComment(comment);
-                        }
-                    }
+                // If no products – write one row with empty product column
+                if (products == null || products.isEmpty()) {
+                    Row row = sheet.createRow(rowIndex);
+                    writeLeadRow(row, lead, null);   // null product
+                    writeComments(sheet, drawing, rowIndex, errors,errorStyle);
+                    rowIndex++;
+                    continue;
+                }
+
+                // Otherwise write MULTIPLE ROWS (one per product)
+                for (Product p : products) {
+                    Row row = sheet.createRow(rowIndex);
+                    // Write all lead fields + single product
+                    writeLeadRow(row, lead, p.getModuleName());
+
+                    // Add comments once per row
+                    writeComments(sheet, drawing, rowIndex, errors,errorStyle );
+
+                    rowIndex++;
                 }
             }
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
-            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
-                uploadHistory.setErrorFileName(errorFilePath);
-                errorWorkbook.write(out);
-            }
-
-            log.info("Error file generated with {} invalid rows", errorRows.size());
-
-        } catch (IOException e) {
-            log.error("Error writing error file: {}", e.getMessage());
+            // Save
+            File file = new File("invalid_leads.xlsx");
+            FileOutputStream out = new FileOutputStream(file);
+            workbook.write(out);
+            out.close();
+            workbook.close();
+            log.info("Exit : LeadExcelHelper.generateErrorExcelFromJson");
+            return file;
+        }
+        catch (Exception exception){
+            log.error("Error writing error file: {}", exception.getMessage());
+            log.error("Exit : LeadExcelHelper.generateErrorExcelFromJson --->exception ");
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+    }
+
+    private void writeLeadRow(Row row, Lead lead, String singleProduct) {
+
+        row.createCell(1).setCellValue(lead.getFirstName());
+        row.createCell(2).setCellValue(lead.getLastName());
+        row.createCell(3).setCellValue(lead.getMobileNumber());
+        row.createCell(4).setCellValue(lead.getEmail());
+        row.createCell(5).setCellValue(lead.getGstin());
+
+        // Write only ONE product per row
+        row.createCell(6).setCellValue(singleProduct != null ? singleProduct : "");
+
+        row.createCell(7).setCellValue(lead.getBusinessAddress());
+        row.createCell(8).setCellValue(lead.getDescription());
+    }
+    private void writeComments(Sheet sheet, Drawing<?> drawing, int rowIndex, Map<String, String> errors ,CellStyle style) {
+        addComment(sheet, drawing, rowIndex, 1, errors.get("firstName"),style);
+        addComment(sheet, drawing, rowIndex, 2, errors.get("lastName"),style);
+        addComment(sheet, drawing, rowIndex, 3, errors.get("mobileNumber"),style);
+        addComment(sheet, drawing, rowIndex, 4, errors.get("email"),style);
+        addComment(sheet, drawing, rowIndex, 5, errors.get("gstin"),style);
+        addComment(sheet, drawing, rowIndex, 6, errors.get("interestedModules"),style);
+        addComment(sheet, drawing, rowIndex, 7, errors.get("businessAddress"),style);
+        addComment(sheet, drawing, rowIndex, 8, errors.get("description"),style);
+    }
+
+    private void addComment(Sheet sheet, Drawing<?> drawing, int row, int col, String text,CellStyle style) {
+        if (text == null) return;
+        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(col);
+        anchor.setCol2(col + 3);
+        anchor.setRow1(row);
+        anchor.setRow2(row + 2);
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(text));
+        comment.setAuthor("Validation");
+        sheet.getRow(row).getCell(col).setCellComment(comment);
+        sheet.getRow(row).getCell(col).setCellStyle(style);
     }
 
 
