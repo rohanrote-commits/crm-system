@@ -15,6 +15,7 @@ public class UploadHistory {
    private String id;
    private String fileName;
    private LocalDateTime uploadedAt;
+   private LocalDateTime updatedAt;
    private String uploadedBy;
    private int totalRecords;
    @Enumerated(EnumType.STRING)
