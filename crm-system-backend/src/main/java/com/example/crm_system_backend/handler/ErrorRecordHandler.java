@@ -2,6 +2,7 @@ package com.example.crm_system_backend.handler;
 
 
 import com.example.crm_system_backend.beans.InvalidLeadError;
+import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
@@ -15,15 +16,18 @@ import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -61,7 +65,27 @@ public class ErrorRecordHandler {
                 }
         );
     }
+    public List<InvalidUserError> findUserErrorRecordByUploadHistoryId(String uploadHistoryId){
+        log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
+        UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
+        if (history.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
+        }
 
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<InvalidUserError> errorList =
+                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidUserError>>() {});
+
+            return errorList;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate Excel from JSON", e);
+        }
+    }
+
+
+    //changes are here
     public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);

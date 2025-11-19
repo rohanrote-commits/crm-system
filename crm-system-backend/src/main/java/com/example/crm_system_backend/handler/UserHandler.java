@@ -122,7 +122,6 @@ public class UserHandler implements IHandler<UserDTO> {
         List<User> users = new ArrayList<>();
         User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {
-
             log.info("Request for getting users is in user Handler for master admin");
             users = userService.getAllUserByMasterAdmin(id);
         } else {

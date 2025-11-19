@@ -28,15 +28,33 @@ jQuery(function () {
 
  let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url: `http://localhost:8080/crm/error/records/${id}`,
+        url: `http://localhost:8080/crm/error/records/user/${id}`,
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,
         },
+        pageLength: 5,
+
         dataSrc: function (response) {
-            docId = response.id;
-            uploadHistoryId = response.uploadHistoryId;
-            return response.errorUserList || [];
+            console.log("Invalid User Response:", response);
+
+            return response.map(item => ({
+                rowNumber: item.rowNumber,
+                errors: item.errors,
+
+                firstName: item.user.firstName,
+                lastName: item.user.lastName,
+                email: item.user.email,
+                mobileNumber: item.user.mobileNumber,
+                address: item.user.address,
+                city: item.user.city,
+                state: item.user.state,
+                country : item.user.country,
+                pinCode :item.user.pinCode,
+                role : item.user.role,
+                registeredby : item.user.registeredby,
+                registeredOn : item.user.registeredOn
+            }));
         },
         error: function (xhr) {
             if (xhr.status === 401) {
@@ -54,49 +72,116 @@ jQuery(function () {
     },
 
     columns: [
-        {
-            data: null,
-            title: "Sr.No.",
-            orderable: false,
-            render: function (data, type, row, meta) {
-                return meta.row + meta.settings._iDisplayStart + 1;
-            }
-        },
-        { data: "firstName", title: "First Name" },
-        { data: "lastName", title: "Last Name" },
-        { data: "email", title: "Email" },
-        { data: "mobileNumber", title: "Mobile" },
-        { data: "address", title: "Address" },
-        { data: "city", title: "City" },
-        { data: "state", title: "State" },
-        { data: "country", title: "Country" },
-        { data: "pinCode", title: "Pin Code" },
-        { data: "role", title: "Role" },
-        { data: "registeredBy", title: "Registered By" },
-        {
-            data: "registeredOn",
-            title: "Registered On",
-            render: function (data) {
-                return data ? new Date(data).toLocaleString("en-GB") : "-";
-            }
-        },
-        {
-            data: null,
-            title: "Action",
-            orderable: false,
-            render: function (row) {
-                return `
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>`;
-            }
+    {
+        data: null,
+        title: "Sr.No.",
+        orderable: false,
+        render: function (data, type, row, meta) {
+            return meta.row + meta.settings._iDisplayStart + 1;
         }
-    ],
+    },
+    {
+        data: "firstName",
+        title: "First Name",
+        render: function (data, type, row) {
+            return highlightError(data, row, "firstName");
+        }
+    },
+    {
+        data: "lastName",
+        title: "Last Name",
+        render: function (data, type, row) {
+            return highlightError(data, row, "lastName");
+        }
+    },
+    {
+        data: "email",
+        title: "Email",
+        render: function (data, type, row) {
+            return highlightError(data, row, "email");
+        }
+    },
+    {
+        data: "mobileNumber",
+        title: "Mobile",
+        render: function (data, type, row) {
+            return highlightError(data, row, "mobileNumber");
+        }
+    },
+    {
+        data: "address",
+        title: "Address",
+        render: function (data, type, row) {
+            return highlightError(data, row, "address");
+        }
+    },
+    {
+        data: "city",
+        title: "City",
+        render: function (data, type, row) {
+            return highlightError(data, row, "city");
+        }
+    },
+    {
+        data: "state",
+        title: "State",
+        render: function (data, type, row) {
+            return highlightError(data, row, "state");
+        }
+    },
+    {
+        data: "country",
+        title: "Country",
+        render: function (data, type, row) {
+            return highlightError(data, row, "country");
+        }
+    },
+    {
+        data: "pinCode",
+        title: "Pin Code",
+        render: function (data, type, row) {
+            return highlightError(data, row, "pinCode");
+        }
+    },
+    {
+        data: "role",
+        title: "Role",
+        render: function (data, type, row) {
+            return highlightError(data, row, "role");
+        }
+    },
+    {
+        data: "registeredBy",
+        title: "Registered By",
+        render: function (data, type, row) {
+            return highlightError(data, row, "registeredBy");
+        }
+    },
+    {
+        data: "registeredOn",
+        title: "Registered On",
+        render: function (data) {
+            return data ? new Date(data).toLocaleString("en-GB") : "-";
+        }
+    },
+    {
+        data: null,
+        title: "Action",
+        orderable: false,
+        render: function (row) {
+            return `
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
+        }
+    }
+]
+,
 
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
@@ -490,5 +575,11 @@ function showDeleteConfirm() {
 
 
 });
+function highlightError(data, row, field) {
+    return row.errors && row.errors[field]
+        ? `<span class="text-danger fw-bold" title="${row.errors[field]}">${data}</span>`
+        : data;
+}
+
 
 

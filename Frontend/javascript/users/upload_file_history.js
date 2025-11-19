@@ -34,6 +34,7 @@ jQuery(function() {
       success: function (fileList) {
         $("#upload-table").DataTable({
           data: fileList,
+          pageLength: 5,
           columns: [
             {data:"id",
               visible:false,

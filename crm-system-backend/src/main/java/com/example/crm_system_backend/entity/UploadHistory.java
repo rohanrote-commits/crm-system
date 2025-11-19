@@ -27,4 +27,5 @@ public class UploadHistory {
    private FileTemplateType fileTemplateType;
     @Column(columnDefinition = "JSON")
    private String errorRecord;
+
 }

@@ -1,13 +1,18 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
+import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -21,7 +26,9 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -134,6 +141,7 @@ public class UserExcelHelper {
         List<User> users = new ArrayList<>(); //valid users
         List<Row> errorRows = new ArrayList<>();//error rows
         UserList userList = new UserList();
+        List<InvalidUserError> jsonErrorList = new ArrayList<>();
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(is)) {
@@ -145,6 +153,7 @@ public class UserExcelHelper {
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             for (Row row : sheet) {
+                Map<String, String> errorMap = new HashMap<>();
                 boolean hasError = false;
 
                 if (row.getRowNum() <= 1) continue;
@@ -172,41 +181,47 @@ public class UserExcelHelper {
 
                 if (isEmpty(firstName) || !firstName.matches(NAME_REGEX)) {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
+                    errorMap.put("firstName", "Invalid First Name");
                     hasError = true;
-                } else {
-                    user.setFirstName(firstName);
                 }
+                    user.setFirstName(firstName);
 
                 if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
                     markError(row.getCell(2), "Invalid Last Name", errorStyle);
+                    errorMap.put("lastName", "Invalid Last Name");
                     hasError = true;
-                } else {
-                    user.setLastName(lastName);
                 }
+                    user.setLastName(lastName);
+
 
                 if (isEmpty(mobileNumber) || !mobileNumber.matches(MOBILE_REGEX)) {
                     markError(row.getCell(3), "Invalid mobile number", errorStyle);
+                    errorMap.put("mobileNumber", "Invalid mobile number");
                     hasError = true;
                 } else {
                     if(userRepo.existsByMobileNumber( mobileNumber)){
                         markError(row.getCell(3), "Mobile number already exists", errorStyle);
+                        errorMap.put("mobileNumber", "Mobile number already exists");
                         hasError = true;
-                    }else {
-                        user.setMobileNumber(mobileNumber);
+
                     }
+
                 }
+                user.setMobileNumber(mobileNumber);
 
                 if (isEmpty(email) || !email.matches(EMAIL_REGEX)) {
                     markError(row.getCell(4), "Invalid email", errorStyle);
+                    errorMap.put("email", "Invalid email");
                     hasError = true;
                 } else {
                     if(userRepo.existsByEmail( email)){
                         markError(row.getCell(4), "Email already exists", errorStyle);
+                        errorMap.put("email", "Email already exists");
                         hasError = true;
-                    }else {
-                        user.setEmail(email);
+
                     }
                 }
+                user.setEmail(email);
 
                 boolean isAddressPresent = !isEmpty(address);
                 boolean isAnyLocationFieldPresent =
@@ -216,38 +231,41 @@ public class UserExcelHelper {
 
                     if (!address.matches(ADDRESS_REGEX)) {
                         markError(row.getCell(5), "Invalid Address", errorStyle);
+                        errorMap.put("address", "Invalid Address");
                         hasError = true;
-                    } else {
-                        user.setAddress(address);
                     }
+                        user.setAddress(address);
+
 
                     if (isEmpty(city) || !city.matches(NAME_REGEX)) {
                         markError(row.getCell(6), "City required", errorStyle);
+                        errorMap.put("city", "City required");
                         hasError = true;
-                    } else {
+                    }
                         user.setCity(city);
-                    }
 
-                    if (isEmpty(state) || !state.matches(NAME_REGEX)) {
+
+                    if (isEmpty(state)) {
                         markError(row.getCell(7), "State required", errorStyle);
+                        errorMap.put("state", "State required");
                         hasError = true;
-                    } else {
-                        user.setState(state);
                     }
+                        user.setState(state);
 
                     if (isEmpty(country) || !country.matches(NAME_REGEX)) {
                         markError(row.getCell(8), "Country required", errorStyle);
+                        errorMap.put("country", "Country required");
                         hasError = true;
-                    } else {
-                        user.setCountry(country);
                     }
+                        user.setCountry(country);
 
                     if (isEmpty(pinCode) || !pinCode.matches(PIN_CODE_REGEX)) {
                         markError(row.getCell(9), "Invalid Pincode", errorStyle);
+                        errorMap.put("pinCode", "Invalid Pincode");
                         hasError = true;
-                    } else {
-                        user.setPinCode(pinCode);
                     }
+                        user.setPinCode(pinCode);
+
 
                 } else if (isAnyLocationFieldPresent) {
 
@@ -262,6 +280,7 @@ public class UserExcelHelper {
 
                 if (isEmpty(role) || ("ADMIN".equals(userRole) && !"Basic".equals(role))) {
                     markError(row.getCell(10), "Invalid Role", errorStyle);
+                    errorMap.put("role", "Invalid Role");
                     hasError = true;
                 } else {
                     if ("Basic".equals(role)) {
@@ -276,24 +295,36 @@ public class UserExcelHelper {
                         || (!password.equals(confirmPassword))) {
 
                     markError(row.getCell(11), "Invalid Password", errorStyle);
+                    errorMap.put("password", "Invalid Password");
                     markError(row.getCell(12), "Confirm Password does not match", errorStyle);
+                    errorMap.put("confirmPassword", "Confirm Password does not match");
                     hasError = true;
-                } else {
-                    user.setPassword(password);
                 }
+                    user.setPassword(password);
+
 
 
                 if (!hasError) {
                     users.add(user);
                 } else {
+                    // Add to error rows list (for Excel file)
                     errorRows.add(row);
+                    // Build JSON error entry
+                    InvalidUserError err = new InvalidUserError();
+                    err.setRowNumber(row.getRowNum());
+                    err.setUser(user);
+                    err.setErrors(errorMap);
+                    jsonErrorList.add(err);
+
                 }
+
             }
             if (!errorRows.isEmpty()) {
                 if (!users.isEmpty()) {
                     uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
+
                 writeErrorFile(errorRows, uploadHistory);
                 List<User> errorUserList = errorRows.stream().map(this::extractUser).toList();
                 userList.setInvalidUserList(errorUserList);
@@ -307,6 +338,15 @@ public class UserExcelHelper {
             log.error(e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonData = null;
+        try {
+            jsonData = mapper.writeValueAsString(jsonErrorList);
+        } catch (JsonProcessingException e) {
+            log.error("Exception: LeadExcelHelper.processExcelData {}",e);
+            throw new RuntimeException(e);
+        }
+        uploadHistory.setErrorRecord(jsonData);
         uploadHistory.setTotalRecords((users.size() + errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(users.size());
