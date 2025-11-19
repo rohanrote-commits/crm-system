@@ -418,7 +418,7 @@ jQuery(function () {
           e.preventDefault();
           const fileName = sessionStorage.getItem("file");
           $.ajax({
-            url: `http://localhost:8080/crm/history/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/lead/error/${uploadHistoryId}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,

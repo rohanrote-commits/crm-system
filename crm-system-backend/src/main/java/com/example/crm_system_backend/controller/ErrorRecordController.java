@@ -38,11 +38,13 @@ public class ErrorRecordController {
        log.info("Exit: ErrorRecordController.updateErrorRecord");
        return new  ResponseEntity<>(leadDto, HttpStatus.OK);
     }
+
     @PutMapping("/user/{oldEmail}/{uploadHistoryId}")
     public ResponseEntity<UserDTO> updateErrorRecord(@PathVariable String oldEmail, @PathVariable String uploadHistoryId , @RequestBody UserDTO errorRecord){
         UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(oldEmail,uploadHistoryId,errorRecord);
         return new  ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @DeleteMapping("/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.deleteErrorRecordByEmail");

@@ -67,7 +67,7 @@ $(document).ready(function (params) {
         $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
     });
 
-    if (rowData.id) {
+    if (isEdit) {
         $("#email").prop("readOnly", true);
         $("#gstin").prop("readOnly", true);
     }
