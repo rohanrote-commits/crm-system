@@ -27,7 +27,7 @@ jQuery(function() {
 
       $("#upload-table").DataTable({
       ajax: {
-          url: `http://localhost:8080/crm/history/${payload?.email}`,
+          url: `http://localhost:8080/crm/history/lead/${payload?.email}`,
           type: "GET",
           headers: {
               Authorization: "Bearer " + token,

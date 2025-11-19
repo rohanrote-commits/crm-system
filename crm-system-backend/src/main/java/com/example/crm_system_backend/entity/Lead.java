@@ -35,16 +35,15 @@ public class Lead {
     private User user;
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus;
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "lead_interested_modules",
-            joinColumns = @JoinColumn(name = "lead_id")
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @JoinTable(
+            name = "lead_products",
+            joinColumns = @JoinColumn(name = "lead_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
     )
-    @Column(name = "module_name")
-    private Set<String> interestedModules = new HashSet<>();
-
+    private Set<Product> interestedProducts = new HashSet<>();
     private Date createdAt;
-
     private Date updatedAt;
 }
 

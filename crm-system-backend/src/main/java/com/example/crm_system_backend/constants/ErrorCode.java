@@ -37,7 +37,10 @@ public enum ErrorCode {
     DATA_INSERTED_PARTIALLY("DIP", "Data Inserted Partially", HttpStatus.INTERNAL_SERVER_ERROR),
     DATA_NOT_INSERTED("DNI", "Data Not Inserted", HttpStatus.INTERNAL_SERVER_ERROR),
     ERROR_IN_FILE_PROCESSING("EFP", "Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE);
+    INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE),
+
+
+    PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),;
 
     private final String code;
     private final String message;

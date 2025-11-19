@@ -1,5 +1,7 @@
 package com.example.crm_system_backend.handler;
 
+
+import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
@@ -8,25 +10,26 @@ import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.BeanUtils;
-
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class ErrorRecordHandler {
 
 
@@ -37,16 +40,6 @@ public class ErrorRecordHandler {
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final IUserRepo userRepo;
-
-
-    public ErrorRecordHandler(ErrorRecordService errorRecordService, UploadHistoryService uploadHistoryService, LeadService leadService, ModelMapper modelMapper, UserService userService,IUserRepo userRepo){
-        this.errorRecordService = errorRecordService;
-        this.uploadHistoryService = uploadHistoryService;
-        this.leadService = leadService;
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.userRepo = userRepo;
-    }
 
 
 
@@ -65,18 +58,27 @@ public class ErrorRecordHandler {
         );
     }
 
-    public ErrorRecord findErrorRecordByUploadHistoryId(String uploadHistoryId){
+    public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
-        return errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId).orElseThrow(
-                ()-> {
-                    log.error("Exit : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
-                   return new ExcelException(ErrorCode.NO_ERROR_RECORDS);
-                }
-        );
+        UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
+        if (history.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<InvalidLeadError> errorList =
+                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
+
+            return errorList;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate Excel from JSON", e);
+        }
     }
 
     @Transactional
-    public LeadDto updateErrorRecord(String oldEmail,String uploadHistoryId, LeadDto leadDto){
+    public LeadDto updateErrorRecord(String oldEmail, String uploadHistoryId, LeadDto leadDto){
     log.info("Enter: ErrorRecordHandler.updateErrorRecord");
         //delete error record from mongo error records
        ErrorRecord errorRecord =  errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId).orElseThrow(

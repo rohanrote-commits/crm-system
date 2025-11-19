@@ -1,15 +1,22 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.LeadList;
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.service.serviceImpl.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -25,10 +32,13 @@ import java.util.*;
 
 
 @Component
+@AllArgsConstructor
 public class LeadExcelHelper {
 
 
     private static final Logger log = LoggerFactory.getLogger(LeadExcelHelper.class);
+    private final ProductService productService;
+    private final ModelMapper modelMapper;
 
     @Async("bulkUploadExecutor")
     public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
@@ -37,6 +47,8 @@ public class LeadExcelHelper {
         List<Lead> validLeads = new ArrayList<>();
         List<Row> errorRows = new ArrayList<>();
         LeadList leadList = new LeadList();
+        List<InvalidLeadError> jsonErrorList = new ArrayList<>();
+
 
         if(!this.validateExcelHeader(file)){
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
@@ -59,10 +71,16 @@ public class LeadExcelHelper {
                     continue;
                 }
                 Lead lead = extractLead(row);
-                boolean rowHasError = validateRow(row, lead, errorStyle, leadMap);
-                if (rowHasError) {
-                    // Store row with errors for writing later
+                Map<String, String> errorMap = validateRowWithErrors(row, lead, errorStyle);
+                if (!errorMap.isEmpty()) {
+                    // Add to error rows list (for Excel file)
                     errorRows.add(row);
+                    // Build JSON error entry
+                    InvalidLeadError err = new InvalidLeadError();
+                    err.setRowNumber(row.getRowNum());
+                    err.setLead(lead);
+                    err.setErrors(errorMap);
+                    jsonErrorList.add(err);
                 } else {
                     mergeLead(leadMap, lead);
                 }
@@ -82,7 +100,7 @@ public class LeadExcelHelper {
             }
 
         } catch (IOException e) {
-            log.error("Exit : LeadExcelHelper.processExcelData -->${}",e);
+            log.error("Exit : LeadExcelHelper.processExcelData -->{}",e);
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             log.error(e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
@@ -90,6 +108,16 @@ public class LeadExcelHelper {
         uploadHistory.setTotalRecords((validLeads.size()+ errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(validLeads.size());
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonData = null;
+        try {
+            jsonData = mapper.writeValueAsString(jsonErrorList);
+        } catch (JsonProcessingException e) {
+            log.error("Exception: LeadExcelHelper.processExcelData {}",e);
+            throw new RuntimeException(e);
+        }
+        uploadHistory.setErrorRecord(jsonData);
         leadList.setValidLeadList(validLeads);
         log.info("Exit: LeadExcelHelper.processExcelData");
         return leadList;
@@ -142,8 +170,8 @@ public class LeadExcelHelper {
         lead.setLastName(getCellValue(row.getCell(2)));
         lead.setMobileNumber(getCellValue(row.getCell(3)));
         lead.setEmail(getCellValue(row.getCell(4)));
-        lead.setGstin(getCellValue(row.getCell(5)));
-        lead.getInterestedModules().add(getCellValue(row.getCell(6)));
+        lead.setGstin(getCellValue(row.getCell(5)).toUpperCase());
+        lead.getInterestedProducts().add(productService.getProductByName(getCellValue(row.getCell(6))));
         lead.setBusinessAddress(getCellValue(row.getCell(7)));
         lead.setDescription(getCellValue(row.getCell(8)));
         return lead;
@@ -196,61 +224,70 @@ public class LeadExcelHelper {
         }
     }
 
-    private boolean validateRow(Row row, Lead lead, CellStyle errorStyle, Map<String, Lead> leadMap) {
-        boolean hasError = false;
-        // 1. First Name
+    private Map<String, String> validateRowWithErrors(Row row, Lead lead, CellStyle errorStyle) {
+        Map<String, String> errorMap = new HashMap<>();
+
+        // First Name
         if (isEmpty(lead.getFirstName()) || !lead.getFirstName().matches(RegxConstant.NAME_REGEX)) {
-            markError(row.getCell(1), "Invalid First Name", errorStyle);
-            hasError = true;
+            String msg = "Invalid First Name";
+            markError(row.getCell(1), msg, errorStyle);
+            errorMap.put("firstName", msg);
         }
 
-        // 2. Last Name
+        // Last Name
         if (isEmpty(lead.getLastName()) || !lead.getLastName().matches(RegxConstant.NAME_REGEX)) {
-            markError(row.getCell(2), "Invalid Last Name", errorStyle);
-            hasError = true;
+            String msg = "Invalid Last Name";
+            markError(row.getCell(2), msg, errorStyle);
+            errorMap.put("lastName", msg);
         }
 
-        // 3. Mobile
+        // Mobile
         if (isEmpty(lead.getMobileNumber()) || !lead.getMobileNumber().matches(RegxConstant.MOBILE_REGEX)) {
-            markError(row.getCell(3), "Invalid Mobile Number", errorStyle);
-            hasError = true;
+            String msg = "Invalid Mobile Number";
+            markError(row.getCell(3), msg, errorStyle);
+            errorMap.put("mobileNumber", msg);
         }
 
-        // 4. Email
+        // Email
         if (isEmpty(lead.getEmail()) || !lead.getEmail().matches(RegxConstant.EMAIL_REGEX)) {
-            markError(row.getCell(4), "Invalid Email", errorStyle);
-            hasError = true;
+            String msg = "Invalid Email";
+            markError(row.getCell(4), msg, errorStyle);
+            errorMap.put("email", msg);
         }
 
-        // 5. GSTIN
+        // GSTIN
         if (isEmpty(lead.getGstin()) || !lead.getGstin().matches(RegxConstant.GSTIN_REGEX)) {
-            markError(row.getCell(5), "Invalid GSTIN", errorStyle);
-            hasError = true;
+            String msg = "Invalid GSTIN";
+            markError(row.getCell(5), msg, errorStyle);
+            errorMap.put("gstin", msg);
         }
 
-        // 6. Interested Modules
-        if (lead.getInterestedModules() == null || lead.getInterestedModules().isEmpty()) {
-            markError(row.getCell(6), "No Modules Selected", errorStyle);
-            hasError = true;
+        // Modules
+        if (lead.getInterestedProducts() == null || lead.getInterestedProducts().isEmpty()) {
+            String msg = "No Modules Selected";
+            markError(row.getCell(6), msg, errorStyle);
+            errorMap.put("interestedProducts", msg);
         }
 
-        // 7. Address
-        if (!isEmpty(lead.getBusinessAddress())){
-            if(!lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
-                markError(row.getCell(7), "Invalid Address", errorStyle);
-                hasError = true;
-            }
+        // Address
+        if (!isEmpty(lead.getBusinessAddress()) &&
+                !lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
+            String msg = "Invalid Address";
+            markError(row.getCell(7), msg, errorStyle);
+            errorMap.put("businessAddress", msg);
         }
 
-        // 8. Description
-        if (!isEmpty(lead.getDescription()) ){
-            if(!lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
-                markError(row.getCell(8), "Invalid Description", errorStyle);
-                hasError = true;
-            }
+        // Description
+        if (!isEmpty(lead.getDescription()) &&
+                !lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
+            String msg = "Invalid Description";
+            markError(row.getCell(8), msg, errorStyle);
+            errorMap.put("description", msg);
         }
-        return hasError;
+
+        return errorMap;
     }
+
 
     private void mergeLead(Map<String, Lead> leadMap, Lead lead) {
         String emailKey = lead.getEmail().trim().toLowerCase();
@@ -259,7 +296,7 @@ public class LeadExcelHelper {
             Lead existingLead = leadMap.get(emailKey);
 
             // Merge interested modules (avoid duplicates)
-            existingLead.getInterestedModules().addAll(lead.getInterestedModules());
+            existingLead.getInterestedProducts().addAll(lead.getInterestedProducts());
 
             // Optional: If other fields are blank in the first record, fill them from new one
             if (isEmpty(existingLead.getFirstName()) && !isEmpty(lead.getFirstName()))
