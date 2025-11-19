@@ -158,61 +158,68 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
     @Override
-    public void bulkUpload(MultipartFile file,Long userId) {
+    public void bulkUpload(MultipartFile file, Long userId) {
         log.info("Enter: LeadHandler.bulkUpload");
-        UploadHistory  uploadHistory = new UploadHistory();
+
+        UploadHistory uploadHistory = new UploadHistory();
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
-        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
-        uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
+        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
+
         try {
+            // Validate User
             User user = userService.getUserById(userId).orElseThrow(
-                    ()->  {
-                        log.error("Exit: LeadHandler.bulkUpload-> User not found");
-                        return new UserException(ErrorCode.USER_NOT_FOUND);
-                    }
+                    () -> new UserException(ErrorCode.USER_NOT_FOUND)
             );
             uploadHistory.setUploadedBy(user.getEmail());
-            LeadList leadList = leadExcelHelper.processExcelData(file,uploadHistory);
+
+            // Process Excel
+            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory);
+
             List<Lead> validLeadList = leadList.getValidLeadList();
             List<Lead> invalidLeadList = leadList.getInvalidLeadList();
-            if(!validLeadList.isEmpty()) {
-                validLeadList.forEach(
-                        lead -> {
-                            lead.setCreatedAt(new Date());
-                            lead.setUpdatedAt(new Date());
-                            lead.setLeadStatus(LeadStatus.ADDED);
-                            lead.setUser(user);
-                        }
-                );
+
+            // Save valid data
+            if (!validLeadList.isEmpty()) {
+                validLeadList.forEach(lead -> {
+                    lead.setCreatedAt(new Date());
+                    lead.setUpdatedAt(new Date());
+                    lead.setLeadStatus(LeadStatus.ADDED);
+                    lead.setUser(user);
+                });
+
+                leadService.bulkUpload(validLeadList);
+            }
+
+            // ------ Set Status ------
+            if (!validLeadList.isEmpty() && !invalidLeadList.isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+            }
+            else if (!validLeadList.isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-               List<Lead> savedLead =  leadService.bulkUpload(validLeadList);
-               if(savedLead.isEmpty()) {
-                   uploadHistory.setUploadStatus(UploadStatus.FAILED);
-               }
-               // uploadHistoryService.save(uploadHistory);
             }
-            if(!invalidLeadList.isEmpty()) {
-               // uploadHistory.setUploadStatus(UploadStatus.FAILED);
-               UploadHistory savedUploadHistory = uploadHistoryService.save(uploadHistory);
-                ErrorRecord errorRecord = new ErrorRecord();
-                errorRecord.setUplodedBy(user.getEmail());
-                errorRecord.setUploadHistoryId(savedUploadHistory.getId());
-                errorRecord.setErrorsList(invalidLeadList);
-                errorRecord.setFileName(file.getOriginalFilename());
-                errorRecordHandler.saveErrorRecord(errorRecord);
+            else if (!invalidLeadList.isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
             }
+            else {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED); // empty file or unexpected
+            }
+
+            uploadHistoryService.save(uploadHistory);
         }
-        catch (Exception e){
-            log.error("Exit: LeadHandler.bulkUpload {exception}",e );
+        catch (Exception e) {
+            log.error("Exit: LeadHandler.bulkUpload Exception:", e);
+
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistory.setUploadedAt(LocalDateTime.now());
             uploadHistoryService.save(uploadHistory);
             throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+
         log.info("Exit: LeadHandler.bulkUpload");
     }
+
 
     public List<LeadDto> getLeadsByUserEmail(String email) {
         log.info("Enter: LeadHandler.getLeadsByUserEmail");

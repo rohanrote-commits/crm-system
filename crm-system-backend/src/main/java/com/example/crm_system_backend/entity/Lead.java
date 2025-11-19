@@ -36,7 +36,7 @@ public class Lead {
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinTable(
             name = "lead_products",
             joinColumns = @JoinColumn(name = "lead_id"),

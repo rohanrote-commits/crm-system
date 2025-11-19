@@ -36,20 +36,23 @@ public class UploadedHistoryHandler {
     public List<UploadHistoryDto> findLeadUploadHistoryByEmail(String email)
     {
         log.info("Enter : findLeadUploadHistoryByEmail");
-        try {
-            List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().
-                    filter(uploadHistory -> uploadHistory.getFileTemplateType().name().equalsIgnoreCase(FileTemplateType.LEAD.name())).map(
-                            uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class)
-                    ).toList();
-            log.info("Exit : findLeadUploadHistoryByEmail");
-            return uploadHistoryDtos;
-        } catch (Exception ex) {
-            log.info("Exit : findLeadUploadHistoryByEmail ${e}", ex);
-            throw new LeadException(ErrorCode.FILE_HISTORY_NOT_FOUND);
 
+
+
+        List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().
+                filter(uploadHistory -> {
+                    FileTemplateType fileTemplateType = uploadHistory.getFileTemplateType();
+                    return fileTemplateType != null &&
+                            fileTemplateType.name().equalsIgnoreCase(FileTemplateType.LEAD.name());
+                        }
+                ).map(
+                        uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class)
+                ).toList();
+        log.info("Exit : findLeadUploadHistoryByEmail");
+         return uploadHistoryDtos;
 
         }
-    }
+
 
     public List<UploadHistoryDto> findUserUploadHistoryByEmail(String email) {
         try {

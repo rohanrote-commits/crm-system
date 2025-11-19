@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,4 +27,6 @@ public class LeadDto {
     private String user;
     private LeadStatus leadStatus;
     private Set<String> interestedModules = new HashSet<>();
+    private Date createdAt;
+    private Date updatedAt;
 }
