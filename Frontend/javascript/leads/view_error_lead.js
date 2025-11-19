@@ -34,8 +34,8 @@ jQuery(function () {
    const payload = parseJwt(token);
   const id = sessionStorage.getItem("id");
   let docId;
-  let uploadHistoryId;
-  let oldEmail;
+  let uploadHistoryId = id;
+  let rowNumber;
 
 //   let errorTable = $("#lead-table").DataTable({
 //     ajax: {
@@ -149,7 +149,6 @@ jQuery(function () {
 
         dataSrc: function (response) {
             console.log("Invalid Leads Response:", response);
-
             return response.map(item => ({
                 rowNumber: item.rowNumber,
                 errors: item.errors,
@@ -249,7 +248,7 @@ jQuery(function () {
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="Edit error record">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}" title="Delete error record">
+                        <button class="btn btn-sm btn-danger delete-lead" data-row="${data.rowNumber}" title="Delete error record">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>`;
@@ -262,9 +261,9 @@ jQuery(function () {
 });
 
      
-       $("#lead-table").on("click", ".edit-lead", function () {
+   $("#lead-table").on("click", ".edit-lead", function () {
 
-          
+        
     const table = $("#lead-table").DataTable();
     const rowData = table.row($(this).closest("tr")).data();
 
@@ -299,8 +298,8 @@ jQuery(function () {
     rowData.interestedModules.forEach(mod => {
         $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
     });
-
-     oldEmail = rowData.email;
+    console.log(rowData)
+     rowNumber = rowData.rowNumber;
     $("#updateConfirmModal").modal("hide");
     $("#leadModal").modal("show");
 });
@@ -368,7 +367,7 @@ jQuery(function () {
     errorElement: "span",
     errorClass: "text-danger",
     submitHandler: function () {
-      console.log(oldEmail ,uploadHistoryId)
+      console.log(rowNumber ,uploadHistoryId)
       const leadId = $("#leadId").val();
       const leadData = {
         firstName: $("#firstName").val(),
@@ -386,11 +385,10 @@ jQuery(function () {
           })
           .get(),
           
-          
       };
- 
+      console.log(rowNumber ,uploadHistoryId)
       //Edit Lead
-      const url =  `http://localhost:8080/crm/error/${oldEmail}/${uploadHistoryId}`;
+      const url =  `http://localhost:8080/crm/error/${rowNumber}/${uploadHistoryId}`;
       $.ajax({
         url,
         type: "PUT",
@@ -398,6 +396,8 @@ jQuery(function () {
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
+          console.log(leadData);
+          
           showAlert(
             "Lead updated successfully!","success"
           );
@@ -411,7 +411,6 @@ jQuery(function () {
       });
     },
   });
-
 
 
 
@@ -456,32 +455,36 @@ jQuery(function () {
           });
         });
 
-        //delete error lead
-      let deleteEmail = null;
+       //delete error lead
+      let selectedRowNumber = null;
       $(document).on("click", ".delete-lead", function () {
-          deleteEmail = $(this).data("email");
+           selectedRowNumber = $(this).data("row"); 
           $("#deleteConfirmModal").modal("show");
       });
       // confirm delete
       $("#confirmDeleteBtn").click(function () {
-        uploadHistoryId = sessionStorage.getItem("id");
-          if (!deleteEmail) return;
+         const uploadHistoryId = sessionStorage.getItem("id");
 
-          $.ajax({
-              url: `http://localhost:8080/crm/error/${deleteEmail}/${uploadHistoryId}`,
-              type: "DELETE",
-              data: { email: deleteEmail },
-              headers: { "Authorization": "Bearer " + token },
-              success: function () {
-                  showAlert("Lead deleted successfully.", "success");
-                  $("#lead-table").DataTable().ajax.reload(null, false);
-              },
-              error: function () {
-                  showAlert("Error deleting lead.", "warning");
-              }
-          });
+    if (!selectedRowNumber || !uploadHistoryId) {
+        showAlert("Missing rowNumber or uploadHistoryId", "warning");
+        return;
+    }
 
-          $("#deleteConfirmModal").modal("hide");
+    $.ajax({
+        url: `http://localhost:8080/crm/error/${selectedRowNumber}/${uploadHistoryId}`,
+        type: "DELETE",
+        headers: { "Authorization": "Bearer " + token },
+        success: function () {
+            showAlert("Lead deleted successfully", "success");
+            $("#lead-table").DataTable().ajax.reload(null, false);
+        },
+        error: function (err) {
+            console.log(err);
+            showAlert("Error deleting lead", "warning");
+        }
+    });
+
+    $("#deleteConfirmModal").modal("hide");
       });
 
           // Open Modal on Button Click
@@ -531,8 +534,6 @@ jQuery(function () {
         alert.alert('close');
       }, 5000);
     }
-
-
 
 });
 

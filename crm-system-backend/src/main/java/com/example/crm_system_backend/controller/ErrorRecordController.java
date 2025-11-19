@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/crm/error/")
+@RequestMapping("/crm/error")
 @AllArgsConstructor
 public class ErrorRecordController {
 
@@ -31,10 +31,10 @@ public class ErrorRecordController {
       return new  ResponseEntity<>(errorRecordList, HttpStatus.OK);
     }
 
-    @PutMapping("/{oldEmail}/{uploadHistoryId}")
-    public ResponseEntity<LeadDto> updateErrorRecord(@PathVariable String oldEmail,@PathVariable String uploadHistoryId ,@RequestBody LeadDto errorRecord){
+    @PutMapping("/{rowNumber}/{uploadHistoryId}")
+    public ResponseEntity<LeadDto> updateErrorRecord(@PathVariable int rowNumber,@PathVariable String uploadHistoryId ,@RequestBody LeadDto errorRecord){
         log.info("Enter: ErrorRecordController.updateErrorRecord");
-       LeadDto leadDto = errorRecordHandler.updateErrorRecord(oldEmail,uploadHistoryId,errorRecord);
+       LeadDto leadDto = errorRecordHandler.updateErrorRecord(rowNumber,uploadHistoryId,errorRecord);
        log.info("Exit: ErrorRecordController.updateErrorRecord");
        return new  ResponseEntity<>(leadDto, HttpStatus.OK);
     }
@@ -43,10 +43,10 @@ public class ErrorRecordController {
         UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(oldEmail,uploadHistoryId,errorRecord);
         return new  ResponseEntity<>(userDTO, HttpStatus.OK);
     }
-    @DeleteMapping("{email}/{uploadHistoryEmail}")
-    public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable String email,@PathVariable String uploadHistoryEmail){
+    @DeleteMapping("/{rowNumber}/{uploadHistoryId}")
+    public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.deleteErrorRecordByEmail");
-        errorRecordHandler.deleteErrorRecordByEmail(email,uploadHistoryEmail);
+        errorRecordHandler.deleteErrorRecordByEmail(rowNumber,uploadHistoryId);
         log.info("Exit: ErrorRecordController.deleteErrorRecordByEmail");
         return new  ResponseEntity<>(HttpStatus.OK);
     }

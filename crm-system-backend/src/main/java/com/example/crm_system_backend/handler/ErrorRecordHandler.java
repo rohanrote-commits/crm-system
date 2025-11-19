@@ -3,12 +3,14 @@ package com.example.crm_system_backend.handler;
 
 import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.exception.ErrorRecordException;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -40,6 +43,7 @@ public class ErrorRecordHandler {
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final IUserRepo userRepo;
+    private final ObjectMapper objectMapper;
 
 
 
@@ -66,41 +70,63 @@ public class ErrorRecordHandler {
         }
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
             List<InvalidLeadError> errorList =
-                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
+                    objectMapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
 
             return errorList;
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate Excel from JSON", e);
+            log.error(e.toString());
+            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
         }
     }
 
     @Transactional
-    public LeadDto updateErrorRecord(String oldEmail, String uploadHistoryId, LeadDto leadDto){
-    log.info("Enter: ErrorRecordHandler.updateErrorRecord");
-        //delete error record from mongo error records
-       ErrorRecord errorRecord =  errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId).orElseThrow(
-                ()-> {
-                    log.error("Exit : ErrorRecordHandler.updateErrorRecord");
-                    return new ExcelException(ErrorCode.NO_ERROR_RECORDS);
-                }
-        );
-       errorRecord.getErrorsList().removeIf(lead1 -> oldEmail.equalsIgnoreCase(lead1.getEmail()));
-       ErrorRecord savedRecord = errorRecordService.saveErrorRecord(errorRecord);
+    public LeadDto updateErrorRecord(int rowNumber, String uploadHistoryId, LeadDto leadDto) {
+        log.info("Enter: ErrorRecordHandler.updateErrorRecord");
+        UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
 
-       //if error record list is empty then delete this record from db
-       if(savedRecord.getErrorsList().isEmpty()){
-            errorRecordService.deleteErrorRecordById(savedRecord.getId());
+        if (uploadHistory.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
-       //update the correct lead in leads table with history table
-        UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
-        uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
-        uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
-        Lead savedLead = leadService.save(leadDto);
-        return modelMapper.map(savedLead, LeadDto.class);
+        try {
+            // 1 Read JSON → List<InvalidLeadError>
+            List<InvalidLeadError> errorList =
+                    objectMapper.readValue(
+                            uploadHistory.getErrorRecord(),
+                            new TypeReference<List<InvalidLeadError>>() {}
+                    );
+            // 2 Find the invalid lead by rowNumber
+            InvalidLeadError toFix = errorList.stream()
+                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .findFirst()
+                    .orElseThrow(() -> new ErrorRecordException(ErrorCode.INVALID_LEAD_NOT_FOUND));
+
+            // 3 Remove the resolved error record
+            errorList.remove(toFix);
+            // 4 Save updated JSON back to DB
+            uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+            //update error record number
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setUpdatedAt(LocalDateTime.now());
+           UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+           //if no error record then status is success
+           if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
+               uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+               uploadHistoryService.save(uploadHistory);
+           }
+
+            // 5 Save corrected lead as valid lead
+            Lead savedLead = leadService.save(leadDto);
+            return modelMapper.map(savedLead, LeadDto.class);
+
+        } catch (Exception e) {
+            log.error("Exception in updateErrorRecord", e);
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
+        }
     }
 
     @Transactional
@@ -148,20 +174,46 @@ public class ErrorRecordHandler {
     }
 
 
-    public void deleteErrorRecordByEmail(String oldEmail,String uploadHistoryId) {
+    public void deleteErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
         log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
-        //delete error record from mongo error records
-        ErrorRecord errorRecord =  errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId).orElseThrow(
-                ()-> {
-                    log.error("Exit : ErrorRecordHandler.deleteErrorRecordByEmail -> Error Record not found");
-                   return new ExcelException(ErrorCode.NO_ERROR_RECORDS);
-                }
-        );
-        errorRecord.getErrorsList().removeIf(lead1 -> oldEmail.equalsIgnoreCase(lead1.getEmail()));
-        ErrorRecord savedRecord = errorRecordService.saveErrorRecord(errorRecord);
-        //If error record is empty then delete its ref from db
-        if(savedRecord.getErrorsList().isEmpty()){
-            errorRecordService.deleteErrorRecordById(savedRecord.getId());
+
+        UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
+        if (uploadHistory.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
+        }
+
+        try {
+            // 1 Read JSON → List<InvalidLeadError>
+            List<InvalidLeadError> errorList =
+                    objectMapper.readValue(
+                            uploadHistory.getErrorRecord(),
+                            new TypeReference<List<InvalidLeadError>>() {
+                            }
+                    );
+            // 2 Find the invalid lead by rowNumber
+            InvalidLeadError toFix = errorList.stream()
+                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .findFirst()
+                    .orElseThrow(() ->{
+                        log.error("Exception : ErrorRecordHandler.deleteErrorRecordByEmail -->InvalidLeadNotFound");
+                       return new ErrorRecordException(ErrorCode.INVALID_LEAD_NOT_FOUND);
+                    });
+            errorList.remove(toFix);
+            // 4 Save updated JSON back to DB
+            uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+            //update error record number
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setUpdatedAt(LocalDateTime.now());
+            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            //if no error record then status is success
+            if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(uploadHistory);
+            }
+        } catch (Exception e) {
+            log.error("Exception in updateErrorRecord", e);
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
         }
         log.info("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
     }

@@ -40,7 +40,8 @@ public enum ErrorCode {
     INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE),
 
 
-    PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),;
+    PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),
+    INVALID_LEAD_NOT_FOUND("ILNF", "Invalid Lead Not Found" , HttpStatus.NOT_FOUND ),;
 
     private final String code;
     private final String message;
