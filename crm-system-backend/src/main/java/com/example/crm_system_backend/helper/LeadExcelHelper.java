@@ -1,13 +1,13 @@
 package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.beans.LeadList;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -19,8 +19,6 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-
 
 
 @Component
@@ -36,11 +34,8 @@ public class LeadExcelHelper {
         List<Row> errorRows = new ArrayList<>();
         LeadList leadList = new LeadList();
 
-        if(!this.validateExcelHeader(file)){
+        if (!this.validateExcelHeader(file)) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
-            uploadHistory.setValidRecords(0);
-            uploadHistory.setInvalidRecords(0);
-            log.error("Exit: LeadExcelHelper.processExcelData: Invalid Excel Header");
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
@@ -68,7 +63,7 @@ public class LeadExcelHelper {
             validLeads.addAll(leadMap.values());
             //if the error row list has entries then generate the error file
             if (!errorRows.isEmpty()) {
-                if(!validLeads.isEmpty()){
+                if (!validLeads.isEmpty()) {
                     uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
                 }
                 uploadHistory.setInvalidRecords(errorRows.size());
@@ -147,6 +142,29 @@ public class LeadExcelHelper {
         return lead;
     }
 
+    //    private boolean validateExcelHeader(MultipartFile file)  {
+//        File tempFile = new File("crm-system-backend\\src\\main\\resources\\Lead Template.xlsx");
+//        try (
+//            Workbook workbook = new XSSFWorkbook(file.getInputStream());
+//            Workbook tempWorkbook = new XSSFWorkbook(tempFile.getAbsolutePath())){
+//            Sheet sheet = workbook.getSheetAt(1);
+//            for (Row row : sheet) {
+//                if (row.getRowNum() == 1) {
+//                    for (Cell cell : row) {
+//                        if (!cell.getCellType().toString().equals(headers.get(cell.getColumnIndex()))) {
+//                            return false;
+//                        }
+//                    }
+//                    return true;
+//                }
+//            }
+//            return true;
+//        }
+//        catch (IOException ioException) {
+//            log.error(ioException.getMessage());
+//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+//        }
+//    }
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
 
@@ -231,18 +249,26 @@ public class LeadExcelHelper {
             markError(row.getCell(6), "No Modules Selected", errorStyle);
             hasError = true;
         }
+//        else {
+//            for (String module : lead.getInterestedModules()) {
+//                if (!ALLOWED_MODULES.contains(module.toUpperCase())) {
+//                    markError(row.getCell(6), "Invalid Module: " + module, errorStyle);
+//                    hasError = true;
+//                }
+//            }
+//        }
 
         // 7. Address
-        if (!isEmpty(lead.getBusinessAddress())){
-            if(!lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
+        if (!isEmpty(lead.getBusinessAddress())) {
+            if (!lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
                 markError(row.getCell(7), "Invalid Address", errorStyle);
                 hasError = true;
             }
         }
 
         // 8. Description
-        if (!isEmpty(lead.getDescription()) ){
-            if(!lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
+        if (!isEmpty(lead.getDescription())) {
+            if (!lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
                 markError(row.getCell(8), "Invalid Description", errorStyle);
                 hasError = true;
             }
@@ -280,7 +306,7 @@ public class LeadExcelHelper {
         }
     }
 
-    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
+    private void writeErrorFile(List<Row> errorRows, UploadHistory uploadHistory) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
 
         try (

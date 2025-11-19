@@ -30,14 +30,13 @@ import java.util.List;
 
 
 @Component
-@AllArgsConstructor
 public class LeadHandler implements IHandler<LeadDto> {
 
     private static final Logger log = LoggerFactory.getLogger(LeadHandler.class);
     private final LeadService leadService;
     private final UserService userService;
 
-    private final LeadExcelHelper  leadExcelHelper;
+    private final LeadExcelHelper leadExcelHelper;
 
     private final ModelMapper modelMapper;
 
@@ -45,7 +44,14 @@ public class LeadHandler implements IHandler<LeadDto> {
 
     private final ErrorRecordHandler errorRecordHandler;
 
-
+    public LeadHandler(LeadService leadService, UserService userService, LeadExcelHelper leadExcelHelper, ModelMapper modelMapper, UploadHistoryService uploadHistoryService, ErrorRecordHandler errorRecordHandler) {
+        this.leadService = leadService;
+        this.userService = userService;
+        this.leadExcelHelper = leadExcelHelper;
+        this.modelMapper = modelMapper;
+        this.uploadHistoryService = uploadHistoryService;
+        this.errorRecordHandler = errorRecordHandler;
+    }
 
 
     @Override
@@ -59,7 +65,6 @@ public class LeadHandler implements IHandler<LeadDto> {
         Lead savedLead =  leadService.save(leadDto);
         return modelMapper.map(savedLead,LeadDto.class);
     }
-
 
     public List<LeadDto> getLeadsByUser(Long userId) {
         log.info("Enter: LeadHandler.getLeadsByUser");
@@ -97,6 +102,7 @@ public class LeadHandler implements IHandler<LeadDto> {
         log.info("Enter: LeadHandler.getAll");
       List<LeadDto> leadList =  leadService.getAllLeads().stream().map(lead -> {
             LeadDto leadDto = new LeadDto();
+            // BeanUtils.copyProperties(lead, leadDto);
             modelMapper.map(lead, leadDto);
             return leadDto;
         }).toList();

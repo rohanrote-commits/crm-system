@@ -10,7 +10,6 @@ public class ErrorResponse {
     public HttpStatus status;
 
 
-
     public ErrorResponse(String message, HttpStatus status) {
         this.message = message;
         this.status = status;

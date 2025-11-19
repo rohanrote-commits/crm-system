@@ -48,12 +48,12 @@ public class LeadService implements ILeadService {
 
     @Override
     public List<Lead> getAllLeads() {
-       return leadRepository.findAll();
+        return leadRepository.findAll();
     }
 
     @Override
-    public Lead editLead(Long leadId,Lead lead) {
-       return leadRepository.save(lead);
+    public void editLead(Long leadId, Lead lead) {
+        leadRepository.save(lead);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class LeadService implements ILeadService {
 
     @Override
     public List<Lead> bulkUpload(List<Lead> leads) {
-      return   leadRepository.saveAll(leads);
+      return leadRepository.saveAll(leads);
     }
 
     public Optional<Lead> getLeadById(Long leadId) {

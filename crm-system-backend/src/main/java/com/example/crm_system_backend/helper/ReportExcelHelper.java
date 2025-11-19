@@ -1,26 +1,45 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.service.Report.ReportService;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Component
 public class ReportExcelHelper {
 
     @Autowired
-    IUserRepo userRepo;
-
-    @Autowired
     ILeadRepository leadRepo;
 
+    @Autowired
+    IUserRepo userRepo;
+
+
+    /**
+     * Contains head style for workbook
+     * @param workbook
+     * @return cell style for head cells for all sheets present in workbook
+     */
     // Styles
     public CellStyle headStyle(Workbook workbook) {
         Font headFont = workbook.createFont();
@@ -33,9 +52,20 @@ public class ReportExcelHelper {
         headStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
         headStyle.setAlignment(HorizontalAlignment.LEFT);
 
+        headStyle.setBorderTop(BorderStyle.THIN);
+        headStyle.setBorderBottom(BorderStyle.THIN);
+        headStyle.setBorderLeft(BorderStyle.THIN);
+        headStyle.setBorderRight(BorderStyle.THIN);
+
         return headStyle;
     }
 
+
+    /**
+     * Contains header style for workbook
+     * @param workbook
+     * @return cell style for header cells for all sheets present in workbook
+     */
     public CellStyle headerStyle(Workbook workbook) {
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
@@ -44,41 +74,74 @@ public class ReportExcelHelper {
         headerStyle.setFont(headerFont);
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setFillBackgroundColor(IndexedColors.BLACK.getIndex());
-        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        headerStyle.setFillForegroundColor(IndexedColors.LIME.getIndex());
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         headerStyle.setWrapText(true);
 
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+
         return headerStyle;
     }
 
+
+    /**
+     * Contains data style for workbook
+     * @param workbook
+     * @return cell style for data cells for all sheets present in workbook
+     */
     public CellStyle dataStyle(Workbook workbook) {
         CellStyle dataStyle = workbook.createCellStyle();
         dataStyle.setWrapText(true);
 
+        dataStyle.setBorderTop(BorderStyle.THIN);
+        dataStyle.setBorderBottom(BorderStyle.THIN);
+        dataStyle.setBorderLeft(BorderStyle.THIN);
+        dataStyle.setBorderRight(BorderStyle.THIN);
+
         return dataStyle;
     }
 
-    public List<Lead> getLeadList(List<Lead> leads, Date start, Date end) {
+
+    /**
+     * @param start
+     * @param end
+     * @return list of all leads registered in time period between start date and end date
+     */
+    @Transactional
+    public List<Lead> getLeadList(Date start, Date end) {
         List<Lead> leadList = new ArrayList<>();
-        for(Lead lead : leads) {
+        for (Lead lead : leadRepo.findAll()) {
             Date createdAt = lead.getCreatedAt();
-            if((createdAt.after(start) && createdAt.before(end))) {
+            if ((createdAt.after(start) && createdAt.before(end))) {
                 leadList.add(lead);
             }
         }
         return leadList;
     }
 
-    public List<Lead> getLeadList(Date start, Date end) {
-        List<Lead> leadList = new ArrayList<>();
-        for(Lead lead : leadRepo.findAll()) {
-            Date createdAt = lead.getCreatedAt();
-            if((createdAt.after(start) && createdAt.before(end))) {
-                leadList.add(lead);
+    /**
+     * Required to print name of user in Report Download History data-table on UI side
+     * @param email
+     * @return a String containing name of user
+     */
+    public String getName(String email) {
+        String name = null;
+        for(User user : userRepo.findAll()) {
+            if(user.getEmail().equals(email)) {
+                String first_name = userRepo.findUserFirstNameByEmail(email);
+                String last_name = userRepo.findUserLastNameByEmail(email);
+                name = first_name + " " + last_name;
+
             }
         }
-        return leadList;
+        return name;
     }
+
+    //-----------Email Helper methods----------------
+
 
 }

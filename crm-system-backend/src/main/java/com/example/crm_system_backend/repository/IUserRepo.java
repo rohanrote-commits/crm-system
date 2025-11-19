@@ -13,6 +13,8 @@ public interface IUserRepo extends JpaRepository<User, Long> {
 
     Optional<User> getUserById(Long id);
 
+    @Query("Select u from user u where u.registeredBy = :registeredBy")
+    List<User> getUserByRegisteredBy(@Param("registeredBy") Long registeredBy);
 
     boolean existsByEmail(String email);
 
@@ -27,6 +29,12 @@ public interface IUserRepo extends JpaRepository<User, Long> {
 
     @Query("SELECT u.email FROM user u WHERE u.id = :id")
     String findEmailById(@Param("id") Long id);
+
+    @Query("SELECT u.firstName FROM user u WHERE u.email = :email")
+    String findUserFirstNameByEmail(@Param("email") String email);
+
+    @Query("SELECT u.lastName FROM user u WHERE u.email = :email")
+    String findUserLastNameByEmail(@Param("email") String email);
 
     Optional<User> getUserByEmail(String email);
 }

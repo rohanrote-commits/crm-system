@@ -10,7 +10,7 @@ public class SignUpRequest {
     private String mobileNumber;
     private String password;
     private String confirmPassword;
-   //Address information
+    //Address information
     private String address;
     private String city;
     private String state;

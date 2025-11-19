@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserException.class)
-    public ResponseEntity<ErrorResponse> handleUserException(UserException userException){
+    public ResponseEntity<ErrorResponse> handleUserException(UserException userException) {
         ErrorResponse errorResponse = new ErrorResponse(
                 userException.errorCode.getMessage(),
                 userException.errorCode.getStatus()
@@ -24,13 +24,13 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(ExcelProcessingError.class)
-    public ResponseEntity<byte[]> handleExcelProcessingError(ExcelProcessingError exception){
+    public ResponseEntity<byte[]> handleExcelProcessingError(ExcelProcessingError exception) {
 
-        return  ResponseEntity.internalServerError().header(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_OCTET_STREAM_VALUE).body(exception.file);
+        return ResponseEntity.internalServerError().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE).body(exception.file);
     }
 
     @ExceptionHandler(FileDownloadException.class)
-    public ResponseEntity<ErrorResponse> handleFileDownloadException(FileDownloadException exception){
+    public ResponseEntity<ErrorResponse> handleFileDownloadException(FileDownloadException exception) {
         ErrorResponse errorResponse = new ErrorResponse(
                 exception.getErrorCode().getMessage(),
                 exception.getErrorCode().getStatus()
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(LeadException.class)
-    public ResponseEntity<ErrorResponse> handleLeadException(LeadException exception){
+    public ResponseEntity<ErrorResponse> handleLeadException(LeadException exception) {
         ErrorResponse errorResponse = new ErrorResponse(
                 exception.errorCode.getMessage(),
                 exception.errorCode.getStatus()

@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.interceptor;
 
+
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
@@ -57,19 +58,19 @@ public class RequestInterceptor implements HandlerInterceptor {
             token = token.substring(7).trim();
 
             //check expiry of token
-            if (jwtUtil.isTokenExpired(token)) {
+            if(jwtUtil.isTokenExpired(token)){
                 userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
                 throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
             //check  if session is already present
             String email = jwtUtil.getEmail(token);
-            if (email == null || !userSessionService.findSessionByToken(token, email)) {
+            if (email == null || !userSessionService.findSessionByToken(token,email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 throw new UserException(ErrorCode.ANOTHER_SESSION_ACTIVE_FOR_USER);
             }
             String role = jwtUtil.getRole(token);
-            if (role == null) {
+            if(role == null){
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
@@ -81,6 +82,5 @@ public class RequestInterceptor implements HandlerInterceptor {
 
         return true;
     }
-
 
 }

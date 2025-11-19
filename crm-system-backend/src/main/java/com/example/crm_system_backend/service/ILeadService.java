@@ -9,8 +9,9 @@ import java.util.Optional;
 public interface ILeadService {
     Lead save(LeadDto leadDto);
     Optional<List<Lead>> getLeadsByUser(User user);
+
     List<Lead> getAllLeads();
-    Lead editLead(Long leadId,Lead leadDto);
+    void editLead(Long leadId, Lead leadDto);
     void deleteLead(Long leadId);
     List<Lead> bulkUpload(List<Lead> leads);
 }

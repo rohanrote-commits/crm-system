@@ -15,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-
-
-
 @RestController
 @RequestMapping("/crm/lead")
 public class LeadController {
@@ -55,27 +52,23 @@ public class LeadController {
     }
 
     @PutMapping("/{email}")
-    public ResponseEntity<LeadDto> updateLead(@PathVariable String email ,@Valid @RequestBody LeadDto leadDto) {
-        log.info("Enter: LeadController.updateLead");
+    public ResponseEntity<LeadDto> updateLead(@PathVariable String email, @Valid @RequestBody LeadDto leadDto) {
         Lead lead = leadHandler.getLeadByEmail(email);
-        return new ResponseEntity<>(leadHandler.edit(lead.getId(),leadDto), HttpStatus.OK);
+        return new ResponseEntity<>(leadHandler.edit(lead.getId(), leadDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<?>  deleteLead(@RequestParam String email) {
-        log.info("Enter: LeadController.deleteLead");
+    public ResponseEntity<?> deleteLead(@RequestParam String email) {
         Lead lead = leadHandler.getLeadByEmail(email);
         leadHandler.delete(lead.getId());
-        log.info("Exit: LeadController.deleteLead");
-        return new ResponseEntity<>("Lead Deleted Successfully",HttpStatus.OK);
+        return new ResponseEntity<>("Lead Deleted Successfully", HttpStatus.OK);
     }
 
     @PostMapping("/import/{id}")
-    public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file,@PathVariable Long id) {
-        log.info("Enter: LeadController.bulkSaveLead");
-         leadHandler.bulkUpload(file,id);
-         log.info("Exit: LeadController.bulkSaveLead");
+    public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file, @PathVariable Long id) {
+        leadHandler.bulkUpload(file, id);
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
+
 
 }

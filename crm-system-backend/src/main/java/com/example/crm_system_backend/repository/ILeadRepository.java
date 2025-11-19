@@ -11,9 +11,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public interface ILeadRepository extends JpaRepository<Lead,Integer> {
+public interface ILeadRepository extends JpaRepository<Lead, Integer> {
     Optional<List<Lead>> getLeadsByUser(User user);
+
     Optional<Lead> getLeadsById(Long leadId);
+
     Optional<Lead> getLeadsByEmail(String email);
 
     Optional<List<Lead>> getLeadsByUser(Optional<User> user);

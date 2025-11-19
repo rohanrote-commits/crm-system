@@ -41,5 +41,4 @@ public class User {
     private long registeredBy;
     private LocalDateTime registeredOn;
 
-
 }

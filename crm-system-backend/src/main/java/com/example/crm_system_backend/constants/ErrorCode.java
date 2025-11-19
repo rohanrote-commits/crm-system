@@ -9,8 +9,10 @@ public enum ErrorCode {
     USER_NOT_FOUND("404", "User Not Found", HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_FOUND("401", "Account Not Found", HttpStatus.NOT_FOUND),
     WRONG_CREDENTIALS("401", "Wrong Credentials", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_ALREADY_IN_USE("409","Account Already In Use", HttpStatus.CONFLICT),
     ACCOUNT_ALREADY_EXISTS("409", "Account Already Exists", HttpStatus.CONFLICT),
     MAXIMUM_USERACCOUNT_LIMIT_REACHED("409", "Maximum UserAccount Limit Reached", HttpStatus.CONFLICT),
+
     AMOUNT_MUST_BE_POSITIVE("400", "Amount must be positive", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_BALANCE("500", "Insufficient Balance", HttpStatus.INTERNAL_SERVER_ERROR),
     ANOTHER_THREAD_EXECTING("410", "Another Thread Executing", HttpStatus.GONE),
@@ -35,7 +37,10 @@ public enum ErrorCode {
     SESSION_EXPIRED("SE", "Session Expired", HttpStatus.UNAUTHORIZED),
     ANOTHER_SESSION_ACTIVE("ASA", "Another Session Active", HttpStatus.CONFLICT),
     ERROR_IN_FILE_PROCESSING("EFP", "Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE);
+    INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE),
+
+    FAILED_TO_SCHEDULE_EMAIL("FTSE", "Error in scheduling email", HttpStatus.CONFLICT),
+    ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),;
 
     private final String code;
     private final String message;

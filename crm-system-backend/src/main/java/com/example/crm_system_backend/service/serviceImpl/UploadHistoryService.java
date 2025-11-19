@@ -19,17 +19,16 @@ public class UploadHistoryService implements IUploadHistoryService {
     private IUploadHistoryRepository iUploadHistoryRepository;
 
 
-
     @Override
     public UploadHistory save(UploadHistory uploadHistory) {
-      return    iUploadHistoryRepository.save(uploadHistory);
+        return iUploadHistoryRepository.save(uploadHistory);
     }
 
     @Override
     public UploadHistory findById(String id) {
-     UploadHistory uploadHistory =    iUploadHistoryRepository.findById(id).orElseThrow(
-             ()-> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
-     );
+        UploadHistory uploadHistory = iUploadHistoryRepository.findById(id).orElseThrow(
+                () -> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
+        );
         return uploadHistory;
     }
 
