@@ -57,9 +57,14 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     @Override
     public UserDTO save(UserDTO userDTO) {
-        if (userService.checkUserByEmail(userDTO.getEmail())) throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        if (userService.checkUserByMobileNumber(userDTO.getMobileNumber()))
+        if (userService.checkUserByEmail(userDTO.getEmail())) {
+            log.error("Email already exists: {}", userDTO.getEmail());
+            throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+        if (userService.checkUserByMobileNumber(userDTO.getMobileNumber())) {
+            log.error("Mobile number already exists: {}", userDTO.getMobileNumber());
             throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
+        }
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
         if (user.getAddress() == null) {
@@ -67,6 +72,7 @@ public class UserHandler implements IHandler<UserDTO> {
                     user.getState() != null ||
                     user.getCountry() != null ||
                     user.getPinCode() != null) {
+                log.error("Invalid address: {}", user.getAddress());
                 throw new UserException(ErrorCode.INVALID_ADDRESS);
             }
         }
@@ -95,7 +101,10 @@ public class UserHandler implements IHandler<UserDTO> {
      * @throws UserException if the user with the specified ID is not found
      */
     public User getById(Long id) {
-        return userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        return userService.getUserById(id).orElseThrow(() -> {
+                log.error("User not found with id: " + id );
+                throw new UserException(ErrorCode.USER_NOT_FOUND);
+        });
     }
 
     /**
@@ -113,7 +122,6 @@ public class UserHandler implements IHandler<UserDTO> {
         List<User> users = new ArrayList<>();
         User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {
-
             log.info("Request for getting users is in user Handler for master admin");
             users = userService.getAllUserByMasterAdmin(id);
         } else {
@@ -122,7 +130,7 @@ public class UserHandler implements IHandler<UserDTO> {
                 log.info("Request for getting users is in user Handler for admin");
                 users = userService.getAllUsersByAdmin(id);
             }
-            else if(userRepo.findRoleById(id)==Roles.USER){
+            else if(userRepo.findRoleById(id)==Roles.BASIC){
                 users.add(accessingUser);
                 User registeringUser = userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
                 if(registeringUser.getRole()==Roles.MASTER_ADMIN) {
@@ -159,12 +167,14 @@ public class UserHandler implements IHandler<UserDTO> {
         Optional<User> userOptional = userRepo.getUserByEmail(forgetPasswordDTO.getEmail());
         if (userOptional.isPresent()) {
             if (userOptional.get().getPassword().equals(forgetPasswordDTO.getPassword())) {
+                log.warn("Password should not be same as existing password");
                 throw new UserException(ErrorCode.PASSWORD_SHOULD_NOT_BE_SAME);
             }
             userOptional.get().setPassword(forgetPasswordDTO.getPassword());
             userService.registerUser(userOptional.get());
             return forgetPasswordDTO;
         } else {
+            log.warn("User not found" + forgetPasswordDTO.getEmail());
             throw new UserException(ErrorCode.USER_NOT_FOUND);
         }
     }
@@ -332,7 +342,7 @@ public class UserHandler implements IHandler<UserDTO> {
         uploadHistory.setFileTemplateType(FileTemplateType.USER);
 
         try {
-            UserList userList = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory);
+            UserList userList = userExcelHelper.processExcelData(file, savedUser.getRole().name(), uploadHistory).get();
 
             // Process valid users
 

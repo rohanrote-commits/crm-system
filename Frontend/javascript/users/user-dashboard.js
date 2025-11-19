@@ -1,40 +1,36 @@
 $(document).ready(function () {
-  // Parse JWT Token
-  function parseJwt(token) {
-    try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      return null;
-    }
-  }
+  // Parse JWT Token
+  function parseJwt(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  }
 
-  $("#back").click(function () {
-    window.location.href = "/Frontend/html/dashboard.html";
-  });
+  $("#back").click(function () {
+    window.location.href = "/Frontend/html/dashboard.html";
+  });
 
-  // Get token from sessionStorage
-  const token = sessionStorage.getItem("Authorization");
-  if (!token) {
-    showAlert("Unauthorized. Please login.", "danger");
-    window.location.href = "/Frontend/html/login.html";
-    return;
-  }
-    
-  const payload = parseJwt(token);
-  const userRole = payload?.role?.trim();
-  console.log("Decoded Token:", payload);
+  // Get token from sessionStorage
+  const token = sessionStorage.getItem("Authorization");
+  if (!token) {
+    showAlert("Unauthorized. Please login.", "danger");
+    window.location.href = "/Frontend/html/login.html";
+    return;
+  }
 
 // --- START: ROLE-BASED UI RESTRICTIONS ---
   // Hide Add/Import button for USER role
-  if (userRole === "USER") {
+  if (userRole === "BASIC") {
     $("#addUserBtn").hide();
   }
 // --- END: ROLE-BASED UI RESTRICTIONS ---
@@ -109,11 +105,11 @@ showDeleteConfirm().then((ok) => {
 // DELETE USER (sub-user)
   $("#user-table").on("click", ".delete-user", function () {
     // RESTRICTION: Block USER role from deleting sub-users
-    if (userRole === "USER") {
+    if (userRole === "BASIC") {
         showAlert("Access Denied: You do not have permission to delete users.", "danger");
         return;
     }
-    
+   
     const user = { email: $(this).data("email") };
 
     showDeleteConfirm().then((ok) => {
@@ -308,7 +304,7 @@ showDeleteConfirm().then((ok) => {
               data: null,
               title: "Action",
               orderable: false,
-              width: "100px", 
+              width: "20px",
               // FIX: Remove explicit height and use ultra-minimal padding
                createdCell: function (td, cellData, rowData, row, col) {
                    $(td).css({
@@ -337,11 +333,11 @@ showDeleteConfirm().then((ok) => {
           columnDefs: [{ targets: [3, 5], searchable: false }],
           destroy: true,
         });
-        
+       
         // RESTRICTION: Conditionally hide the Action column (index 7) for USER role
-        if (userRole === "USER") {
+        if (userRole === "BASIC") {
             // Get the Action column (index 7) and hide it
-            table.column(7).visible(false); 
+            table.column(7).visible(false);
         }
 
       },
@@ -404,7 +400,78 @@ function showDeleteConfirm() {
       () => resolve(false),
       { once: true }
     );
-
     modal.show();
   });
 }
+  // LOAD ALL USERS FUNCTION
+  function loadUsers(token) {
+    $.ajax({
+      url: "http://localhost:8080/crm/user/users",
+      type: "GET",
+      headers: { Authorization: "Bearer " + token },
+      success: function (userList) {
+        $("#user-table").DataTable({
+          pageLength: 5,
+          autoWidth: false,
+          fixedHeader: true,
+          ordering: true,
+          lengthMenu: [5, 10, 25, 50],
+          data: userList,
+          columns: [
+            {
+              data: null,
+              title: "S.No",
+              orderable: false,
+              searchable: false,
+              render: function (data, type, row, meta) {
+                return meta.row + 1 + meta.settings._iDisplayStart;
+              },
+            },
+            { data: "firstName" },
+            { data: "lastName" },
+            { data: "email" },
+            { data: "mobileNumber" },
+            { data: "role" },
+            { data: "emailOfAdminRegistered" },
+            {
+              data: null,
+              title: "Action",
+              orderable: false,
+              render: function (data, type, row) {
+                return `
+                  <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-warning edit-user" data-email="${row.email}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-user" data-email="${row.email}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                `;
+              },
+            },
+          ],
+          columnDefs: [{ targets: [3, 5], searchable: false }],
+          destroy: true,
+        });
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to load users";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        console.log(xhr.responseJSON.status);
+        if(xhr.responseJSON.status === "UNAUTHORIZED"){
+           showAlert(errorMsg, "danger");
+           window.location.href = `/Frontend/html/users/login.html`
+        }else{
+        showAlert(errorMsg, "danger");
+        }
+      }
+    });
+  }
+// });
+
+//     modal.show();
+//   });
+// }

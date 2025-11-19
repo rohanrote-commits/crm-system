@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +41,7 @@ public class LeadExcelHelper {
     private final ProductService productService;
     private final ModelMapper modelMapper;
 
+    @Async("bulkUploadExecutor")
     public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
         log.info("Enter: LeadExcelHelper.processExcelData");
         Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads

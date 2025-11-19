@@ -151,14 +151,15 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function (response) {
-             
+
                 showAlert(response,"success");
+
                 fileInput.val(''); // Clear input
             },
             error: function (xhr) {
                  let error = xhr.responseJSON.message;
              showAlert(error,"danger");
-             
+
             }
         });
     });
@@ -188,7 +189,6 @@ $(document).ready(function () {
                 showAlert("File Downloded successfully","success");
             },
             error: function () {
-
                     if (xhr.status === 401) {
         showAlert("Session expired. Please login again.","warning");
         sessionStorage.clear();

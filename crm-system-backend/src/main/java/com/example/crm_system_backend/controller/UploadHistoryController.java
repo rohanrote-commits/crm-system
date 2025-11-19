@@ -26,11 +26,13 @@ import java.util.List;
 public class UploadHistoryController {
 
 
-    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
+
     private final UploadedHistoryHandler uploadedHistoryHandler;
 
     private  final  ModelMapper modelMapper;
     private final DownloadHandler downloadHandler;
+    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
+
 
     /**
      * Retrieves the upload history associated with a specific user based on their email.

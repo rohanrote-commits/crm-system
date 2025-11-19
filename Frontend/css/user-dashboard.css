@@ -367,40 +367,32 @@ textarea.valid {
 .btn-green:hover {
   background-color: #05681a;
 }
-
 /* Target buttons in Action column */
 #user-table .btn-sm {
-    padding: 0.15rem 0.25rem;  /* smaller padding */
-    font-size: 0.75rem;        /* smaller font/icons */
-    line-height: 1;            /* keeps icons centered */
+    display: flex;                 /* allow centering with flex */
+    align-items: center;           /* vertical center */
+    justify-content: center;       /* horizontal center */
+    padding: 0.2rem;              /* small padding */
+    font-size: 0.9rem;             /* adjust icon size */
+    width: 28px;                    /* button width */
+    height: 28px;                   /* button height */
+    line-height: 1;                /* ensures icon fits */
+    padding-right: 10px;
+    min-width: unset;               /* remove default Bootstrap min-width */
 }
 
-/* Reduce gap between buttons inside the flex container */
+/* Reduce gap between buttons inside flex container */
 #user-table td .d-flex {
-    gap: 0.2rem;   /* smaller gap, adjust as needed */
-    justify-content: center; /* keep buttons centered */
+    gap: 0.1rem;                   /* smaller gap */
+    justify-content: center;       /* center buttons */
 }
 
-
-/* Force rows to a smaller height */
-#user-table tbody tr {
-    height: 35px !important; /* adjust as needed */
-    max-height: 35px !important;
-}
-
-/* Ensure the content inside doesn't stretch the row */
-#user-table tbody td, 
-#user-table tbody th {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-/* Set a fixed width for the Action column */
+/* Minimal Action column width */
 #user-table th:nth-child(8),
 #user-table td:nth-child(8) {
-    width: 80px;   /* adjust as needed */
-    max-width: 200px;
+    width: auto;                   /* shrink to fit buttons */
+    max-width: 200px;               /* optional limit */
+    padding: 0.1rem;
     text-align: center;
     white-space: nowrap;
 }
-

@@ -25,7 +25,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestInterceptor)
-                .addPathPatterns("/crm/user/**", "/crm/lead/**")
+                .addPathPatterns("/crm/user/**", "/crm/lead/**","/crm/error/**")
                 .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up", "/crm/user/forget");
 
         registry.addInterceptor(roleInterceptor)
