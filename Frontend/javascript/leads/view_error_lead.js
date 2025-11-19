@@ -37,37 +37,133 @@ jQuery(function () {
   let uploadHistoryId;
   let oldEmail;
 
-  let errorTable = $("#lead-table").DataTable({
+//   let errorTable = $("#lead-table").DataTable({
+//     ajax: {
+//         url: `http://localhost:8080/crm/error/records/${id}`,
+//         type: "GET",
+//         headers: {
+//             Authorization: "Bearer " + token,
+//         },
+
+//         dataSrc: function (response) {
+//             console.log("Leads fetched:", response);
+
+//             docId = response.id;
+//             uploadHistoryId = response.uploadHistoryId;
+
+//             return response.errorsList || [];
+//         },
+
+//         error: function (xhr) {
+//           errorTable.clear().draw();
+//             if (xhr.status === 401) {
+//                 showAlert("Session expired. Login again.", "warning");
+//                 sessionStorage.clear();
+//                 window.location.href = "/Frontend/html/login.html";
+//                 return;
+//             }
+//             if(xhr.status===400){
+//               showAlert("No Invalid Leads for the Record","info")
+//             }
+//             else{
+//             showAlert("No Invalid Leads Found.", "danger");
+//             }
+//         }
+//     },
+
+//     columns: [
+//         {
+//             data: null,
+//             title: "Sr.No.",
+//             orderable: false,
+//             render: function (data, type, row, meta) {
+//                 return meta.row + meta.settings._iDisplayStart + 1;
+//             }
+//         },
+
+//         { data: "firstName", title: "First Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
+//         { data: "lastName", title: "Last Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
+//         { data: "email", title: "Email", render: validateText(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/) },
+//         { data: "mobileNumber", title: "Mobile", render: validateText(/^[789]\d{9}$/) },
+//         { data: "gstin", title: "GSTIN", render: validateText(/^[A-Z0-9]{15}$/) },
+//         { data: "description", title: "Description", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
+//         { data: "businessAddress", title: "Address", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
+
+//         {
+//             data: "interestedModules",
+//             title: "Interested Modules",
+//             orderable: false,
+//             render: function (data) {
+//                 return data && data.length ? data.join(", ") : "-";
+//             }
+//         },
+
+//         {
+//             data: null,
+//             title: "Action",
+//             orderable: false,
+//             render: function (row) {
+//                 return `
+//                     <div class="d-flex justify-content-center gap-2">
+//                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="Edit error record">
+//                             <i class="bi bi-pencil"></i>
+//                         </button>
+//                         <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}" title="Delete error record">
+//                             <i class="bi bi-trash"></i>
+//                         </button>
+//                     </div>`;
+//             }
+//         }
+//     ],
+//     pageLength: 10,
+//     lengthMenu: [10, 25, 50, 100],
+//     destroy: true,
+//     responsive: true,
+//     searching: true,
+//     paging: true,
+//     ordering: true,
+//     info: true,
+//     language: {
+//         emptyTable: "No error records found",
+//     }
+// });
+
+// function validateText(regex) {
+//     return function (data) {
+//         if (!regex.test(data)) {
+//             return `<span class="text-danger fw-bold">${data}</span>`;
+//         }
+//         return data;
+//     };
+// }
+
+       //Edit Lead
+     
+ let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url: `http://localhost:8080/crm/error/lead/records/${id}`,
+        url: `http://localhost:8080/crm/error/records/${id}`,
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,
         },
 
         dataSrc: function (response) {
-            console.log("Leads fetched:", response);
+            console.log("Invalid Leads Response:", response);
 
-            docId = response.id;
-            uploadHistoryId = response.uploadHistoryId;
+            return response.map(item => ({
+                rowNumber: item.rowNumber,
+                errors: item.errors,
 
-            return response.errorsList || [];
-        },
+                firstName: item.lead.firstName,
+                lastName: item.lead.lastName,
+                email: item.lead.email,
+                mobileNumber: item.lead.mobileNumber,
+                gstin: item.lead.gstin,
+                description: item.lead.description,
+                businessAddress: item.lead.businessAddress,
 
-        error: function (xhr) {
-          errorTable.clear().draw();
-            if (xhr.status === 401) {
-                showAlert("Session expired. Login again.", "warning");
-                sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.html";
-                return;
-            }
-            if(xhr.status===400){
-              showAlert("No Invalid Leads for the Record","info")
-            }
-            else{
-            showAlert("No Invalid Leads Found.", "danger");
-            }
+                interestedModules: item.lead.interestedProducts?.map(p => p.moduleName) || []
+            }));
         }
     },
 
@@ -81,18 +177,63 @@ jQuery(function () {
             }
         },
 
-        { data: "firstName", title: "First Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
-        { data: "lastName", title: "Last Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
-        { data: "email", title: "Email", render: validateText(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/) },
-        { data: "mobileNumber", title: "Mobile", render: validateText(/^[789]\d{9}$/) },
-        { data: "gstin", title: "GSTIN", render: validateText(/^[A-Z0-9]{15}$/) },
-        { data: "description", title: "Description", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
-        { data: "businessAddress", title: "Address", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
+        {
+            data: "firstName",
+            title: "First Name",
+            render: function (data, type, row) {
+                return row.errors.firstName
+                    ? `<span class="text-danger fw-bold" title="${row.errors.firstName}">${data}</span>`
+                    : data;
+            }
+        },
+
+        {
+            data: "lastName",
+            title: "Last Name",
+            render: function (data, type, row) {
+                return row.errors.lastName
+                    ? `<span class="text-danger fw-bold" title="${row.errors.lastName}">${data}</span>`
+                    : data;
+            }
+        },
+
+        {
+            data: "email",
+            title: "Email",
+            render: function (data, type, row) {
+                return row.errors.email
+                    ? `<span class="text-danger fw-bold" title="${row.errors.email}">${data}</span>`
+                    : data;
+            }
+        },
+
+        {
+            data: "mobileNumber",
+            title: "Mobile",
+            render: function (data, type, row) {
+                return row.errors.mobileNumber
+                    ? `<span class="text-danger fw-bold" title="${row.errors.mobileNumber}">${data}</span>`
+                    : data;
+            }
+        },
+
+        {
+            data: "gstin",
+            title: "GSTIN",
+            render: function (data, type, row) {
+                return row.errors.gstin
+                    ? `<span class="text-danger fw-bold" title="${row.errors.gstin}">${data}</span>`
+                    : data;
+            }
+        },
+
+        { data: "description", title: "Description" },
+
+        { data: "businessAddress", title: "Address" },
 
         {
             data: "interestedModules",
             title: "Interested Modules",
-            orderable: false,
             render: function (data) {
                 return data && data.length ? data.join(", ") : "-";
             }
@@ -102,7 +243,7 @@ jQuery(function () {
             data: null,
             title: "Action",
             orderable: false,
-            render: function (row) {
+            render: function (data, type, row) {
                 return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="Edit error record">
@@ -115,30 +256,13 @@ jQuery(function () {
             }
         }
     ],
+
     pageLength: 10,
-    lengthMenu: [10, 25, 50, 100],
-    destroy: true,
-    responsive: true,
-    searching: true,
-    paging: true,
-    ordering: true,
-    info: true,
-    language: {
-        emptyTable: "No error records found",
-    }
+    destroy: true
 });
 
-function validateText(regex) {
-    return function (data) {
-        if (!regex.test(data)) {
-            return `<span class="text-danger fw-bold">${data}</span>`;
-        }
-        return data;
-    };
-}
-
-       //Edit Lead
-        $("#lead-table").on("click", ".edit-lead", function () {
+     
+       $("#lead-table").on("click", ".edit-lead", function () {
 
           
     const table = $("#lead-table").DataTable();
@@ -304,7 +428,7 @@ function validateText(regex) {
               responseType: "blob",
             },
             success: function (data, status, xhr) {
-              const filename = `${fileName.replace(" ", "_")}.xlsx`;
+              const filename = `${fileName.replace(" ", "_")}`;
               const blob = new Blob([data], {
                 type: xhr.getResponseHeader("Content-Type"),
               });

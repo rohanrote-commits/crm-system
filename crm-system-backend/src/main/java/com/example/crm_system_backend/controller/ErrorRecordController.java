@@ -1,34 +1,32 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
-import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.example.crm_system_backend.dto.UserDTO;
 
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/crm/error/")
+@AllArgsConstructor
 public class ErrorRecordController {
 
 
-    @Autowired
+
     private ErrorRecordHandler errorRecordHandler;
 
 
     @GetMapping("/records/{uploadHistoryId}")
-    public ResponseEntity<ErrorRecord> findErrorRecordByUploadHistoryId(@PathVariable String uploadHistoryId){
+    public ResponseEntity< List<InvalidLeadError>> findErrorRecordByUploadHistoryId(@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.findErrorRecordByUploadHistoryId");
-      ErrorRecord errorRecordList = errorRecordHandler.findErrorRecordByUploadHistoryId(uploadHistoryId);
+        List<InvalidLeadError> errorRecordList = errorRecordHandler.findErrorRecordByUploadHistoryId(uploadHistoryId);
       log.info("Exit: ErrorRecordController.findErrorRecordByUploadHistoryId");
       return new  ResponseEntity<>(errorRecordList, HttpStatus.OK);
     }

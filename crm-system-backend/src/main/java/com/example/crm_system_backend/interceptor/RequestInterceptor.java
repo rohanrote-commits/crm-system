@@ -45,7 +45,6 @@ public class RequestInterceptor implements HandlerInterceptor {
 
         if (uri.startsWith("/crm/")) {
             log.info("Request URI: {}", uri);
-
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 return true;
             }

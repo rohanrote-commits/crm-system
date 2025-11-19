@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.service.Report;
 
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.ILeadRepository;
@@ -217,9 +218,9 @@ public class ReportService {
 
         for (Lead lead : leads) {
 
-            Set<String> products = lead.getInterestedModules();
+            Set<Product> products = lead.getInterestedProducts();
 
-            for (String product : products) {
+            for (Product product : products) {
                 Row row = sheet.createRow(rowNum++);
                 row.setRowStyle(data_style);
                 int cellNum = 0;
@@ -228,7 +229,7 @@ public class ReportService {
                 row.createCell(cellNum++).setCellValue(lead.getLastName());
                 row.createCell(cellNum++).setCellValue(lead.getEmail());
                 row.createCell(cellNum++).setCellValue(lead.getGstin());
-                row.createCell(cellNum++).setCellValue(product);
+                row.createCell(cellNum++).setCellValue(product.getModuleName());
                 row.createCell(cellNum++).setCellValue(lead.getLeadStatus().toString());
             }
         }

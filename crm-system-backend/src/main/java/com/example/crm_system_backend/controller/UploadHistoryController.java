@@ -1,10 +1,9 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
-import com.example.crm_system_backend.entity.UploadHistory;
+import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.handler.UploadedHistoryHandler;
-import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
@@ -26,6 +25,7 @@ import java.util.List;
 public class UploadHistoryController {
 
 
+    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
     private final UploadedHistoryHandler uploadedHistoryHandler;
 
     private  final  ModelMapper modelMapper;
@@ -62,7 +62,8 @@ public class UploadHistoryController {
         try {
             fileBytes = FileUtils.readFileToByteArray(file);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
