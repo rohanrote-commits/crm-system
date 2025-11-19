@@ -173,13 +173,10 @@ public class LeadHandler implements IHandler<LeadDto> {
                     () -> new UserException(ErrorCode.USER_NOT_FOUND)
             );
             uploadHistory.setUploadedBy(user.getEmail());
-
             // Process Excel
             LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory);
-
             List<Lead> validLeadList = leadList.getValidLeadList();
             List<Lead> invalidLeadList = leadList.getInvalidLeadList();
-
             // Save valid data
             if (!validLeadList.isEmpty()) {
                 validLeadList.forEach(lead -> {
@@ -191,7 +188,6 @@ public class LeadHandler implements IHandler<LeadDto> {
 
                 leadService.bulkUpload(validLeadList);
             }
-
             // ------ Set Status ------
             if (!validLeadList.isEmpty() && !invalidLeadList.isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
@@ -205,7 +201,6 @@ public class LeadHandler implements IHandler<LeadDto> {
             else {
                 uploadHistory.setUploadStatus(UploadStatus.FAILED); // empty file or unexpected
             }
-
             uploadHistoryService.save(uploadHistory);
         }
         catch (Exception e) {
