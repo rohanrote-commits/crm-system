@@ -153,6 +153,7 @@ $(document).ready(function () {
             success: function (response) {
              
                 showAlert(response,"success");
+                
                 fileInput.val(''); // Clear input
             },
             error: function (xhr) {

@@ -115,6 +115,12 @@ public class ErrorRecordHandler {
 
         // 3. Convert UserDTO → User (the corrected user)
         User user = modelMapper.map(userDTO, User.class);
+        if(user.getAddress() == null || user.getAddress().isEmpty()){
+            user.setCity(null);
+            user.setState(null);
+            user.setCountry(null);
+            user.setPinCode(null);
+        }
         user.setRegisteredBy(parentUser.getId());
 
         // 4. Try saving the corrected user FIRST

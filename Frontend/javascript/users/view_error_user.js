@@ -126,10 +126,10 @@ let roleOptions = '<option value="">Select Role</option>';
 if (payload.role === "MASTER_ADMIN") {
     roleOptions += `
         <option value="ADMIN">ADMIN</option>
-        <option value="USER">USER</option>
+        <option value="BASIC">BASIC</option>
     `;
 } else if (payload.role === "ADMIN") {
-    roleOptions += `<option value="USER">USER</option>`;
+    roleOptions += `<option value="BASIC">BASIC</option>`;
 }
 
 $('#userRole').html(roleOptions);
@@ -173,9 +173,9 @@ $("#lead-table").on("click", ".edit-lead", function () {
     // Dynamically populate role options again based on logged-in user
     let roleOptions = '<option value="">Select Role</option>';
     if (payload.role === "MASTER_ADMIN") {
-        roleOptions += `<option value="ADMIN">ADMIN</option><option value="USER">USER</option>`;
+        roleOptions += `<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`;
     } else if (payload.role === "ADMIN") {
-        roleOptions += `<option value="USER">USER</option>`;
+        roleOptions += `<option value="BASIC">BASIC</option>`;
     }
     $('#userRole').html(roleOptions);
 

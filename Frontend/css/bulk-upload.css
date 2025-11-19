@@ -120,7 +120,25 @@ body {
   border-radius: 8px;
   overflow: hidden;
 }
+/* Optional: add space between header and first row */
+#upload-table thead th {
+  background-color: #0b2a5b;   /* dark blue or any color you like */
+    color: #fff;                 /* white text */
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 3px solid #0a1f46;
+}
 
+/* Optional: separate body rows more clearly */
+#upload-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6; /* subtle row separators */
+}
+
+/* Optional: hover effect for rows */
+#upload-table tbody tr:hover {
+    background-color: #0a43ee;
+}
 .table thead {
   background-color: #f1f3f5;
   color: #333;

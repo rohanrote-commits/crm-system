@@ -3,18 +3,17 @@ package com.example.crm_system_backend.helper;
 import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.constants.UploadStatus;
-import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.ExcelException;
-import com.example.crm_system_backend.exception.ExcelProcessingError;
-import com.example.crm_system_backend.exception.UserException;
+import com.example.crm_system_backend.repository.IUserRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,10 +22,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
 public class UserExcelHelper {
+    @Autowired
+    private IUserRepo userRepo;
 
     private static final String NAME_REGEX = "^[A-Za-z ]{1,50}$";
 
@@ -120,7 +122,8 @@ public class UserExcelHelper {
      * @throws ExcelException if the file has invalid headers or if there are issues
      *                        during file processing
      */
-    public UserList processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
+    @Async("bulkUploadExecutor")
+    public CompletableFuture<UserList> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
         int countDown = 5;
 
 
@@ -185,14 +188,24 @@ public class UserExcelHelper {
                     markError(row.getCell(3), "Invalid mobile number", errorStyle);
                     hasError = true;
                 } else {
-                    user.setMobileNumber(mobileNumber);
+                    if(userRepo.existsByMobileNumber( mobileNumber)){
+                        markError(row.getCell(3), "Mobile number already exists", errorStyle);
+                        hasError = true;
+                    }else {
+                        user.setMobileNumber(mobileNumber);
+                    }
                 }
 
                 if (isEmpty(email) || !email.matches(EMAIL_REGEX)) {
                     markError(row.getCell(4), "Invalid email", errorStyle);
                     hasError = true;
                 } else {
-                    user.setEmail(email);
+                    if(userRepo.existsByEmail( email)){
+                        markError(row.getCell(4), "Email already exists", errorStyle);
+                        hasError = true;
+                    }else {
+                        user.setEmail(email);
+                    }
                 }
 
                 boolean isAddressPresent = !isEmpty(address);
@@ -252,7 +265,7 @@ public class UserExcelHelper {
                     hasError = true;
                 } else {
                     if ("Basic".equals(role)) {
-                        user.setRole(Roles.USER);
+                        user.setRole(Roles.BASIC);
                     } else {
                         user.setRole(Roles.ADMIN);
                     }
@@ -297,7 +310,7 @@ public class UserExcelHelper {
         uploadHistory.setTotalRecords((users.size() + errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(users.size());
-        return userList;
+        return CompletableFuture.completedFuture(userList);
     }
 
     /**
@@ -464,7 +477,7 @@ public class UserExcelHelper {
         user.setPinCode(getCellValue(row.getCell(9)));
         String role = getCellValue(row.getCell(10));
         if ("Basic".equals(role)) {
-            user.setRole(Roles.USER);
+            user.setRole(Roles.BASIC);
         }else{
             user.setRole(Roles.ADMIN);
         }

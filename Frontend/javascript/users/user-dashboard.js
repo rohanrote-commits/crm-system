@@ -34,7 +34,7 @@ $(document).ready(function () {
 
 // --- START: ROLE-BASED UI RESTRICTIONS ---
   // Hide Add/Import button for USER role
-  if (userRole === "USER") {
+  if (userRole === "BASIC") {
     $("#addUserBtn").hide();
   }
 // --- END: ROLE-BASED UI RESTRICTIONS ---
@@ -109,7 +109,7 @@ showDeleteConfirm().then((ok) => {
 // DELETE USER (sub-user)
   $("#user-table").on("click", ".delete-user", function () {
     // RESTRICTION: Block USER role from deleting sub-users
-    if (userRole === "USER") {
+    if (userRole === "BASIC") {
         showAlert("Access Denied: You do not have permission to delete users.", "danger");
         return;
     }
@@ -308,7 +308,7 @@ showDeleteConfirm().then((ok) => {
               data: null,
               title: "Action",
               orderable: false,
-              width: "100px", 
+              width: "20px", 
               // FIX: Remove explicit height and use ultra-minimal padding
                createdCell: function (td, cellData, rowData, row, col) {
                    $(td).css({
@@ -339,7 +339,7 @@ showDeleteConfirm().then((ok) => {
         });
         
         // RESTRICTION: Conditionally hide the Action column (index 7) for USER role
-        if (userRole === "USER") {
+        if (userRole === "BASIC") {
             // Get the Action column (index 7) and hide it
             table.column(7).visible(false); 
         }
