@@ -7,6 +7,7 @@ import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -52,9 +53,13 @@ public class ErrorRecordController {
        log.info("Exit: ErrorRecordController.updateErrorRecord");
        return new  ResponseEntity<>(leadDto, HttpStatus.OK);
     }
-    @PutMapping("/user/{oldEmail}/{uploadHistoryId}")
-    public ResponseEntity<UserDTO> updateErrorRecord(@PathVariable String oldEmail, @PathVariable String uploadHistoryId , @RequestBody UserDTO errorRecord){
-        UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(oldEmail,uploadHistoryId,errorRecord);
+    @PutMapping("/user/{rowNumber}/{uploadHistoryId}")
+    public ResponseEntity<UserDTO> updateErrorRecord(@PathVariable int rowNumber, @PathVariable String uploadHistoryId , @RequestBody UserDTO errorRecord, HttpServletRequest request){
+        Object registeredById = request.getAttribute("userId");
+        if (registeredById != null) {
+            errorRecord.setRegisteredBy((Long) registeredById);
+        }
+        UserDTO userDTO = errorRecordHandler.updateUserErrorRecord(rowNumber,uploadHistoryId,errorRecord);
         return new  ResponseEntity<>(userDTO, HttpStatus.OK);
     }
     @DeleteMapping("/{rowNumber}/{uploadHistoryId}")
@@ -65,9 +70,9 @@ public class ErrorRecordController {
         return new  ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("user/{email}/{uploadHistoryEmail}")
-    public ResponseEntity<?> deleteUserErrorRecordByEmail(@PathVariable String email,@PathVariable String uploadHistoryEmail){
-        errorRecordHandler.deleteUserErrorRecordByEmail(email,uploadHistoryEmail);
+    @DeleteMapping("user/{rowNumber}/{uploadHistoryEmail}")
+    public ResponseEntity<?> deleteUserErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryEmail){
+        errorRecordHandler.deleteUserErrorRecordByEmail(rowNumber,uploadHistoryEmail);
         return new  ResponseEntity<>(HttpStatus.OK);
     }
 

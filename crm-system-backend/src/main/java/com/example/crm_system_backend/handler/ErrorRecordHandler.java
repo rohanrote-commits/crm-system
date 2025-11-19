@@ -154,53 +154,61 @@ public class ErrorRecordHandler {
     }
 
     @Transactional
-    public UserDTO updateUserErrorRecord(String oldEmail, String uploadHistoryId, UserDTO userDTO){
-
-        // 1. Fetch the error record
-        ErrorRecord errorRecord = errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId)
-                .orElseThrow(() -> new ExcelException(ErrorCode.NO_ERROR_RECORDS));
-
-        // 2. Fetch upload history and parent user
+    public UserDTO updateUserErrorRecord(int rowNumber, String uploadHistoryId, UserDTO userDTO){
+        log.info("Enter: ErrorRecordHandler.updateErrorRecord");
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
-        User parentUser = userService.getUserByEmail(errorRecord.getUplodedBy())
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        // 3. Convert UserDTO → User (the corrected user)
-        User user = modelMapper.map(userDTO, User.class);
-        if(user.getAddress() == null || user.getAddress().isEmpty()){
-            user.setCity(null);
-            user.setState(null);
-            user.setCountry(null);
-            user.setPinCode(null);
-        }
-        user.setRegisteredBy(parentUser.getId());
-
-        // 4. Try saving the corrected user FIRST
-        if(userRepo.existsByEmail(user.getEmail())){
-            throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
-        if(userRepo.existsByMobileNumber(user.getMobileNumber())){
-            throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
-        }
-        User savedUser = userService.registerUser(user);
-
-        // 5. Update upload history counts
-        uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
-        uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
-        uploadHistoryService.save(uploadHistory);
-
-        // 6. ONLY AFTER SUCCESS → remove user from error record
-        errorRecord.getErrorUserList()
-                .removeIf(u -> oldEmail.equalsIgnoreCase(u.getEmail()));
-
-        ErrorRecord savedRecord = errorRecordService.saveErrorRecord(errorRecord);
-
-        // 7. If the error list becomes empty → delete the entire record
-        if (savedRecord.getErrorUserList().isEmpty()) {
-            errorRecordService.deleteErrorRecordById(savedRecord.getId());
+        if (uploadHistory.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
-        return modelMapper.map(savedUser, UserDTO.class);
+        try {
+            // 1 Read JSON → List<InvalidUserError>
+            List<InvalidUserError> errorList =
+                    objectMapper.readValue(
+                            uploadHistory.getErrorRecord(),
+                            new TypeReference<List<InvalidUserError>>() {}
+                    );
+            // 2 Find the invalid User by rowNumber
+            InvalidUserError toFix = errorList.stream()
+                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .findFirst()
+                    .orElseThrow(() -> new ErrorRecordException(ErrorCode.INVALID_USER_NOT_ACTIVE));
+
+            // 3 Remove the resolved error record
+            errorList.remove(toFix);
+            // 4 Save updated JSON back to DB
+            uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+            //update error record number
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setUpdatedAt(LocalDateTime.now());
+            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            //if no error record then status is success
+            if(hasNoErrors(savedUploadHistory1)){
+                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+            }
+            uploadHistoryService.save(savedUploadHistory1);
+
+            // 5 Save and return corrected user
+            if(userRepo.existsByEmail(userDTO.getEmail())){
+                throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+            if(userRepo.existsByMobileNumber(userDTO.getMobileNumber())){
+                throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
+            }
+            User user = new User();
+            BeanUtils.copyProperties(userDTO,user);
+            User savedUser = userRepo.save(user);
+
+
+
+            return modelMapper.map(savedUser, UserDTO.class);
+
+        } catch (Exception e) {
+            log.error("Exception in updateErrorRecord", e);
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
+        }
     }
 
 
@@ -248,14 +256,67 @@ public class ErrorRecordHandler {
         log.info("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
     }
 
-    public void deleteUserErrorRecordByEmail(String oldEmail,String uploadHistoryId) {
-        //delete error record from mongo error records
-        ErrorRecord errorRecord =  errorRecordService.findErrorRecordByUploadHistoryId(uploadHistoryId).orElseThrow(
-                ()-> new ExcelException(ErrorCode.NO_ERROR_RECORDS)
-        );
-        errorRecord.getErrorUserList().removeIf(user -> oldEmail.equalsIgnoreCase(user.getEmail()));
-        ErrorRecord savedRecord = errorRecordService.saveErrorRecord(errorRecord);
+    public void deleteUserErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
+        log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
+
+        UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
+        if (uploadHistory.getErrorRecord() == null) {
+            throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
+        }
+
+        try {
+            // 1 Read JSON → List<InvalidLeadError>
+            List<InvalidUserError> errorList =
+                    objectMapper.readValue(
+                            uploadHistory.getErrorRecord(),
+                            new TypeReference<List<InvalidUserError>>() {
+                            }
+                    );
+            // 2 Find the invalid lead by rowNumber
+            InvalidUserError toFix = errorList.stream()
+                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .findFirst()
+                    .orElseThrow(() ->{
+                        log.error("Exception : ErrorRecordHandler.deleteErrorRecordByEmail -->InvalidLeadNotFound");
+                        return new ErrorRecordException(ErrorCode.INVALID_USER_NOT_ACTIVE);
+                    });
+            errorList.remove(toFix);
+            // 4 Save updated JSON back to DB
+            uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+            //update error record number
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setUpdatedAt(LocalDateTime.now());
+            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            //if no error record then status is success
+           if(hasNoErrors(savedUploadHistory1)){
+               savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+           }
+            uploadHistoryService.save(savedUploadHistory1);
+        } catch (Exception e) {
+            log.error("Exception in updateErrorRecord", e);
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
+        }
+        log.info("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
     }
+
+    private boolean hasNoErrors(UploadHistory history) {
+        try {
+            String json = history.getErrorRecord();
+            if (json == null) return true;
+            // Normalize whitespace
+            json = json.trim();
+            if ("[]".equals(json)) return true;
+            // Parse and check size
+            List<Object> items = objectMapper.readValue(json, new TypeReference<List<Object>>() {});
+            return items == null || items.isEmpty();
+        } catch (Exception e) {
+            log.warn("Failed to parse errorRecord; treating as not empty. Value: {}", history.getErrorRecord(), e);
+            return false;
+        }
+    }
+
+
 
 
 }

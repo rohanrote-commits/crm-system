@@ -1,4 +1,5 @@
 jQuery(function () {
+    let rowNumber = null;
 
     const token = sessionStorage.getItem("Authorization");
       // Parse JWT
@@ -23,7 +24,7 @@ jQuery(function () {
    const payload = parseJwt(token);
   const id = sessionStorage.getItem("id");
   let docId;
-  let uploadHistoryId;
+  let uploadHistoryId = id;
   let oldEmail;
 
  let errorTable = $("#lead-table").DataTable({
@@ -168,13 +169,13 @@ jQuery(function () {
         data: null,
         title: "Action",
         orderable: false,
-        render: function (row) {
+        render: function (data,type,row) {
             return `
                 <div class="d-flex justify-content-center gap-2">
                     <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
+                    <button class="btn btn-sm btn-danger delete-lead" data-row="${data.rowNumber}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>`;
@@ -266,6 +267,8 @@ $("#lead-table").on("click", ".edit-lead", function () {
 
     // Set the current role of the record
     $("#userRole").val(rowData.role);
+        console.log(rowData)
+      rowNumber = rowData.rowNumber;
 
     oldEmail = rowData.email;
     $("#userModal").modal("show");
@@ -371,7 +374,7 @@ $("#userForm").validate({
             role: $("#userRole").val()
         };
 
-        const url = `http://localhost:8080/crm/error/user/${(oldEmail)}/${uploadHistoryId}`;
+        const url = `http://localhost:8080/crm/error/user/${(rowNumber)}/${uploadHistoryId}`;
 
         $.ajax({
             url: url,
@@ -441,7 +444,9 @@ $("#userForm").validate({
       $(document).on("click", ".delete-lead", function () {
         showDeleteConfirm().then((ok) => {
   if (!ok) return;
-          deleteEmail = $(this).data("email");
+const rowData = $("#lead-table").DataTable().row($(this).parents("tr")).data();
+    deleteEmail = rowData.email;       // keep your email
+    rowNumber = rowData.rowNumber;     // set the rowNumber for API
           $("#deleteConfirmModal").modal("show");
       });
       // confirm delete
@@ -450,7 +455,7 @@ $("#userForm").validate({
           if (!deleteEmail) return;
 
           $.ajax({
-              url: `http://localhost:8080/crm/error/user/${deleteEmail}/${uploadHistoryId}`,
+              url: `http://localhost:8080/crm/error/user/${rowNumber}/${uploadHistoryId}`,
               type: "DELETE",
               data: { email: deleteEmail },
               headers: { "Authorization": "Bearer " + token },

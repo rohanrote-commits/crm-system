@@ -39,9 +39,9 @@ public enum ErrorCode {
     ERROR_IN_FILE_PROCESSING("EFP", "Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE),
 
-
+   INVALID_USER_NOT_ACTIVE("INUA", "Invalid User Not Found", HttpStatus.NOT_ACCEPTABLE),
     PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),
-    INVALID_LEAD_NOT_FOUND("ILNF", "Invalid Lead Not Found" , HttpStatus.NOT_FOUND ),;
+    INVALID_LEAD_NOT_FOUND("ILNF", "Invalid Lead Not Found" , HttpStatus.NOT_FOUND );
 
     private final String code;
     private final String message;
