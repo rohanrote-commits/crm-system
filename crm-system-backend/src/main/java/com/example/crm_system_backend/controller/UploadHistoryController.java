@@ -3,6 +3,7 @@ package com.example.crm_system_backend.controller;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.handler.DownloadHandler;
 import com.example.crm_system_backend.handler.UploadedHistoryHandler;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -29,6 +30,7 @@ public class UploadHistoryController {
     private final UploadedHistoryHandler uploadedHistoryHandler;
 
     private  final  ModelMapper modelMapper;
+    private final DownloadHandler downloadHandler;
 
     /**
      * Retrieves the upload history associated with a specific user based on their email.
@@ -49,15 +51,15 @@ public class UploadHistoryController {
     }
 
     /**
-     * Retrieves the error file specified by the filename from the server.
+     * Retrieves the error file specified by the uploadHistoryId from the server.
      *
-     * @param filename the name of the file to be retrieved
+     * @param uploadHistoryId the name of the file to be retrieved
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
-    @GetMapping("/lead/error/{filename}")
-    public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String filename){
-        File file = new File(filename);
+    @GetMapping("/lead/error/{uploadHistoryId}")
+    public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String uploadHistoryId){
+        File file = downloadHandler.downloadErrorFile(uploadHistoryId);
         byte[] fileBytes = null;
         try {
             fileBytes = FileUtils.readFileToByteArray(file);
@@ -66,7 +68,7 @@ public class UploadHistoryController {
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+file.getName())
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(fileBytes);
     }

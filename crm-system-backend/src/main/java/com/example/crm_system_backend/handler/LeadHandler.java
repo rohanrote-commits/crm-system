@@ -141,11 +141,11 @@ public class LeadHandler implements IHandler<LeadDto> {
         modelMapper.map(leadDto, oldLead);
         oldLead.setId(leadId);
         oldLead.setUpdatedAt(new Date());
-        leadService.editLead(leadId,oldLead);
         Set<Product> productSet =  leadDto.getInterestedModules().stream().map(
                 productService::getProductByName
         ).collect(Collectors.toSet());
         oldLead.setInterestedProducts(productSet);
+        leadService.editLead(leadId,oldLead);
         log.info("Exit: LeadHandler.edit");
         return  modelMapper.map(oldLead,LeadDto.class);
     }

@@ -90,7 +90,6 @@ public class ErrorRecordHandler {
         if (uploadHistory.getErrorRecord() == null) {
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
-
         try {
             // 1 Read JSON → List<InvalidLeadError>
             List<InvalidLeadError> errorList =
@@ -115,8 +114,8 @@ public class ErrorRecordHandler {
            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
            //if no error record then status is success
            if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
-               uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-               uploadHistoryService.save(uploadHistory);
+               savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+               uploadHistoryService.save(savedUploadHistory1);
            }
 
             // 5 Save corrected lead as valid lead
@@ -208,8 +207,8 @@ public class ErrorRecordHandler {
             UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
             //if no error record then status is success
             if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
-                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-                uploadHistoryService.save(uploadHistory);
+                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(savedUploadHistory1);
             }
         } catch (Exception e) {
             log.error("Exception in updateErrorRecord", e);
