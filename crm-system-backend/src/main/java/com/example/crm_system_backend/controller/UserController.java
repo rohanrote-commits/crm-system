@@ -84,6 +84,7 @@ public class UserController {
     /**
      * Retrieves a list of all user details accessible to the requester. The request
      * is authorized based on the role "MASTER_ADMIN".
+     *
      * @param request the HTTP servlet request containing attributes like the `userId` of the requester
      * @return a ResponseEntity containing a list of UserDTOs representing user details and an HTTP status of OK
      */

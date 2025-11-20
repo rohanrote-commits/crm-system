@@ -58,7 +58,9 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 24px 32px;
   transition: all 0.2s ease-in-out;
+  
 }
+
 
 .dashboard-section:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -113,6 +115,7 @@ body {
 
 /* Upload History Table */
 .upload-history-table-container {
+  /* display: -webkit-inline-box; */
   margin-top: 10px;
 }
 

@@ -109,41 +109,41 @@ jQuery(function () {
             return highlightError(data, row, "mobileNumber");
         }
     },
-    {
-        data: "address",
-        title: "Address",
-        render: function (data, type, row) {
-            return highlightError(data, row, "address");
-        }
-    },
-    {
-        data: "city",
-        title: "City",
-        render: function (data, type, row) {
-            return highlightError(data, row, "city");
-        }
-    },
-    {
-        data: "state",
-        title: "State",
-        render: function (data, type, row) {
-            return highlightError(data, row, "state");
-        }
-    },
-    {
-        data: "country",
-        title: "Country",
-        render: function (data, type, row) {
-            return highlightError(data, row, "country");
-        }
-    },
-    {
-        data: "pinCode",
-        title: "Pin Code",
-        render: function (data, type, row) {
-            return highlightError(data, row, "pinCode");
-        }
-    },
+    // {
+    //     data: "address",
+    //     title: "Address",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "address");
+    //     }
+    // },
+    // {
+    //     data: "city",
+    //     title: "City",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "city");
+    //     }
+    // },
+    // {
+    //     data: "state",
+    //     title: "State",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "state");
+    //     }
+    // },
+    // {
+    //     data: "country",
+    //     title: "Country",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "country");
+    //     }
+    // },
+    // {
+    //     data: "pinCode",
+    //     title: "Pin Code",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "pinCode");
+    //     }
+    // },
     {
         data: "role",
         title: "Role",
@@ -151,20 +151,20 @@ jQuery(function () {
             return highlightError(data, row, "role");
         }
     },
-    {
-        data: "registeredBy",
-        title: "Registered By",
-        render: function (data, type, row) {
-            return highlightError(data, row, "registeredBy");
-        }
-    },
-    {
-        data: "registeredOn",
-        title: "Registered On",
-        render: function (data) {
-            return data ? new Date(data).toLocaleString("en-GB") : "-";
-        }
-    },
+    // {
+    //     data: "registeredBy",
+    //     title: "Registered By",
+    //     render: function (data, type, row) {
+    //         return highlightError(data, row, "registeredBy");
+    //     }
+    // },
+    // {
+    //     data: "registeredOn",
+    //     title: "Registered On",
+    //     render: function (data) {
+    //         return data ? new Date(data).toLocaleString("en-GB") : "-";
+    //     }
+    // },
     {
         data: null,
         title: "Action",
@@ -223,6 +223,10 @@ $('#userRole').html(roleOptions);
 
 // Edit User (Error Record)
 $("#lead-table").on("click", ".edit-lead", function () {
+
+    const rowData = $("#lead-table").DataTable().row($(this).parents("tr")).data();
+    rowNumber  = rowData.rowNumber;
+    deleteEmail = rowData.email;
     showUpdateConfirm().then((ok) => {
   if (!ok) return;
     const rowData = $("#lead-table")
@@ -231,7 +235,7 @@ $("#lead-table").on("click", ".edit-lead", function () {
         .data();
 
     $("#userModalLabel").text("Edit User");
-    $("#saveUserBtn").text("Update User");
+    $("#saveUserBtn").text("Update");
 
     $("#userId").val(rowData.id);
     $("#userFirstName").val(rowData.firstName);
@@ -241,6 +245,7 @@ $("#lead-table").on("click", ".edit-lead", function () {
     $("#userPassword").val(rowData.password);
     $("#userConfirmPassword").val(rowData.password);
     $("#userAddress").val(rowData.address);
+
 
     if (rowData.address && rowData.address.trim() !== "") {
         $("#addressFields").removeClass("d-none");
@@ -254,6 +259,47 @@ $("#lead-table").on("click", ".edit-lead", function () {
         $("#userState").val("");
         $("#userCountry").val("");
         $("#userPinCode").val("");
+    }
+    const fieldIdMap = {
+        firstName: "userFirstName",
+        lastName: "userLastName",
+        email: "userEmail",
+        mobileNumber: "userMobileNumber",
+        password: "userPassword",
+        confirmPassword: "userConfirmPassword",
+        address: "userAddress",
+        city: "userCity",
+        state: "userState",
+        country: "userCountry",
+        pinCode: "userPinCode",
+        role: "userRole"
+    };
+
+    // Set field values
+    for (const field in fieldIdMap) {
+        const inputId = fieldIdMap[field];
+        $(`#${inputId}`).val(rowData[field] || "");
+    }
+     // Highlight backend errors
+    for (const field in fieldIdMap) {
+        const inputId = fieldIdMap[field];
+        const errorMsg = rowData.errors && rowData.errors[field] ? rowData.errors[field] : null;
+
+        if (errorMsg) {
+            const $input = $(`#${inputId}`);
+            $input.addClass("is-invalid");
+            if ($input.next(".error-message").length === 0) {
+                $input.after(`<span class="error-message">${errorMsg}</span>`);
+            } else {
+                $input.next(".error-message").text(errorMsg);
+            }
+
+            // Remove error when user starts typing
+            $input.off("input.clearError").on("input.clearError", function () {
+                $input.removeClass("is-invalid");
+                $input.next(".error-message").remove();
+            });
+        }
     }
 
     // Dynamically populate role options again based on logged-in user
@@ -356,6 +402,8 @@ $("#userForm").validate({
     unhighlight: function(element) {
         $(element).removeClass('error');
     },
+        onkeyup: function(element) {
+        $(element).valid()},
     submitHandler: function(form) {
         // Your existing AJAX update code
         const userData = {
@@ -372,7 +420,7 @@ $("#userForm").validate({
             role: $("#userRole").val()
         };
 
-        const url = `http://localhost:8080/crm/error/user/${(oldEmail)}/${uploadHistoryId}`;
+        const url = `http://localhost:8080/crm/error/user/${(rowNumber)}/${uploadHistoryId}`;
 
         $.ajax({
             url: url,
@@ -393,7 +441,14 @@ $("#userForm").validate({
         });
     }
 });
+    $('.pw-toggle').on('click', function() {
+    const input = $(this).siblings('input'); // input inside same wrapper
+    const isHidden = input.attr('type') === 'password';
+    input.attr('type', isHidden ? 'text' : 'password');
 
+    $(this).attr('aria-pressed', isHidden);
+    $(this).attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+  });
 
       $("#downloadErrorFile").click(function (e) {
         console.log("Now in downloadErrorFile");

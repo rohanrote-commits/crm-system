@@ -72,6 +72,7 @@ public class ErrorRecordHandler {
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
         if (history.getErrorRecord() == null) {
+            log.error("Exit : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
@@ -80,12 +81,25 @@ public class ErrorRecordHandler {
             List<InvalidLeadError> errorList =
                     mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
 
+            log.info("Exit: ErrorRecordHandler.findErrorRecordByUploadHistoryId");
             return errorList;
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate Excel from JSON", e);
         }
     }
+
+    /**
+     * Retrieves a list of invalid user error records based on the given upload history ID.
+     * This method fetches the associated upload history, extracts the error records in JSON format,
+     * and converts them into a list of {@code InvalidUserError} objects.
+     *
+     * @param uploadHistoryId the unique identifier of the upload history containing error records
+     * @return a list of {@code InvalidUserError} objects representing the invalid user errors
+     *         associated with the provided upload history
+     * @throws UploadHistoryException if the upload history does not contain error records
+     * @throws RuntimeException if there is an issue while processing the error records
+     */
     public List<InvalidUserError> findUserErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
@@ -152,6 +166,18 @@ public class ErrorRecordHandler {
         }
     }
 
+    /**
+     * Updates the error record for a user in the system by removing the error from the upload history
+     * and saving the updated user data.
+     *
+     * @param rowNumber the row number of the invalid user record to be fixed
+     * @param uploadHistoryId the identifier for the upload history containing error records
+     * @param userDTO the updated user details to replace the invalid user record
+     * @return the updated {@code UserDTO} object containing corrected user details
+     * @throws UploadHistoryException if the upload history does not exist or contains no error records
+     * @throws ErrorRecordException if the specified error record cannot be found or other issues occur during processing
+     * @throws UserException if a user with the provided email or mobile number already exists
+     */
     @Transactional
     public UserDTO updateUserErrorRecord(int rowNumber, String uploadHistoryId, UserDTO userDTO){
         log.info("Enter: ErrorRecordHandler.updateErrorRecord");
@@ -191,9 +217,11 @@ public class ErrorRecordHandler {
 
             // 5 Save and return corrected user
             if(userRepo.existsByEmail(userDTO.getEmail())){
+                log.error("User with email {} already exists", userDTO.getEmail());
                 throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
             }
             if(userRepo.existsByMobileNumber(userDTO.getMobileNumber())){
+                log.error("User with mobile number {} already exists", userDTO.getMobileNumber());
                 throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
             }
             User user = new User();
@@ -260,6 +288,7 @@ public class ErrorRecordHandler {
 
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
         if (uploadHistory.getErrorRecord() == null) {
+            log.error("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
@@ -300,6 +329,7 @@ public class ErrorRecordHandler {
     }
 
     private boolean hasNoErrors(UploadHistory history) {
+        log.info("Enter: ErrorRecordHandler.hasNoErrors");
         try {
             String json = history.getErrorRecord();
             if (json == null) return true;

@@ -28,7 +28,6 @@ public class UploadHistoryController {
 
 
     private final UploadedHistoryHandler uploadedHistoryHandler;
-
     private  final  ModelMapper modelMapper;
     private final DownloadHandler downloadHandler;
     private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
@@ -46,6 +45,13 @@ public class UploadHistoryController {
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
 
+    /**
+     * Retrieves the upload history for a specific user based on their email.
+     *
+     * @param email the email address of the user whose upload history is to be retrieved
+     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
+     *         the upload history associated with the user
+     */
     @GetMapping("/user/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@PathVariable String email){
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUserUploadHistoryByEmail(email);
@@ -75,6 +81,13 @@ public class UploadHistoryController {
                 .body(fileBytes);
     }
 
+    /**
+     * Retrieves the error file specified by the filename from the server.
+     *
+     * @param filename the name of the file to be retrieved
+     * @return a ResponseEntity containing the file as a byte array along with the appropriate
+     * HTTP headers and content type for a file download
+     */
     @GetMapping("/user/error/{filename}")
     public ResponseEntity<byte []> getUserErrorFile(@PathVariable String filename){
         File file = new File(filename);

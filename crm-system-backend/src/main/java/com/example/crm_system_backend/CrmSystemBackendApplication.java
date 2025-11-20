@@ -8,9 +8,9 @@ import org.springframework.scheduling.annotation.AsyncResult;
 @SpringBootApplication
 public class CrmSystemBackendApplication {
 
-
 	public static void main(String[] args) {
-		SpringApplication.run(CrmSystemBackendApplication.class, args);
+
+        SpringApplication.run(CrmSystemBackendApplication.class, args);
 	}
 
 }

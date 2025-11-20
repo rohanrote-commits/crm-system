@@ -107,6 +107,7 @@ body {
   padding: 40px;
   overflow-x: auto; 
   overflow-y: auto;
+  
 }
 
 .dashboard-section {
@@ -117,6 +118,7 @@ body {
   padding: 30px;
   box-shadow: 0 0 15px rgba(0,0,0,0.05);
   text-align: center;
+  display: -webkit-inline-box;
 }
 .top-container{
   justify-content: center;
@@ -378,7 +380,9 @@ textarea.valid {
     height: 28px;                   /* button height */
     line-height: 1;                /* ensures icon fits */
     padding-right: 10px;
-    min-width: unset;               /* remove default Bootstrap min-width */
+    min-width: unset;
+    margin-left : -50px;  
+    margin-right: -45px;        
 }
 
 /* Reduce gap between buttons inside flex container */
@@ -390,7 +394,7 @@ textarea.valid {
 /* Minimal Action column width */
 #user-table th:nth-child(8),
 #user-table td:nth-child(8) {
-    width: auto;                   /* shrink to fit buttons */
+    width: 50px;                   /* shrink to fit buttons */
     max-width: 200px;               /* optional limit */
     padding: 0.1rem;
     text-align: center;
