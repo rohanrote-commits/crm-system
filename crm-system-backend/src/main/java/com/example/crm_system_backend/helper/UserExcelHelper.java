@@ -57,13 +57,16 @@ public class UserExcelHelper {
      * @return the cell value as a String; an empty String if the cell is null
      */
     private static String getCellValue(Cell cell) {
+        log.info("Enter:UserExcelHelper.getCellValue");
         if (cell == null) return "";
         if (cell.getCellType() == CellType.NUMERIC) {
             if (DateUtil.isCellDateFormatted(cell)) {
                 return cell.getLocalDateTimeCellValue().toLocalDate().toString();
             }
+            log.info("Exit:UserExcelHelper.getCellValue");
             return String.valueOf((long) cell.getNumericCellValue());
         }
+        log.info("Exit:UserExcelHelper.getCellValue");
         return cell.getStringCellValue().trim();
     }
 
@@ -74,6 +77,8 @@ public class UserExcelHelper {
      * @return true if the string is null, empty, or contains only whitespace characters; false otherwise
      */
     private static boolean isEmpty(String value) {
+        log.info("Enter:UserExcelHelper.isEmpty");
+        log.info("Exit:UserExcelHelper.isEmpty");
         return value == null || value.trim().isEmpty();
     }
 
@@ -86,6 +91,7 @@ public class UserExcelHelper {
      * @param errorStyle the cell style to apply for indicating the error
      */
     private static void markError(Cell cell, String message, CellStyle errorStyle) {
+        log.info("Enter:UserExcelHelper.markError");
         if (cell == null) return;
         cell.setCellStyle(errorStyle);
         Sheet sheet = cell.getSheet();
@@ -97,6 +103,7 @@ public class UserExcelHelper {
         Comment comment = drawing.createCellComment(anchor);
         comment.setString(factory.createRichTextString(message));
         cell.setCellComment(comment);
+        log.info("Exit:UserExcelHelper.markError");
     }
 
     /**
@@ -107,12 +114,15 @@ public class UserExcelHelper {
      * @return true if the row is empty; false otherwise
      */
     private static boolean isRowEmpty(Row row) {
+        log.info("Enter:UserExcelHelper.isRowEmpty");
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
             if (cell != null && cell.getCellType() != CellType.BLANK) {
+                log.info("Exit:UserExcelHelper.isRowEmpty");
                 return false;
             }
         }
+        log.info("Exit:UserExcelHelper.isRowEmpty");
         return true;
     }
 
@@ -131,10 +141,12 @@ public class UserExcelHelper {
      */
     @Async("bulkUploadExecutor")
     public CompletableFuture<UserList> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
+        log.info("Enter:UserExcelHelper.processExcelData");
         int countDown = 5;
 
 
         if (!this.validateExcelHeader(file)) {
+            log.error("Exit:processExcelData Excel header mismatch. Please check the template and try again.");
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
@@ -335,7 +347,7 @@ public class UserExcelHelper {
         }
         catch (IOException e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
-            log.error(e.getMessage());
+            log.error("Exit: UserExcelHelper.processExcelData IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
         ObjectMapper mapper = new ObjectMapper();
@@ -343,13 +355,14 @@ public class UserExcelHelper {
         try {
             jsonData = mapper.writeValueAsString(jsonErrorList);
         } catch (JsonProcessingException e) {
-            log.error("Exception: LeadExcelHelper.processExcelData {}",e);
+            log.error("Exit: LeadExcelHelper.processExcelData {}",e);
             throw new RuntimeException(e);
         }
         uploadHistory.setErrorRecord(jsonData);
         uploadHistory.setTotalRecords((users.size() + errorRows.size()));
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(users.size());
+        log.info("Exit:UserExcelHelper.processExcelData");
         return CompletableFuture.completedFuture(userList);
     }
 
@@ -363,10 +376,13 @@ public class UserExcelHelper {
      * @throws ExcelException if an I/O error occurs while writing the workbook data
      */
     private byte[] getErrorFileAsBytes(Workbook workbook) {
+        log.info("Enter:UserExcelHelper.getErrorFileAsBytes");
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             workbook.write(out);
+            log.info("Exit:UserExcelHelper.getErrorFileAsBytes");
             return out.toByteArray();
         } catch (IOException e) {
+            log.error("Exit:UserExcelHelper.getErrorFileAsBytes IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
@@ -382,6 +398,7 @@ public class UserExcelHelper {
      */
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/UsersTemplate.xlsx");
+        log.info("Enter:UserExcelHelper.validateExcelHeader");
 
         try (
                 InputStream uploadedIs = file.getInputStream();
@@ -398,6 +415,7 @@ public class UserExcelHelper {
             Row templateHeader = templateSheet.getRow(0);
 
             if (uploadedHeader == null || templateHeader == null) {
+                log.info("Header row is null");
                 return false;
             }
 
@@ -405,6 +423,7 @@ public class UserExcelHelper {
             int templateCells = templateHeader.getLastCellNum();
 
             if (uploadedCells != templateCells) {
+                log.info("Header mismatch: expected {} columns, found {}", templateCells, uploadedCells);
                 return false; // Different number of columns
             }
 
@@ -418,14 +437,15 @@ public class UserExcelHelper {
                 if (!uploadedHeaderValue.equalsIgnoreCase(templateHeaderValue)) {
                     log.error("Header mismatch at column {}: expected '{}', found '{}'",
                             i, templateHeaderValue, uploadedHeaderValue);
+                    log.info("Exit:UserExcelHelper.validateExcelHeader");
                     return false;
                 }
             }
-
+            log.info("Exit:UserExcelHelper.validateExcelHeader");
             return true; // All headers match
 
         } catch (IOException e) {
-            log.error("Excel header validation failed: {}", e.getMessage());
+            log.error("Exit:UserExcelHelper.validateExcelHeader IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
@@ -444,6 +464,7 @@ public class UserExcelHelper {
      */
     public void writeErrorFile(List<Row> errorRows, UploadHistory uploadHistory) throws IOException {
         File templateFile = new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+        log.info("Enter:UserExcelHelper.writeErrorFile");
 
         try (
                 FileInputStream fis = new FileInputStream(templateFile);
@@ -500,11 +521,12 @@ public class UserExcelHelper {
             log.info("Error file generated with {} invalid rows", errorRows.size());
 
         } catch (IOException e) {
-            log.error("Error writing error file: {}", e.getMessage());
+            log.error("Exit:UserExcelHelper.writeErrorFile IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
     private User extractUser(Row row) {
+        log.info("Enter:UserExcelHelper.extractUser");
         User user = new User();
         user.setFirstName(getCellValue(row.getCell(1)));
         user.setLastName(getCellValue(row.getCell(2)));
@@ -521,11 +543,8 @@ public class UserExcelHelper {
         }else{
             user.setRole(Roles.ADMIN);
         }
-
-
         user.setPassword(getCellValue(row.getCell(11)));
-
-
+        log.info("Exit:UserExcelHelper.extractUser");
         return user;
     }
 

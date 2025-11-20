@@ -31,7 +31,8 @@ public class UserService implements IUserService {
      */
     @Override
     public User registerUser(User user) {
-
+        log.info("Enter : UserService:registerUser");
+        log.info("Exit : UserService:registerUser");
         return userRepo.save(user);
     }
 
@@ -53,8 +54,9 @@ public class UserService implements IUserService {
      */
     @Override
     public void deleteUser(User user) {
-
+log.info("Enter : UserService:deleteUser");
         userRepo.delete(user);
+        log.info("Exit : UserService:deleteUser");
     }
 
     /**
@@ -64,6 +66,8 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUsers() {
+        log.info("Enter : UserService:getAllUsers");
+
         return List.of();
     }
 
@@ -80,7 +84,7 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUserByMasterAdmin(Long id) {
-        log.info("Request for getting users is in user Handler for master admin");
+       log.info("Enter : UserService:getAllUserByMasterAdmin");
         List<User> user = new ArrayList<>();
         List<User> users = userRepo.findUsersByRegisteredBy(id);
         user.addAll(users);
@@ -94,6 +98,7 @@ public class UserService implements IUserService {
             user.addAll(users2);
             log.info("users2:{}", users2);
         });
+        log.info("Exit : UserService:getAllUserByMasterAdmin");
         return user;
     }
 
@@ -104,6 +109,9 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUsersByAdmin(Long id) {
+        log.info("Enter : UserService:getAllUsersByAdmin");
+        log.info("id:{}", id);
+        log.info("Exit : UserService:getAllUsersByAdmin");
         return userRepo.findUsersByRegisteredBy(id);
     }
 
@@ -113,6 +121,9 @@ public class UserService implements IUserService {
      **/
     @Override
     public Optional<User> getUser(UserDTO dto) {
+        log.info("Enter : UserService:getUser");
+        log.info("dto:{}", dto);
+        log.info("Exit : UserService:getUser");
         return userRepo.findByEmailAndPassword(dto.getEmail(), dto.getPassword());
     }
 
@@ -124,7 +135,8 @@ public class UserService implements IUserService {
      */
     @Override
     public boolean checkUserByEmail(String email) {
-
+        log.info("Enter : UserService:checkUserByEmail");
+        log.info("Exiit : UserService:checkUserByEmail");
         return userRepo.existsByEmail(email);
     }
 
@@ -136,7 +148,8 @@ public class UserService implements IUserService {
      */
     @Override
     public boolean checkUserByMobileNumber(String number) {
-
+        log.info("Enter : UserService:checkUserByMobileNumber");
+        log.info("Exiit : UserService:checkUserByMobileNumber");
         return userRepo.existsByMobileNumber(number);
     }
 
@@ -146,6 +159,9 @@ public class UserService implements IUserService {
      * @param id the unique ID of the user to be retrieved
      */
     public Optional<User> getUserById(Long id) {
+        log.info("Enter : UserService:getUserById");
+        log.info("id:{}", id);
+        log.info("Exit : UserService:getUserById");
         return userRepo.findById(id);
     }
 
@@ -167,11 +183,16 @@ public class UserService implements IUserService {
      * @return an Optional containing the user entity if found, or an empty Optional if no user is found
      */
     public Optional<User> getUserByEmail(String email) {
+        log.info("Enter : UserService:getUserByEmail");
+        log.info("email:{}", email);
+        log.info("Exit : UserService:getUserByEmail");
         return userRepo.getUserByEmail(email);
     }
 
     public Optional<List<User>> getAllUsersRegisterById(Long id) {
+        log.info("Enter: UserService.getAllUsersRegisterById");
         List<User> users = userRepo.findUsersByRegisteredBy(id);
+        log.info("Exit: UserService.getAllUsersRegisterById");
         return Optional.ofNullable(users);
     }
 }

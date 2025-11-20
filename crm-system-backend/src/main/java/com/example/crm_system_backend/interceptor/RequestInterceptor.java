@@ -41,6 +41,7 @@ public class RequestInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        log.info("Enter: RequestInterceptor.preHandle");
         String uri = request.getRequestURI();
 
         if (uri.startsWith("/crm/")) {
@@ -71,6 +72,7 @@ public class RequestInterceptor implements HandlerInterceptor {
                 userSessionService.deleteSessionByEmail(email);
 
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
+                log.error("Exit: RequestInterceptor.preHandle with error: Session expired for user: {}", email);
                 throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
 
@@ -79,12 +81,14 @@ public class RequestInterceptor implements HandlerInterceptor {
                 userSessionService.deleteSessionByEmail(email);
 
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
+                log.error("Exit: RequestInterceptor.preHandle with error: Session expired for user: {}", email);
                 throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
 
             // ---- STEP 3: Validate active session ----
             if (!userSessionService.findSessionByToken(token, email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("Exit: RequestInterceptor.preHandle with error: Another session active for user: {}", email);
                 throw new UserException(ErrorCode.ANOTHER_SESSION_ACTIVE_FOR_USER);
             }
 
@@ -92,6 +96,7 @@ public class RequestInterceptor implements HandlerInterceptor {
             String role = jwtUtil.getRole(token);
             if (role == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("Exit: RequestInterceptor.preHandle with error: User not found for token: {}", token);
                 throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
 

@@ -57,7 +57,16 @@ public class UploadedHistoryHandler {
         }
 
 
+    /**
+     * Retrieves a list of upload history records for a user identified by their email.
+     * The records returned are filtered to include only those associated with the {@code USER} file template type.
+     *
+     * @param email the email address of the user whose upload history is to be retrieved
+     * @return a list of {@code UploadHistoryDto} objects representing the user's upload history
+     * @throws UserException if no user is found with the provided email address
+     */
     public List<UploadHistoryDto> findUserUploadHistoryByEmail(String email) {
+        log.info("Enter : findUserUploadHistoryByEmail");
         try {
             List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream()
                     .filter(uploadHistory -> {
@@ -67,9 +76,13 @@ public class UploadedHistoryHandler {
                     })
                     .map(uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class))
                     .toList();
+            log.info("Exit : findUserUploadHistoryByEmail");
             return uploadHistoryDtos;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (UserException e) {
+
+            if (log.isErrorEnabled()) {
+                log.error("Exception in findUserUploadHistoryByEmail", e.getMessage());
+            }
             throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
         }
     }

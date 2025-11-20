@@ -28,9 +28,12 @@ $(document).ready(function () {
     return;
   }
 
+  const decoded = parseJwt(token);
+const userRole = decoded ? decoded.role : null; 
 // --- START: ROLE-BASED UI RESTRICTIONS ---
   // Hide Add/Import button for USER role
   if (userRole === "BASIC") {
+      console.log(userRole)
     $("#addUserBtn").hide();
   }
 // --- END: ROLE-BASED UI RESTRICTIONS ---
@@ -276,6 +279,16 @@ showDeleteConfirm().then((ok) => {
       type: "GET",
       headers: { Authorization: "Bearer " + token },
       success: function (userList) {
+          userList.sort((a, b) => {
+        const order = {
+            "MASTER_ADMIN": 1,
+            "ADMIN": 2,
+            "BASIC": 3
+        };
+        return order[a.role] - order[b.role];
+    });
+
+      
         // Initialize DataTable as before
         const table = $("#user-table").DataTable({
           pageLength: 5,

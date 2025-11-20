@@ -57,12 +57,13 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     @Override
     public UserDTO save(UserDTO userDTO) {
+        log.info("Enter : UserHandler:save");
         if (userService.checkUserByEmail(userDTO.getEmail())) {
             log.error("Email already exists: {}", userDTO.getEmail());
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         if (userService.checkUserByMobileNumber(userDTO.getMobileNumber())) {
-            log.error("Mobile number already exists: {}", userDTO.getMobileNumber());
+            log.error("Exit: UserHandler:save with error: Email already exists: {}", userDTO.getEmail());
             throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
         }
         User user = new User();
@@ -72,12 +73,13 @@ public class UserHandler implements IHandler<UserDTO> {
                     user.getState() != null ||
                     user.getCountry() != null ||
                     user.getPinCode() != null) {
-                log.error("Invalid address: {}", user.getAddress());
+                log.error("Exit: UserHandler:save with error: Invalid address: " + user.getAddress());
                 throw new UserException(ErrorCode.INVALID_ADDRESS);
             }
         }
         user.setRegisteredOn(java.time.LocalDateTime.now());
         BeanUtils.copyProperties(userService.registerUser(user), userDTO);
+        log.info("Exit : UserHandler:save");
         return userDTO;
     }
 
@@ -101,9 +103,10 @@ public class UserHandler implements IHandler<UserDTO> {
      * @throws UserException if the user with the specified ID is not found
      */
     public User getById(Long id) {
+        log.info("Request for getting user is in user Handler for user id" + id);
         return userService.getUserById(id).orElseThrow(() -> {
-                log.error("User not found with id: " + id );
-                throw new UserException(ErrorCode.USER_NOT_FOUND);
+            log.error("User not found with id: " + id);
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
         });
     }
 
@@ -118,24 +121,23 @@ public class UserHandler implements IHandler<UserDTO> {
      * @return a list of {@code UserDTO} objects representing the users
      */
     public List<UserDTO> getUsers(Long id) {
-        log.info("Request for getting users is in user Handler for user id" + id);
+        log.info("Enter : UserHandler:getUsers");
         List<User> users = new ArrayList<>();
         User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {
             log.info("Request for getting users is in user Handler for master admin");
             users = userService.getAllUserByMasterAdmin(id);
         } else {
-            if(userRepo.findRoleById(id)==Roles.ADMIN){
+            if (userRepo.findRoleById(id) == Roles.ADMIN) {
                 users.add(userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
                 log.info("Request for getting users is in user Handler for admin");
                 users = userService.getAllUsersByAdmin(id);
-            }
-            else if(userRepo.findRoleById(id)==Roles.BASIC){
+            } else if (userRepo.findRoleById(id) == Roles.BASIC) {
                 users.add(accessingUser);
                 User registeringUser = userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-                if(registeringUser.getRole()==Roles.MASTER_ADMIN) {
+                if (registeringUser.getRole() == Roles.MASTER_ADMIN) {
                     users.add(registeringUser);
-                }else{
+                } else {
                     users.add(registeringUser);
                     users.add(userService.getUserById(userService.getUserById(accessingUser.getRegisteredBy()).get().getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
                 }
@@ -144,7 +146,7 @@ public class UserHandler implements IHandler<UserDTO> {
             }
 
         }
-
+        log.info("Exit : UserHandler:getUsers");
         return users.stream().map(user -> {
             UserDTO userDTO = new UserDTO();
             userDTO.setEmailOfAdminRegistered(userRepo.findEmailById(user.getRegisteredBy()));
@@ -164,17 +166,19 @@ public class UserHandler implements IHandler<UserDTO> {
      * @throws UserException if the user does not exist or the provided password is already in use
      */
     public UserDTO forgetPassword(UserDTO forgetPasswordDTO) {
+        log.info("Enter : UserHandler:forgetPassword");
         Optional<User> userOptional = userRepo.getUserByEmail(forgetPasswordDTO.getEmail());
         if (userOptional.isPresent()) {
             if (userOptional.get().getPassword().equals(forgetPasswordDTO.getPassword())) {
-                log.warn("Password should not be same as existing password");
+                log.error("Exit: UserHandler:forgetPassword with error: Password should not be same");
                 throw new UserException(ErrorCode.PASSWORD_SHOULD_NOT_BE_SAME);
             }
             userOptional.get().setPassword(forgetPasswordDTO.getPassword());
             userService.registerUser(userOptional.get());
+            log.info("Exit : UserHandler:forgetPassword");
             return forgetPasswordDTO;
         } else {
-            log.warn("User not found" + forgetPasswordDTO.getEmail());
+            log.error("Exit: UserHandler:forgetPassword with error: User not found");
             throw new UserException(ErrorCode.USER_NOT_FOUND);
         }
     }
@@ -190,6 +194,7 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     @Override
     public UserDTO edit(Long Id, UserDTO entity) {
+        log.info("Enter : UserHandler:edit");
         Optional<User> userOptional = userService.getUserById(Id);
         if (userOptional.isPresent()) {
             if (entity.getPassword() != null) {
@@ -207,6 +212,7 @@ public class UserHandler implements IHandler<UserDTO> {
             userOptional.get().setPinCode(entity.getPinCode());
         }
         userService.registerUser(userOptional.get());
+        log.info("Exit : UserHandler:edit");
         return entity;
 
 
@@ -225,6 +231,7 @@ public class UserHandler implements IHandler<UserDTO> {
      *                       or if no updatable fields are provided
      */
     public User editSubUser(Long id, UserDTO userDTO) {
+        log.info("Enter : UserHandler:editSubUser");
         List<UserDTO> users = getUsers(id);
         UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
                 .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
@@ -249,10 +256,13 @@ public class UserHandler implements IHandler<UserDTO> {
                 user.get().setPinCode(userDTO.getPinCode());
             }
             if (!flag) {
+                log.error("Exit: UserHandler:editSubUser with error: User data not updatable");
                 throw new UserException(ErrorCode.USER_DATA_NOT_UPDATABLE);
             }
+            log.info("Exit : UserHandler:editSubUser");
             return userService.registerUser(user.get());
         } else {
+            log.error("Exit: UserHandler:editSubUser with error: User not found");
             throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
         }
 
@@ -271,6 +281,7 @@ public class UserHandler implements IHandler<UserDTO> {
      */
     @Override
     public void delete(Long leadId) {
+        log.info("Enter : UserHandler:delete");
         Optional<User> user = userService.getUserById(leadId);
         if (user.isPresent()) {
             if (user.get().getRole() == Roles.MASTER_ADMIN) {
@@ -287,6 +298,8 @@ public class UserHandler implements IHandler<UserDTO> {
             userService.deleteUser(user.get());
             authHandler.logoutHandler(user.get().getEmail());
         }
+
+        log.info("Exit : UserHandler:delete");
 
     }
 
@@ -306,6 +319,7 @@ public class UserHandler implements IHandler<UserDTO> {
      * @param userDTO the {@code UserDTO} object containing the email of the sub-user to be
      */
     public void deleteSubUser(Long id, UserDTO userDTO) {
+        log.info("Enter : UserHandler:deleteSubUser");
         List<UserDTO> users = getUsers(id);
         UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
                 .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
@@ -313,6 +327,7 @@ public class UserHandler implements IHandler<UserDTO> {
         if (user.isPresent()) {
             userService.deleteUser(user.get());
         } else {
+            log.error("Exit: UserHandler:deleteSubUser with error: User Not Found with email: " + userDTO.getEmail());
             throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
         }
 
@@ -331,13 +346,16 @@ public class UserHandler implements IHandler<UserDTO> {
 
 
     public String bulkUploadUser(MultipartFile file, Long id) {
+        log.info("Enter : UserHandler:bulkUploadUser");
         UploadHistory uploadHistory = new UploadHistory();
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
 
         User savedUser = userService.getUserById(id)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() ->{
+                    log.error("Exit: UserHandler:bulkUploadUser with error: User not found");
+                    return new UserException(ErrorCode.USER_NOT_FOUND);});
         uploadHistory.setUploadedBy(savedUser.getEmail());
         uploadHistory.setFileTemplateType(FileTemplateType.USER);
 
@@ -373,29 +391,28 @@ public class UserHandler implements IHandler<UserDTO> {
 
             }
 
-                if(userList.getValidUserList().isEmpty()){
-                    uploadHistory.setUploadStatus(UploadStatus.FAILED);
-                }else if(!userList.getInvalidUserList().isEmpty() && !userList.getValidUserList().isEmpty()){
-                    uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
-                }
-                else {
-                    uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
-                }
-                uploadHistoryService.save(uploadHistory);
+            if (userList.getValidUserList().isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            } else if (!userList.getInvalidUserList().isEmpty() && !userList.getValidUserList().isEmpty()) {
+                uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+            } else {
+                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+            }
+            uploadHistoryService.save(uploadHistory);
 
-                if(uploadHistory.getUploadStatus()==UploadStatus.SUCCESS){
-                    return "All the Users are uploaded successfully";
-                }else if(uploadHistory.getUploadStatus() == UploadStatus.PARTIALLY_SUCCESS){
-                    return "Partially the Users are uploaded successfully";
-                }else {
-                    return "The Users are not uploaded successfully";
-                }
+            if (uploadHistory.getUploadStatus() == UploadStatus.SUCCESS) {
+                return "All the Users are uploaded successfully";
+            } else if (uploadHistory.getUploadStatus() == UploadStatus.PARTIALLY_SUCCESS) {
+                return "Partially the Users are uploaded successfully";
+            } else {
+                return "The Users are not uploaded successfully";
+            }
 
 
         } catch (Exception e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistoryService.save(uploadHistory);
-            log.error("Error during bulk upload", e);
+           log.error("Exit: UserHandler:bulkUploadUser with error: " + e.getMessage());
             throw new UserException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
 

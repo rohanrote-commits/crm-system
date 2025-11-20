@@ -8,7 +8,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class JacksonConfig {
-
+    /**
+     * Defines a Spring bean that provides a customized {@link ObjectMapper} instance.
+     * The configured ObjectMapper includes support for Java Time API objects
+     * through the addition of the {@link JavaTimeModule} and is set to avoid
+     * serializing dates as timestamps by disabling the {@code WRITE_DATES_AS_TIMESTAMPS} feature.
+     *
+     * @return an {@link ObjectMapper} instance configured with custom settings
+     */
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
