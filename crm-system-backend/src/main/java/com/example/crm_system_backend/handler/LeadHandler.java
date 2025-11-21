@@ -1,11 +1,16 @@
 package com.example.crm_system_backend.handler;
 
 import com.example.crm_system_backend.beans.LeadList;
-import com.example.crm_system_backend.constants.*;
+import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.constants.FileTemplateType;
+import com.example.crm_system_backend.constants.LeadStatus;
+import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
-import com.example.crm_system_backend.entity.*;
+import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
+import com.example.crm_system_backend.entity.UploadHistory;
+import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.LeadException;
-import com.example.crm_system_backend.exception.ProductException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.helper.LeadExcelHelper;
 import com.example.crm_system_backend.service.ILeadService;
@@ -17,10 +22,6 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -174,7 +175,7 @@ public class LeadHandler implements IHandler<LeadDto> {
             );
             uploadHistory.setUploadedBy(user.getEmail());
             // Process Excel
-            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory);
+            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory).get();
             List<Lead> validLeadList = leadList.getValidLeadList();
             List<Lead> invalidLeadList = leadList.getInvalidLeadList();
             // Save valid data
@@ -205,7 +206,6 @@ public class LeadHandler implements IHandler<LeadDto> {
         }
         catch (Exception e) {
             log.error("Exit: LeadHandler.bulkUpload Exception:", e);
-
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             uploadHistory.setUploadedAt(LocalDateTime.now());
             uploadHistoryService.save(uploadHistory);

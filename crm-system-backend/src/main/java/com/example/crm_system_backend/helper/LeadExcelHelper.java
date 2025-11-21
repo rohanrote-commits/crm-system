@@ -2,11 +2,10 @@ package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.LeadList;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
-import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -14,7 +13,6 @@ import com.example.crm_system_backend.service.serviceImpl.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
@@ -25,11 +23,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -40,9 +36,10 @@ public class LeadExcelHelper {
     private static final Logger log = LoggerFactory.getLogger(LeadExcelHelper.class);
     private final ProductService productService;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Async("bulkUploadExecutor")
-    public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
+    public CompletableFuture<LeadList> processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
         log.info("Enter: LeadExcelHelper.processExcelData");
         Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads
         List<Lead> validLeads = new ArrayList<>();
@@ -65,7 +62,7 @@ public class LeadExcelHelper {
             CellStyle errorStyle = workbook.createCellStyle();
             errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
+            Set<String>  products = productService.getProducts().stream().map(Product::getModuleName).collect(Collectors.toSet());
             for (Row row : sheet) {
                 if (row.getRowNum() == 0 || row.getRowNum()==1) continue;// skip header
                 if(isRowEmpty(row)){
@@ -110,10 +107,10 @@ public class LeadExcelHelper {
         uploadHistory.setInvalidRecords(errorRows.size());
         uploadHistory.setValidRecords(validLeads.size());
 
-        ObjectMapper mapper = new ObjectMapper();
+
         String jsonData = null;
         try {
-            jsonData = mapper.writeValueAsString(jsonErrorList);
+            jsonData = objectMapper.writeValueAsString(jsonErrorList);
         } catch (JsonProcessingException e) {
             log.error("Exception: LeadExcelHelper.processExcelData {}",e);
             throw new RuntimeException(e);
@@ -121,7 +118,7 @@ public class LeadExcelHelper {
         uploadHistory.setErrorRecord(jsonData);
         leadList.setValidLeadList(validLeads);
         log.info("Exit: LeadExcelHelper.processExcelData");
-        return leadList;
+        return CompletableFuture.completedFuture(leadList);
     }
 
     // Helper to read any cell as string safely
@@ -166,6 +163,7 @@ public class LeadExcelHelper {
     }
 
     private Lead extractLead(Row row) {
+
         Lead lead = new Lead();
         lead.setFirstName(getCellValue(row.getCell(1)));
         lead.setLastName(getCellValue(row.getCell(2)));
@@ -383,7 +381,7 @@ public class LeadExcelHelper {
 //        }
 //    }
 
-    public File generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
+    public byte[] generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
         log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
         try (
@@ -430,13 +428,10 @@ public class LeadExcelHelper {
                 }
             }
             // Save
-            File file = new File("invalid_leads.xlsx");
-            FileOutputStream out = new FileOutputStream(file);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
-            out.close();
             workbook.close();
-            log.info("Exit : LeadExcelHelper.generateErrorExcelFromJson");
-            return file;
+            return out.toByteArray();
         }
         catch (Exception exception){
             log.error("Error writing error file: {}", exception.getMessage());

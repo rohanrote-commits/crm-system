@@ -195,6 +195,7 @@ $.validator.addMethod(
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
+           showPopup("Error", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
           showAlert(
             isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
           );
@@ -202,7 +203,8 @@ $.validator.addMethod(
             $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
-          showAlert("Something went wrong. Please try again.","warning");
+          showPopup("Error","Something went wrong. Please try again", "error");
+         // showAlert("Something went wrong. Please try again.","warning");
         },
       });
       isEdit = false;
@@ -226,3 +228,12 @@ $.validator.addMethod(
         alert.alert('close');
       }, 5000);
     }
+
+     function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

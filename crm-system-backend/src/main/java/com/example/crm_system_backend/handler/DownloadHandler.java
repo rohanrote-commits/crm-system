@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -86,7 +85,7 @@ public class DownloadHandler {
         return fileBytes;
     }
 
-    public File downloadErrorFile(String uploadHistoryId){
+    public byte[] downloadErrorFile(String uploadHistoryId){
         log.info("Enter: DownloadErrorFile.dowloadErrorFile");
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
         if (uploadHistory.getErrorRecord() == null) {
@@ -101,7 +100,7 @@ public class DownloadHandler {
                             new TypeReference<List<InvalidLeadError>>() {
                             }
                     );
-            File errorFile = leadExcelHelper.generateErrorExcelFromJson(errorList);
+            byte [] errorFile = leadExcelHelper.generateErrorExcelFromJson(errorList);
             log.info("Exit: DownloadErrorFile.dowloadErrorFile");
             return errorFile;
 

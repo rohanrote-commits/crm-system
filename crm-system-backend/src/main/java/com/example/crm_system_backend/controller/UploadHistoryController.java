@@ -67,18 +67,12 @@ public class UploadHistoryController {
      */
     @GetMapping("/lead/error/{uploadHistoryId}")
     public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String uploadHistoryId){
-        File file = downloadHandler.downloadErrorFile(uploadHistoryId);
-        byte[] fileBytes = null;
-        try {
-            fileBytes = FileUtils.readFileToByteArray(file);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
-        }
+        byte [] file = downloadHandler.downloadErrorFile(uploadHistoryId);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+file.getName())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+"Lead_Error_"+uploadHistoryId+".xlsx")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(fileBytes);
+                .body(file);
     }
 
     /**
