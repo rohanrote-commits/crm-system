@@ -49,6 +49,7 @@ $(document).ready(function () {
         window.location.href = "/Frontend/html/login.html";
       } else {
         console.error("Token used:", token);
+         showPopup("Error","Something went wrong. Please try again", "error");
         showAlert("Error while downloading the template.","danger");
       }
     },
@@ -73,3 +74,13 @@ $(document).ready(function () {
         alert.alert('close');
       }, 5000);
     }
+
+    
+     function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

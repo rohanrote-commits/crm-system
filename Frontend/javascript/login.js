@@ -43,9 +43,9 @@ $(document).ready(function () {
                 },
                 error: function (xhr) {
                     if (xhr.status === 404) {
-                        showAlert("Invalid Credentials", "danger");
+                         showPopup("Error","Invalid Credentials", "error");
                     } else {
-                        showAlert("Server Side Error", "danger");
+                        showPopup("Error","Server Side Error", "error");
                     }
                 }
             });
@@ -77,3 +77,12 @@ $(document).ready(function () {
         alert.alert('close');
       }, 5000);
     }
+
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

@@ -66,26 +66,25 @@ public class ErrorRecordHandler {
         );
     }
 
-
-    //changes are here
     public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
         if (history.getErrorRecord() == null) {
-            log.error("Exit : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
+            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId ---> for uploadHistoryId {}",uploadHistoryId);
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
             List<InvalidLeadError> errorList =
-                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
+                    objectMapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
 
             log.info("Exit: ErrorRecordHandler.findErrorRecordByUploadHistoryId");
             return errorList;
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate Excel from JSON", e);
+            log.error(e.toString());
+            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId");
+            throw new ErrorRecordException(ErrorCode.NO_ERROR_RECORDS);
         }
     }
 
@@ -143,8 +142,13 @@ public class ErrorRecordHandler {
 
             // 3 Remove the resolved error record
             errorList.remove(toFix);
+            if(!errorList.isEmpty() ){
+                uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+            } else {
+              uploadHistory.setErrorRecord(null);
+            }
             // 4 Save updated JSON back to DB
-            uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
+
             //update error record number
             uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
             uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
@@ -227,9 +231,6 @@ public class ErrorRecordHandler {
             User user = new User();
             BeanUtils.copyProperties(userDTO,user);
             User savedUser = userRepo.save(user);
-
-
-
             return modelMapper.map(savedUser, UserDTO.class);
 
         } catch (Exception e) {

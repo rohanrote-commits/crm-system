@@ -141,7 +141,7 @@ jQuery(function () {
      
  let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url: `http://localhost:8080/crm/error/lead/records/${id}`,
+        url: `http://localhost:8080/crm/error/records/${id}`,
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,
@@ -163,6 +163,24 @@ jQuery(function () {
 
                 interestedModules: item.lead.interestedProducts?.map(p => p.moduleName) || []
             }));
+        },
+        error: function (xhr) {
+          errorTable.clear().draw();
+            if (xhr.status === 401) {
+                showPopup("Error","Session expired. Login again.", "error");
+                showAlert("Session expired. Login again.", "warning");
+                sessionStorage.clear();
+                window.location.href = "/Frontend/html/login.html";
+                return;
+            }
+            if(xhr.status===400){
+               showPopup("Error","No Invalid Leads Found for this File.", "error");
+              showAlert("No Invalid Leads for the Record","info")
+            }
+            else{
+              showPopup("Error","No Invalid Leads Found.", "error");
+              showAlert("No Invalid Leads Found.", "danger");
+            }
         }
     },
 
@@ -406,6 +424,7 @@ jQuery(function () {
         },
         error: function (err) {
           console.log(err);
+          showPopup("Error","Something went wrong. Please try again.","error");
           showAlert("Something went wrong. Please try again.","warning");
         },
       });
@@ -416,7 +435,7 @@ jQuery(function () {
 
       $("#downloadErrorFile").click(function (e) {
           e.preventDefault();
-          const fileName = sessionStorage.getItem("file");
+          const fileName = "Lead_Error"
           $.ajax({
             url: `http://localhost:8080/crm/history/lead/error/${uploadHistoryId}`,
             type: "GET",
@@ -444,12 +463,14 @@ jQuery(function () {
             },
             error: function (xhr) {
               if (xhr.status === 401) {
+                 showPopup("Error","Session expired. Login again.", "error");
                 showAlert("Session expired. Please login again.", "warning");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
               } else {
                 console.error("Token used:", token);
                 showAlert("Error while downloading the Error File.", "danger");
+                showPopup("Error","Error while downloading the Error File.", "error");
               }
             },
           });
@@ -480,6 +501,7 @@ jQuery(function () {
         },
         error: function (err) {
             console.log(err);
+            showPopup("Error","Error While Deleting Lead", "error");
             showAlert("Error deleting lead", "warning");
         }
     });
@@ -506,12 +528,14 @@ jQuery(function () {
         contentType: false,
         processData: false,
         success: function(response) {
+           showPopup("Success","Leads imported successfully!", "success");
           showAlert('Leads imported successfully!',"success");
           $('#importLeadsModal').modal('hide');
           $('#importLeadsForm')[0].reset();
           $('#leadTable').DataTable().ajax.reload();
         },
         error: function(err) {
+          showPopup("Error","Error While importing Lead", "error");
           showAlert('Error importing leads: ' + err.responseText,"danger");
         }
       });
@@ -534,6 +558,16 @@ jQuery(function () {
         alert.alert('close');
       }, 5000);
     }
+
+    function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}
+
 
 });
 

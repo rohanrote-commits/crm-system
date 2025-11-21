@@ -168,6 +168,7 @@ $(document).on("click", function () {
                 window.location.href = "/Frontend/html/login.html";
             },
             error: function (xhr) {
+              showPopup("Error","Failed to Logout", "error");
                 showAlert("Failed to logout: " + xhr.responseText,"warning");
             }
         });
@@ -213,10 +214,12 @@ $("#confirmDeleteBtn").click(function () {
                 data : JSON.stringify(user),
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
-                   showAlert("User deleted successfully.","success");
+                   showPopup("Success","User deleted successfully", "success");
+                   //showAlert("User deleted successfully.","success");
                     $('#user-table').DataTable().ajax.reload();
                 },
                 error: function() {
+                    showPopup("Error","Error deleting lead.", "error");
                     showAlert("Error deleting lead.","warning");
                 }
             });
@@ -304,6 +307,7 @@ $("#confirmDeleteBtn").click(function () {
       data: JSON.stringify(updatedProfile),
       success: function () {
         showAlert("Profile updated successfully", "success");
+        showPopup("Success","Profile updated successfully", "success");
         $("#profileModal input, #profileModal textarea").prop("readonly", true);
         $("#editProfileBtn").removeClass("d-none");
         $("#saveProfileBtn").addClass("d-none");
@@ -315,6 +319,7 @@ $("#confirmDeleteBtn").click(function () {
           errorMsg = xhr.responseJSON.message;
         }
         showAlert(errorMsg, "danger");
+        showPopup("Error","Failed to update profile", "error");
       }
     });
   });
@@ -399,16 +404,16 @@ function loadLeads(payload, token) {
         },
         error: function (xhr) {
             if (xhr.status === 401) {
-                showAlert("Session expired. Login again.","warning");
+                showPopup("Error","Session expired. Login again.", "error");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
             } else {
                 if (xhr.status === 23) {
-                    showAlert("Session expired. Login again.","warning");
+                  showPopup("Error","Session expired. Login again.", "error");
                     sessionStorage.clear();
                     window.location.href = "/Frontend/html/login.html";
                 }
-                showAlert("Error loading leads.","danger");
+                showPopup("Error","Error loading leads.", "error");
             }
         }
     },
@@ -497,3 +502,11 @@ function loadLeads(payload, token) {
       }, 5000);
     }
 
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

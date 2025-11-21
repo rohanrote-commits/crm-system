@@ -1,16 +1,15 @@
 package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Component
 public class ReportExcelHelper {
