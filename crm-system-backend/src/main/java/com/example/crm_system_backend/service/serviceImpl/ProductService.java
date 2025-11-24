@@ -1,20 +1,17 @@
 package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.constants.ErrorCode;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.exception.ProductException;
 import com.example.crm_system_backend.repository.ProductRepo;
 import com.example.crm_system_backend.service.IProductService;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Service
