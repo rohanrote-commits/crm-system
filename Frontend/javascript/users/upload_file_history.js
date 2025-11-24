@@ -19,7 +19,7 @@ jQuery(function () {
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
-    showAlert("Unauthorized. Please login.", "danger");
+    showPopup("Warning","Unauthorized. Please login.", "warning");
     window.location.href = "/Frontend/html/login.html";
     return;
   }
@@ -131,8 +131,9 @@ jQuery(function () {
   $("#upload-table").on("click", ".download-error", function (e) {
     e.preventDefault();
     const fileName = $(this).data("file");
+    const userHistoryId = sessionStorage.getItem("id")
     $.ajax({
-      url: `http://localhost:8080/crm/history/user/error/${fileName}`,
+      url: `http://localhost:8080/crm/history/user/error/${userHistoryId}`,
       type: "GET",
       headers: {
         Authorization: "Bearer " + token,
@@ -154,20 +155,23 @@ jQuery(function () {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
-        showAlert("Error File downloded successfully", "success");
+        showPopup("Success","Error File downloded successfully", "success");
       },
       error: function (xhr) {
         if (xhr.status === 401) {
-          showAlert("Session expired. Please login again.", "warning");
+          showPopup("Warning","Session expired. Please login again.", "warning");
           sessionStorage.clear();
           window.location.href = "/Frontend/html/login.html";
         } else {
           console.error("Token used:", token);
-          showAlert("Error while downloading the Error File.", "danger");
+          showPopup("Warning","Error while downloading the Error File.", "warning");
         }
       },
     });
   });
+
+  //profile
+  
 
   //Function to save id of each row in session storage and use it on next storage
   $("#upload-table").on("click", ".view-error-info", function () {
@@ -181,3 +185,11 @@ jQuery(function () {
     window.location.href = "/Frontend/html/users/view_error_user.html";
   });
 });
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}

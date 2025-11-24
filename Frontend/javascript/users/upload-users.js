@@ -61,3 +61,10 @@ function showAlert(message, type) {
     alert.alert('close');
   }, 5000);
 }
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })}

@@ -135,7 +135,7 @@ $(document).ready(function () {
 
         const token = sessionStorage.getItem("Authorization");
         if (!token) {
-            showAlert("⚠ Session expired. Please login again.","danger");
+            showPopup("Warning","⚠ Session expired. Please login again.","warning");
             window.location.href = "/Frontend/html/login.html";
             return;
         }
@@ -152,13 +152,13 @@ $(document).ready(function () {
             contentType: false,
             success: function (response) {
 
-                showAlert(response,"success");
+                showPopup("Success",response,"success");
 
                 fileInput.val(''); // Clear input
             },
             error: function (xhr) {
                  let error = xhr.responseJSON.message;
-             showAlert(error,"danger");
+             showPopup("Error",error,"error");
 
             }
         });
@@ -186,16 +186,16 @@ $(document).ready(function () {
                 a.remove();
 
                 window.URL.revokeObjectURL(url);
-                showAlert("File Downloded successfully","success");
+                showPopup("Success","File Downloded successfully","success");
             },
             error: function () {
                     if (xhr.status === 401) {
-        showAlert("Session expired. Please login again.","warning");
+        showPopup("Warning","Session expired. Please login again.","warning");
         sessionStorage.clear();
         window.location.href = "/Frontend/html/login.html";
       } else {
         console.error("Token used:", token);
-        showAlert("Error while downloading the template.","danger");
+        showPopup("Error while downloading the template.","danger");
       }
             }
         });
@@ -217,7 +217,15 @@ $(document).ready(function () {
         alert.alert('close');
       }, 5000);
     }
-
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
 
 
 });
+

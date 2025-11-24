@@ -19,21 +19,22 @@
 
 <body>
     <!-- Header -->
-    <header class="top-bar">
-        <div class="logo">CRM <span>Lead Management</span></div>
-        <div class="nav-right">
-            <div class="profile-menu">
-                <img src="/Frontend/assests/profile.png" class="profile-pic" id="profilePic">
-                <div class="dropdown" id="profileDropdown">
-                    <button id="view-profile" class="drop-item">View Profile</button>
-                    <button id="back" class="drop-item">Back</button>
-                    <button id="delete-profile" class="drop-item">Delete Profile</button>
-                    <button id="logout" class="drop-item">Logout</button>
+  <header class="top-bar">
+    <div class="logo">CRM <span>Lead Management</span></div>
+    <div class="nav-right">
+      <div class="profile-menu">
+        <!-- <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i> -->
+        <div class="dropdown" id="profileDropdown">
+          <button id="back" class="drop-item">Back</button>
+          <button id="delete-profile" class="drop-item">Delete Profile</button>
+          <button id="logout" class="drop-item">Logout</button>
 
-                </div>
-            </div>
         </div>
-    </header>
+        
+      </div>
+       <img src="/Frontend/assests/profile.png" class="profile-pic" id="view-profile"></div>
+    </div>
+  </header>
       <!-- Alert container -->
 <div id="alert-container" class="mt-3"></div>
 
@@ -98,6 +99,7 @@
     </main>
     <script src="/Frontend/javascript/bulk-upload.js"></script>
     <script src="/Frontend/javascript/users/upload_file_history.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

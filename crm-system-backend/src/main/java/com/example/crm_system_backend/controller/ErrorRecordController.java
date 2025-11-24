@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.annotations.RoleRequired;
 import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.dto.LeadDto;
@@ -43,6 +44,7 @@ public class ErrorRecordController {
      * @param uploadHistoryId the ID of the upload history for which user error records are to be retrieved
      * @return a ResponseEntity containing a list of InvalidUserError objects and an HTTP status of OK
      */
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @GetMapping("/records/user/{uploadHistoryId}")
     public ResponseEntity< List<InvalidUserError>> findUserErrorRecordByUploadHistoryId(@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.findErrorRecordByUploadHistoryId");
@@ -65,6 +67,7 @@ public class ErrorRecordController {
      * The method also updates the record with the "registered by" user ID retrieved from the HTTP request attributes.
      *
      */
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @PutMapping("/user/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<UserDTO> updateErrorRecord(@PathVariable int rowNumber, @PathVariable String uploadHistoryId , @RequestBody UserDTO errorRecord, HttpServletRequest request){
         Object registeredById = request.getAttribute("userId");
@@ -90,6 +93,7 @@ public class ErrorRecordController {
      * @param uploadHistoryEmail the email associated with the upload history containing the error record
      * @return a ResponseEntity with an HTTP status of OK upon successful deletion
      */
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @DeleteMapping("user/{rowNumber}/{uploadHistoryEmail}")
     public ResponseEntity<?> deleteUserErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryEmail){
         errorRecordHandler.deleteUserErrorRecordByEmail(rowNumber,uploadHistoryEmail);

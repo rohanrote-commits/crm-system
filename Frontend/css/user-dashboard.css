@@ -107,6 +107,8 @@ body {
   padding: 40px;
   overflow-x: auto; 
   overflow-y: auto;
+  width: auto;
+  position:relative;
   
 }
 
@@ -369,33 +371,41 @@ textarea.valid {
 .btn-green:hover {
   background-color: #05681a;
 }
-/* Target buttons in Action column */
-#user-table .btn-sm {
-    display: flex;                 /* allow centering with flex */
-    align-items: center;           /* vertical center */
-    justify-content: center;       /* horizontal center */
-    padding: 0.2rem;              /* small padding */
-    font-size: 0.9rem;             /* adjust icon size */
-    width: 28px;                    /* button width */
-    height: 28px;                   /* button height */
-    line-height: 1;                /* ensures icon fits */
-    padding-right: 10px;
-    min-width: unset;
-    margin-left : -50px;  
-    margin-right: -45px;        
+/* Make buttons small, same size, and prevent stretching */
+#user-table .action-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto !important;   /* prevents stretching */
 }
 
-/* Reduce gap between buttons inside flex container */
-#user-table td .d-flex {
-    gap: 0.1rem;                   /* smaller gap */
-    justify-content: center;       /* center buttons */
+/* Make action buttons stay close and centered */
+#user-table .action-buttons {
+    display: flex !important;
+    justify-content: center !important;  /* center inside column */
+    align-items: center !important;
+    gap: 6px !important;   /* distance between buttons */
+    width: 100% !important;
 }
 
-/* Minimal Action column width */
+/* Fix icon alignment */
+#user-table .action-btn i {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    font-size: 14px !important;   /* adjust icon size if needed */
+}
+
+
+
+/* Corrected Action column width */
 #user-table th:nth-child(8),
 #user-table td:nth-child(8) {
-    width: 50px;                   /* shrink to fit buttons */
-    max-width: 200px;               /* optional limit */
+    width: 100px;      /* not 50px */
+    max-width: 100px;
     padding: 0.1rem;
     text-align: center;
     white-space: nowrap;
