@@ -42,11 +42,9 @@ $(document).ready(function () {
                     window.location.href = "/Frontend/html/dashboard.html";
                 },
                 error: function (xhr) {
-                    if (xhr.status === 404) {
-                         showPopup("Error","Invalid Credentials", "error");
-                    } else {
-                        showPopup("Error","Server Side Error", "error");
-                    }
+                    const error = xhr.responseJSON.message;
+                    showPopup("Error",error,"error");
+                
                 }
             });
         }

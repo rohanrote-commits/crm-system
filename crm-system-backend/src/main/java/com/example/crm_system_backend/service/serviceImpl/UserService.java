@@ -9,6 +9,7 @@ import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.awt.print.Pageable;
@@ -23,6 +24,9 @@ public class UserService implements IUserService {
     @Autowired
     private IUserRepo userRepo;
 
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
     /**
      * Registers a new user by saving their details to the repository.
      *
@@ -33,6 +37,7 @@ public class UserService implements IUserService {
     public User registerUser(User user) {
         log.info("Enter : UserService:registerUser");
         log.info("Exit : UserService:registerUser");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }
 
@@ -122,10 +127,30 @@ log.info("Enter : UserService:deleteUser");
     @Override
     public Optional<User> getUser(UserDTO dto) {
         log.info("Enter : UserService:getUser");
-        log.info("dto:{}", dto);
+
+        Optional<User> userOptional = userRepo.findUserByEmail(dto.getEmail());
+
+        if (!userOptional.isPresent()) {
+            log.error("User not found with email: {}", dto.getEmail());
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+        }
+
+        User user = userOptional.get();
+
+        // Compare raw password with stored hashed password
+        boolean isPasswordCorrect = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+
+        if (!isPasswordCorrect) {
+            log.error("Incorrect password for email: {}", dto.getEmail());
+            throw new UserException(ErrorCode.WRONG_CREDENTIALS);
+        }
+
+        log.info("Password matched successfully");
         log.info("Exit : UserService:getUser");
-        return userRepo.findByEmailAndPassword(dto.getEmail(), dto.getPassword());
+
+        return Optional.of(user);
     }
+
 
     /**
      * Checks if a user exists in the repository based on the provided email.

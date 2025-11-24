@@ -77,6 +77,7 @@ public class UserHandler implements IHandler<UserDTO> {
                 throw new UserException(ErrorCode.INVALID_ADDRESS);
             }
         }
+        
         user.setRegisteredOn(java.time.LocalDateTime.now());
         BeanUtils.copyProperties(userService.registerUser(user), userDTO);
         log.info("Exit : UserHandler:save");
