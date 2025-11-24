@@ -1,29 +1,43 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
+import com.example.crm_system_backend.beans.InvalidUserError;
+import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
+import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ExcelException;
-import com.example.crm_system_backend.exception.ExcelProcessingError;
+import com.example.crm_system_backend.repository.IUserRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
 public class UserExcelHelper {
+    @Autowired
+    private IUserRepo userRepo;
+
     private static final String NAME_REGEX = "^[A-Za-z ]{1,50}$";
 
-    private static final String ADDRESS_REGEX = "^[A-Za-z0-9 ,./#\\-]{1,100}$";
+    private static final String ADDRESS_REGEX = "^[A-Za-z0-9 ,./#\\-]{1,200}$";
 
     private static final String MOBILE_REGEX = "^[789]\\d{9}$";
 
@@ -33,22 +47,49 @@ public class UserExcelHelper {
 
     private static final String PIN_CODE_REGEX = "^[0-9]{6}$";
 
+    /**
+     * Extracts and returns the value of a given cell as a String. Handles numeric, date-formatted,
+     * and string cell types. If the cell is null, an empty String is returned.
+     *
+     * @param cell the cell from which to extract the value, may be null
+     * @return the cell value as a String; an empty String if the cell is null
+     */
     private static String getCellValue(Cell cell) {
+        log.info("Enter:UserExcelHelper.getCellValue");
         if (cell == null) return "";
         if (cell.getCellType() == CellType.NUMERIC) {
             if (DateUtil.isCellDateFormatted(cell)) {
                 return cell.getLocalDateTimeCellValue().toLocalDate().toString();
             }
+            log.info("Exit:UserExcelHelper.getCellValue");
             return String.valueOf((long) cell.getNumericCellValue());
         }
+        log.info("Exit:UserExcelHelper.getCellValue");
         return cell.getStringCellValue().trim();
     }
 
+    /**
+     * Checks whether a given string is empty or contains only whitespace characters.
+     *
+     * @param value the string to be checked, may be null
+     * @return true if the string is null, empty, or contains only whitespace characters; false otherwise
+     */
     private static boolean isEmpty(String value) {
+        log.info("Enter:UserExcelHelper.isEmpty");
+        log.info("Exit:UserExcelHelper.isEmpty");
         return value == null || value.trim().isEmpty();
     }
 
+    /**
+     * Marks the given cell as erroneous by applying an error-specific style and attaching
+     * a comment with the provided error message.
+     *
+     * @param cell       the cell to be marked as erroneous; if null, the method does nothing
+     * @param message    the error message to add as a comment to the cell
+     * @param errorStyle the cell style to apply for indicating the error
+     */
     private static void markError(Cell cell, String message, CellStyle errorStyle) {
+        log.info("Enter:UserExcelHelper.markError");
         if (cell == null) return;
         cell.setCellStyle(errorStyle);
         Sheet sheet = cell.getSheet();
@@ -60,27 +101,57 @@ public class UserExcelHelper {
         Comment comment = drawing.createCellComment(anchor);
         comment.setString(factory.createRichTextString(message));
         cell.setCellComment(comment);
+        log.info("Exit:UserExcelHelper.markError");
     }
 
+    /**
+     * Checks whether a given row in an Excel sheet is empty.
+     * A row is considered empty if all its cells are either null or contain a blank value.
+     *
+     * @param row the row to be checked, must not be null
+     * @return true if the row is empty; false otherwise
+     */
     private static boolean isRowEmpty(Row row) {
+        log.info("Enter:UserExcelHelper.isRowEmpty");
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
             if (cell != null && cell.getCellType() != CellType.BLANK) {
+                log.info("Exit:UserExcelHelper.isRowEmpty");
                 return false;
             }
         }
+        log.info("Exit:UserExcelHelper.isRowEmpty");
         return true;
     }
 
-    public List<User> processExcelData(MultipartFile file, String userRole) {
+    /**
+     * Processes the given Excel file to extract user information, validate the data,
+     * and populate a list of successfully validated users. Errors encountered during
+     * processing are marked in the Excel file.
+     *
+     * @param file          the Excel file to be processed, containing user information
+     * @param userRole      the role of the user performing the upload, used for validation
+     * @param uploadHistory an object to track the upload process, storing the status
+     *                      and counts of valid and invalid records
+     * @return a list of valid {@code User} objects extracted from the Excel file
+     * @throws ExcelException if the file has invalid headers or if there are issues
+     *                        during file processing
+     */
+    @Async("bulkUploadExecutor")
+    public CompletableFuture<UserList> processExcelData(MultipartFile file, String userRole, UploadHistory uploadHistory) {
+        log.info("Enter:UserExcelHelper.processExcelData");
         int countDown = 5;
-        boolean isThereError = false;
+
 
         if (!this.validateExcelHeader(file)) {
+            log.error("Exit:processExcelData Excel header mismatch. Please check the template and try again.");
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
-        List<User> users = new ArrayList<>();
+        List<User> users = new ArrayList<>(); //valid users
+        List<Row> errorRows = new ArrayList<>();//error rows
+        UserList userList = new UserList();
+        List<InvalidUserError> jsonErrorList = new ArrayList<>();
 
         try (InputStream is = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(is)) {
@@ -92,6 +163,7 @@ public class UserExcelHelper {
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             for (Row row : sheet) {
+                Map<String, String> errorMap = new HashMap<>();
                 boolean hasError = false;
 
                 if (row.getRowNum() <= 1) continue;
@@ -119,38 +191,111 @@ public class UserExcelHelper {
 
                 if (isEmpty(firstName) || !firstName.matches(NAME_REGEX)) {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
+                    errorMap.put("firstName", "Invalid First Name");
                     hasError = true;
-                } else {
+                }
                     user.setFirstName(firstName);
                 }
 
                 if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
                     markError(row.getCell(2), "Invalid Last Name", errorStyle);
+                    errorMap.put("lastName", "Invalid Last Name");
                     hasError = true;
-                } else {
-                    user.setLastName(lastName);
                 }
+                    user.setLastName(lastName);
+
 
                 if (isEmpty(mobileNumber) || !mobileNumber.matches(MOBILE_REGEX)) {
                     markError(row.getCell(3), "Invalid mobile number", errorStyle);
+                    errorMap.put("mobileNumber", "Invalid mobile number");
                     hasError = true;
                 } else {
-                    user.setMobileNumber(mobileNumber);
+                    if(userRepo.existsByMobileNumber( mobileNumber)){
+                        markError(row.getCell(3), "Mobile number already exists", errorStyle);
+                        errorMap.put("mobileNumber", "Mobile number already exists");
+                        hasError = true;
+
+                    }
+
                 }
+                user.setMobileNumber(mobileNumber);
 
                 if (isEmpty(email) || !email.matches(EMAIL_REGEX)) {
                     markError(row.getCell(4), "Invalid email", errorStyle);
+                    errorMap.put("email", "Invalid email");
                     hasError = true;
                 } else {
-                    user.setEmail(email);
+                    if(userRepo.existsByEmail( email)){
+                        markError(row.getCell(4), "Email already exists", errorStyle);
+                        errorMap.put("email", "Email already exists");
+                        hasError = true;
+
+                    }
+                }
+                user.setEmail(email);
+
+                boolean isAddressPresent = !isEmpty(address);
+                boolean isAnyLocationFieldPresent =
+                        !isEmpty(city) || !isEmpty(state) || !isEmpty(country) || !isEmpty(pinCode);
+
+                if (isAddressPresent) {
+
+                    if (!address.matches(ADDRESS_REGEX)) {
+                        markError(row.getCell(5), "Invalid Address", errorStyle);
+                        errorMap.put("address", "Invalid Address");
+                        hasError = true;
+                    }
+                        user.setAddress(address);
+
+
+                    if (isEmpty(city) || !city.matches(NAME_REGEX)) {
+                        markError(row.getCell(6), "City required", errorStyle);
+                        errorMap.put("city", "City required");
+                        hasError = true;
+                    }
+                        user.setCity(city);
+
+
+                    if (isEmpty(state)) {
+                        markError(row.getCell(7), "State required", errorStyle);
+                        errorMap.put("state", "State required");
+                        hasError = true;
+                    }
+                        user.setState(state);
+
+                    if (isEmpty(country) || !country.matches(NAME_REGEX)) {
+                        markError(row.getCell(8), "Country required", errorStyle);
+                        errorMap.put("country", "Country required");
+                        hasError = true;
+                    }
+                        user.setCountry(country);
+
+                    if (isEmpty(pinCode) || !pinCode.matches(PIN_CODE_REGEX)) {
+                        markError(row.getCell(9), "Invalid Pincode", errorStyle);
+                        errorMap.put("pinCode", "Invalid Pincode");
+                        hasError = true;
+                    }
+                        user.setPinCode(pinCode);
+
+
+                } else if (isAnyLocationFieldPresent) {
+
+                    markError(row.getCell(5), "Address required", errorStyle);
+                    markError(row.getCell(6), "City requires Address", errorStyle);
+                    markError(row.getCell(7), "State requires Address", errorStyle);
+                    markError(row.getCell(8), "Country requires Address", errorStyle);
+                    markError(row.getCell(9), "Pincode requires Address", errorStyle);
+                    hasError = true;
                 }
 
-                if (isEmpty(role) || ("ADMIN".equals(userRole) && !"User".equals(role))) {
+
+                if (isEmpty(role) || ("ADMIN".equals(userRole) && !"Basic".equals(role))) {
                     markError(row.getCell(10), "Invalid Role", errorStyle);
+                    errorMap.put("role", "Invalid Role");
                     hasError = true;
                 } else {
-                    if ("User".equals(role)) {
-                        user.setRole(Roles.USER);
+                    if ("Basic".equals(role)) {
+                        user.setRole(Roles.BASIC);
                     } else {
                         user.setRole(Roles.ADMIN);
                     }
@@ -161,44 +306,98 @@ public class UserExcelHelper {
                         || (!password.equals(confirmPassword))) {
 
                     markError(row.getCell(11), "Invalid Password", errorStyle);
+                    errorMap.put("password", "Invalid Password");
                     markError(row.getCell(12), "Confirm Password does not match", errorStyle);
+                    errorMap.put("confirmPassword", "Confirm Password does not match");
                     hasError = true;
-                } else {
-                    user.setPassword(password);
                 }
+                    user.setPassword(password);
+
 
 
                 if (!hasError) {
                     users.add(user);
                 } else {
-                    isThereError = true;
+                    // Add to error rows list (for Excel file)
+                    errorRows.add(row);
+                    // Build JSON error entry
+                    InvalidUserError err = new InvalidUserError();
+                    err.setRowNumber(row.getRowNum());
+                    err.setUser(user);
+                    err.setErrors(errorMap);
+                    jsonErrorList.add(err);
+
                 }
+
             }
+            if (!errorRows.isEmpty()) {
+                if (!users.isEmpty()) {
+                    uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+                }
+                uploadHistory.setInvalidRecords(errorRows.size());
 
-            if (isThereError) {
-                log.error("Error in file processing");
+                writeErrorFile(errorRows, uploadHistory);
+                List<User> errorUserList = errorRows.stream().map(this::extractUser).toList();
+                userList.setInvalidUserList(errorUserList);
 
-                throw new ExcelProcessingError(ErrorCode.ERROR_IN_FILE_PROCESSING, getErrorFileAsBytes(workbook));
             }
+           userList.setValidUserList(users);
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
+            uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            log.error("Exit: UserExcelHelper.processExcelData IOException: {}",e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonData = null;
+        try {
+            jsonData = mapper.writeValueAsString(jsonErrorList);
+        } catch (JsonProcessingException e) {
+            log.error("Exit: LeadExcelHelper.processExcelData {}",e);
             throw new RuntimeException(e);
         }
-
-        return users;
+        uploadHistory.setErrorRecord(jsonData);
+        uploadHistory.setTotalRecords((users.size() + errorRows.size()));
+        uploadHistory.setInvalidRecords(errorRows.size());
+        uploadHistory.setValidRecords(users.size());
+        log.info("Exit:UserExcelHelper.processExcelData");
+        return CompletableFuture.completedFuture(userList);
     }
 
+    /**
+     * Creates and returns the content of the given Excel workbook as a byte array.
+     * Writes the workbook data to an in-memory output stream and converts it to a byte array.
+     * If an error occurs during processing, an {@code ExcelException} is thrown with a relevant error code.
+     *
+     * @param workbook the Excel workbook to be converted to a byte array; must not be null
+     * @return a byte array representation of the workbook's content
+     * @throws ExcelException if an I/O error occurs while writing the workbook data
+     */
     private byte[] getErrorFileAsBytes(Workbook workbook) {
+        log.info("Enter:UserExcelHelper.getErrorFileAsBytes");
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             workbook.write(out);
+            log.info("Exit:UserExcelHelper.getErrorFileAsBytes");
             return out.toByteArray();
         } catch (IOException e) {
-            throw new ExcelException(ErrorCode.FILE_PROCESSING_FAILED);
+            log.error("Exit:UserExcelHelper.getErrorFileAsBytes IOException: {}",e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
 
+    /**
+     * Validates if the header of the provided Excel file matches the template header.
+     * Compares each column in the first row of the given file against the predefined template.
+     * If the headers do not match, logs the discrepancy and returns false.
+     *
+     * @param file the Excel file to be validated, must not be null
+     * @return true if the Excel file's header matches the template; false otherwise
+     * @throws ExcelException if an error occurs while processing the file
+     */
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/UsersTemplate.xlsx");
+        log.info("Enter:UserExcelHelper.validateExcelHeader");
 
         try (
                 InputStream uploadedIs = file.getInputStream();
@@ -215,6 +414,7 @@ public class UserExcelHelper {
             Row templateHeader = templateSheet.getRow(0);
 
             if (uploadedHeader == null || templateHeader == null) {
+                log.info("Header row is null");
                 return false;
             }
 
@@ -222,6 +422,7 @@ public class UserExcelHelper {
             int templateCells = templateHeader.getLastCellNum();
 
             if (uploadedCells != templateCells) {
+                log.info("Header mismatch: expected {} columns, found {}", templateCells, uploadedCells);
                 return false; // Different number of columns
             }
 
@@ -235,17 +436,200 @@ public class UserExcelHelper {
                 if (!uploadedHeaderValue.equalsIgnoreCase(templateHeaderValue)) {
                     log.error("Header mismatch at column {}: expected '{}', found '{}'",
                             i, templateHeaderValue, uploadedHeaderValue);
+                    log.info("Exit:UserExcelHelper.validateExcelHeader");
                     return false;
                 }
             }
-
+            log.info("Exit:UserExcelHelper.validateExcelHeader");
             return true; // All headers match
 
         } catch (IOException e) {
-            log.error("Excel header validation failed: {}", e.getMessage());
+            log.error("Exit:UserExcelHelper.validateExcelHeader IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
 
+    /**
+     * Generates an error file in Excel format to record invalid rows encountered
+     * during an upload process. The invalid rows are copied into a new sheet
+     * within a predefined template and styled with error-specific formatting.
+     * The generated file is saved with a timestamped name and its path is set
+     * in the provided {@code UploadHistory} object.
+     *
+     * @param errorRows     a list of invalid rows to be included in the error file
+     * @param uploadHistory an object used to track the upload process, where the
+     *                      path of the generated error file is stored
+     * @throws IOException if there is an issue accessing or writing to the file
+     */
+    public void writeErrorFile(List<Row> errorRows, UploadHistory uploadHistory) throws IOException {
+        File templateFile = new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+        log.info("Enter:UserExcelHelper.writeErrorFile");
 
+        try (
+                FileInputStream fis = new FileInputStream(templateFile);
+                Workbook errorWorkbook = new XSSFWorkbook(fis)
+        ) {
+            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+
+            int startRow = 2; // after header
+            for (Row sourceRow : errorRows) {
+                Row targetRow = templateSheet.createRow(startRow++);
+
+                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+                    Cell sourceCell = sourceRow.getCell(i);
+                    if (sourceCell == null) continue;
+
+                    Cell targetCell = targetRow.createCell(i);
+
+                    // Copy cell value
+                    switch (sourceCell.getCellType()) {
+                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
+                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
+                        default -> targetCell.setCellValue(getCellValue(sourceCell));
+                    }
+
+                    // If source has error style, apply it
+                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
+                        CellStyle style = errorWorkbook.createCellStyle();
+                        style.cloneStyleFrom(sourceCell.getCellStyle());
+                        targetCell.setCellStyle(style);
+
+                        // Copy comments if any
+                        if (sourceCell.getCellComment() != null) {
+                            CreationHelper factory = errorWorkbook.getCreationHelper();
+                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
+                            ClientAnchor anchor = factory.createClientAnchor();
+                            anchor.setCol1(i);
+                            anchor.setRow1(targetRow.getRowNum());
+
+                            Comment comment = drawing.createCellComment(anchor);
+                            comment.setString(factory.createRichTextString(
+                                    sourceCell.getCellComment().getString().getString()));
+                            targetCell.setCellComment(comment);
+                        }
+                    }
+                }
+            }
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String errorFilePath = "Error_File_" + timestamp + ".xlsx";
+            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
+                uploadHistory.setErrorFileName(errorFilePath);
+                errorWorkbook.write(out);
+            }
+
+            log.info("Error file generated with {} invalid rows", errorRows.size());
+
+        } catch (IOException e) {
+            log.error("Exit:UserExcelHelper.writeErrorFile IOException: {}",e.getMessage());
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
+    private User extractUser(Row row) {
+        log.info("Enter:UserExcelHelper.extractUser");
+        User user = new User();
+        user.setFirstName(getCellValue(row.getCell(1)));
+        user.setLastName(getCellValue(row.getCell(2)));
+        user.setMobileNumber(getCellValue(row.getCell(3)));
+        user.setEmail(getCellValue(row.getCell(4)));
+        user.setAddress(getCellValue(row.getCell(5)));
+        user.setCity(getCellValue(row.getCell(6)));
+        user.setState(getCellValue(row.getCell(7)));
+        user.setCountry(getCellValue(row.getCell(8)));
+        user.setPinCode(getCellValue(row.getCell(9)));
+        String role = getCellValue(row.getCell(10));
+        if ("Basic".equals(role)) {
+            user.setRole(Roles.BASIC);
+        }else{
+            user.setRole(Roles.ADMIN);
+        }
+        user.setPassword(getCellValue(row.getCell(11)));
+        log.info("Exit:UserExcelHelper.extractUser");
+        return user;
+    }
+
+    public byte[] generateErrorExcelFromJson(List<InvalidUserError> invalidUsers) throws Exception {
+        log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
+        File templateFile = new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+        try (
+                FileInputStream fis = new FileInputStream(templateFile);
+                Workbook workbook = new XSSFWorkbook(fis)
+        ) {
+            Sheet sheet = workbook.getSheetAt(1);
+
+            // Error style (red background)
+            CellStyle errorStyle = workbook.createCellStyle();
+            errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+            errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
+
+            int rowIndex = 2;
+
+            for (InvalidUserError invalid : invalidUsers) {
+                User user = invalid.getUser();
+                Map<String, String> errors = invalid.getErrors();
+                Row row = sheet.createRow(rowIndex);
+                writeUserRow(row, user);
+                writeComments(sheet, drawing, rowIndex, errors,errorStyle);
+                rowIndex++;
+
+            }
+            // Save
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            workbook.close();
+            return out.toByteArray();
+        }
+        catch (Exception exception){
+            log.error("Error writing error file: {}", exception.getMessage());
+            log.error("Exit : UserExcelHelper.generateErrorExcelFromJson --->exception ");
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
+
+    private void writeUserRow(Row row, User user) {
+
+        row.createCell(1).setCellValue(user.getFirstName());
+        row.createCell(2).setCellValue(user.getLastName());
+        row.createCell(3).setCellValue(user.getMobileNumber());
+        row.createCell(4).setCellValue(user.getEmail());
+        row.createCell(5).setCellValue(user.getAddress());
+        row.createCell(6).setCellValue(user.getCity());
+        row.createCell(7).setCellValue(user.getState());
+        row.createCell(8).setCellValue(user.getCountry());
+        row.createCell(9).setCellValue(user.getPinCode());
+        row.createCell(10).setCellValue(user.getRole().name());
+        row.createCell(11).setCellValue(user.getPassword());
+        row.createCell(12).setCellValue(user.getPassword());
+
+    }
+    private void writeComments(Sheet sheet, Drawing<?> drawing, int rowIndex, Map<String, String> errors ,CellStyle style) {
+        addComment(sheet, drawing, rowIndex, 1, errors.get("firstName"),style);
+        addComment(sheet, drawing, rowIndex, 2, errors.get("lastName"),style);
+        addComment(sheet, drawing, rowIndex, 3, errors.get("mobileNumber"),style);
+        addComment(sheet, drawing, rowIndex, 4, errors.get("email"),style);
+        addComment(sheet, drawing, rowIndex, 5, errors.get("address"),style);
+        addComment(sheet, drawing, rowIndex, 6, errors.get("city"),style);
+        addComment(sheet, drawing, rowIndex, 7, errors.get("state"),style);
+        addComment(sheet, drawing, rowIndex, 8, errors.get("country"),style);
+        addComment(sheet, drawing, rowIndex, 9, errors.get("pinCode"),style);
+        addComment(sheet, drawing, rowIndex, 10, errors.get("role"),style);
+        addComment(sheet, drawing, rowIndex, 11, errors.get("password"),style);
+        addComment(sheet, drawing, rowIndex, 12, errors.get("confirmPassword"),style);
+    }
+
+    private void addComment(Sheet sheet, Drawing<?> drawing, int row, int col, String text,CellStyle style) {
+        if (text == null) return;
+        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(col);
+        anchor.setCol2(col + 3);
+        anchor.setRow1(row);
+        anchor.setRow2(row + 2);
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(text));
+        comment.setAuthor("Validation");
+        sheet.getRow(row).getCell(col).setCellComment(comment);
+        sheet.getRow(row).getCell(col).setCellStyle(style);
+    }
 }

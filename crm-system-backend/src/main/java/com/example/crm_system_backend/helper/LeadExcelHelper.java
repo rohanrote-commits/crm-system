@@ -1,41 +1,59 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.LeadList;
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.constants.ProductColumn;
 import com.example.crm_system_backend.constants.RegxConstant;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
-
+import com.example.crm_system_backend.service.serviceImpl.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 
 @Component
+@AllArgsConstructor
 public class LeadExcelHelper {
 
 
     private static final Logger log = LoggerFactory.getLogger(LeadExcelHelper.class);
+    private final ProductService productService;
+    private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
-    public LeadList processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
+
+    @Async("bulkUploadExecutor")
+    public CompletableFuture<LeadList> processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
         log.info("Enter: LeadExcelHelper.processExcelData");
-        Map<String, Lead> leadMap = new HashMap<>(); // merge duplicate leads
         List<Lead> validLeads = new ArrayList<>();
-        List<Row> errorRows = new ArrayList<>();
+        List<Lead> invalidLeads = new ArrayList<>();
         LeadList leadList = new LeadList();
+        List<InvalidLeadError> jsonErrorList = new ArrayList<>();
 
-        if (!this.validateExcelHeader(file)) {
+
+        if(!this.validateExcelHeader(file)){
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
+            uploadHistory.setValidRecords(0);
+            uploadHistory.setInvalidRecords(0);
+            log.error("Exit: LeadExcelHelper.processExcelData: Invalid Excel Header");
             throw new ExcelException(ErrorCode.WRONG_HEADERS);
         }
 
@@ -45,47 +63,60 @@ public class LeadExcelHelper {
             CellStyle errorStyle = workbook.createCellStyle();
             errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
             errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            //load the products from master db to validate
+            Set<Product> productList = productService.getProducts();
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0 || row.getRowNum()==1) continue;// skip header
+                if (row.getRowNum() == 0 || row.getRowNum()==1 || row.getRowNum() == 2 ) continue;// skip header
                 if(isRowEmpty(row)){
                     continue;
                 }
-                Lead lead = extractLead(row);
-                boolean rowHasError = validateRow(row, lead, errorStyle, leadMap);
-                if (rowHasError) {
-                    // Store row with errors for writing later
-                    errorRows.add(row);
+                Lead lead = extractLead(row,productList);
+                Map<String, String> errorMap = validateRowWithErrors(row, lead, errorStyle);
+                if (!errorMap.isEmpty()) {
+                    // Add to error rows list (for Excel file)
+                    invalidLeads.add(lead);
+                    // Build JSON error entry
+                    InvalidLeadError err = new InvalidLeadError();
+                    err.setRowNumber(row.getRowNum());
+                    err.setLead(lead);
+                    err.setErrors(errorMap);
+                    jsonErrorList.add(err);
                 } else {
-                    mergeLead(leadMap, lead);
+                    validLeads.add(lead);
+                   // mergeLead(leadMap, lead);
                 }
             }
-            validLeads.addAll(leadMap.values());
             //if the error row list has entries then generate the error file
-            if (!errorRows.isEmpty()) {
-                if (!validLeads.isEmpty()) {
+            if (!jsonErrorList.isEmpty()) {
+                if(!validLeads.isEmpty()){
                     uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
                 }
-                uploadHistory.setInvalidRecords(errorRows.size());
-                writeErrorFile(errorRows,uploadHistory);
-                List<Lead> errorList = errorRows.stream().map(this::extractLead
-                        ).toList();
-                leadList.setInvalidLeadList(errorList);
-               // errorRecordHandler.saveErrorRecord(errorList,uploadHistory);
+                uploadHistory.setInvalidRecords(jsonErrorList.size());
+                leadList.setInvalidLeadList(invalidLeads);
             }
 
         } catch (IOException e) {
-            log.error("Exit : LeadExcelHelper.processExcelData -->${}",e);
+            log.error("Exit : LeadExcelHelper.processExcelData -->{}",e);
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             log.error(e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
-        uploadHistory.setTotalRecords((validLeads.size()+ errorRows.size()));
-        uploadHistory.setInvalidRecords(errorRows.size());
+        uploadHistory.setTotalRecords((validLeads.size()+ jsonErrorList.size()));
+        uploadHistory.setInvalidRecords(jsonErrorList.size());
         uploadHistory.setValidRecords(validLeads.size());
+
+        String jsonData = null;
+        try {
+            jsonData = objectMapper.writeValueAsString(jsonErrorList);
+        } catch (JsonProcessingException e) {
+            log.error("Exception: LeadExcelHelper.processExcelData {}",e);
+            throw new RuntimeException(e);
+        }
+        uploadHistory.setErrorRecord(jsonData);
         leadList.setValidLeadList(validLeads);
         log.info("Exit: LeadExcelHelper.processExcelData");
-        return leadList;
+        return CompletableFuture.completedFuture(leadList);
     }
 
     // Helper to read any cell as string safely
@@ -115,56 +146,52 @@ public class LeadExcelHelper {
         return value == null || value.trim().isEmpty();
     }
 
-    private static void markError(Cell cell, String message, CellStyle errorStyle) {
-        if (cell == null) return;
-        cell.setCellStyle(errorStyle);
-        Sheet sheet = cell.getSheet();
-        Drawing<?> drawing = sheet.createDrawingPatriarch();
-        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
-        ClientAnchor anchor = factory.createClientAnchor();
-        anchor.setCol1(cell.getColumnIndex());
-        anchor.setRow1(cell.getRowIndex());
-        Comment comment = drawing.createCellComment(anchor);
-        comment.setString(factory.createRichTextString(message));
-        cell.setCellComment(comment);
-    }
+//    private static void markError(Cell cell, String message, CellStyle errorStyle) {
+//        if (cell == null) return;
+//        cell.setCellStyle(errorStyle);
+//        Sheet sheet = cell.getSheet();
+//        Drawing<?> drawing = sheet.createDrawingPatriarch();
+//        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+//        ClientAnchor anchor = factory.createClientAnchor();
+//        anchor.setCol1(cell.getColumnIndex());
+//        anchor.setRow1(cell.getRowIndex());
+//        Comment comment = drawing.createCellComment(anchor);
+//        comment.setString(factory.createRichTextString(message));
+//        cell.setCellComment(comment);
+//    }
 
-    private Lead extractLead(Row row) {
+    private Lead extractLead(Row row , Set<Product> productList ) {
         Lead lead = new Lead();
+        //extract instreated products for particular  lead
+        Set<Product> interestedProducts = this.extractInterestedProducts(row,productList);
         lead.setFirstName(getCellValue(row.getCell(1)));
         lead.setLastName(getCellValue(row.getCell(2)));
         lead.setMobileNumber(getCellValue(row.getCell(3)));
         lead.setEmail(getCellValue(row.getCell(4)));
-        lead.setGstin(getCellValue(row.getCell(5)));
-        lead.getInterestedModules().add(getCellValue(row.getCell(6)));
-        lead.setBusinessAddress(getCellValue(row.getCell(7)));
-        lead.setDescription(getCellValue(row.getCell(8)));
+        lead.setGstin(getCellValue(row.getCell(5)).toUpperCase());
+        lead.getInterestedProducts().addAll(interestedProducts);
+        lead.setBusinessAddress(getCellValue(row.getCell(13)));
+        lead.setDescription(getCellValue(row.getCell(14)));
         return lead;
     }
 
-    //    private boolean validateExcelHeader(MultipartFile file)  {
-//        File tempFile = new File("crm-system-backend\\src\\main\\resources\\Lead Template.xlsx");
-//        try (
-//            Workbook workbook = new XSSFWorkbook(file.getInputStream());
-//            Workbook tempWorkbook = new XSSFWorkbook(tempFile.getAbsolutePath())){
-//            Sheet sheet = workbook.getSheetAt(1);
-//            for (Row row : sheet) {
-//                if (row.getRowNum() == 1) {
-//                    for (Cell cell : row) {
-//                        if (!cell.getCellType().toString().equals(headers.get(cell.getColumnIndex()))) {
-//                            return false;
-//                        }
-//                    }
-//                    return true;
-//                }
-//            }
-//            return true;
-//        }
-//        catch (IOException ioException) {
-//            log.error(ioException.getMessage());
-//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
-//        }
-//    }
+    private Set<Product> extractInterestedProducts(Row row, Set<Product> productList ) {
+        Set<Product> interestedProducts = new HashSet<>();
+        for (int c = 6; c <= 12; c++) {
+            if ("Yes".equalsIgnoreCase(getCellValue(row.getCell(c)))) {
+                ProductColumn pc = ProductColumn.fromColumn(c);
+                if (pc == null) continue;
+                String moduleName = pc.getModuleName();
+                productList.stream()
+                        .filter(product -> product.getModuleName().equalsIgnoreCase(moduleName))
+                        .findFirst()
+                        .ifPresent(interestedProducts::add);
+            }
+        }
+        return interestedProducts;
+    }
+
+
     private boolean validateExcelHeader(MultipartFile file) {
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
 
@@ -176,8 +203,8 @@ public class LeadExcelHelper {
             Sheet templateSheet = templateWorkbook.getSheetAt(1);
 
             // Read header row (assumed to be first row)
-            Row uploadedHeader = uploadedSheet.getRow(1);
-            Row templateHeader = templateSheet.getRow(1);
+            Row uploadedHeader = uploadedSheet.getRow(2);
+            Row templateHeader = templateSheet.getRow(2);
 
             if (uploadedHeader == null || templateHeader == null) {
                 return false;
@@ -212,161 +239,272 @@ public class LeadExcelHelper {
         }
     }
 
-    private boolean validateRow(Row row, Lead lead, CellStyle errorStyle, Map<String, Lead> leadMap) {
-        boolean hasError = false;
-        // 1. First Name
+    private Map<String, String> validateRowWithErrors(Row row, Lead lead, CellStyle errorStyle) {
+        Map<String, String> errorMap = new HashMap<>();
+
+        // First Name
         if (isEmpty(lead.getFirstName()) || !lead.getFirstName().matches(RegxConstant.NAME_REGEX)) {
-            markError(row.getCell(1), "Invalid First Name", errorStyle);
-            hasError = true;
+            String msg = "Invalid First Name";
+          //  markError(row.getCell(1), msg, errorStyle);
+            errorMap.put("firstName", msg);
         }
 
-        // 2. Last Name
+        // Last Name
         if (isEmpty(lead.getLastName()) || !lead.getLastName().matches(RegxConstant.NAME_REGEX)) {
-            markError(row.getCell(2), "Invalid Last Name", errorStyle);
-            hasError = true;
+            String msg = "Invalid Last Name";
+          //  markError(row.getCell(2), msg, errorStyle);
+            errorMap.put("lastName", msg);
         }
 
-        // 3. Mobile
+        // Mobile
         if (isEmpty(lead.getMobileNumber()) || !lead.getMobileNumber().matches(RegxConstant.MOBILE_REGEX)) {
-            markError(row.getCell(3), "Invalid Mobile Number", errorStyle);
-            hasError = true;
+            String msg = "Invalid Mobile Number";
+         //   markError(row.getCell(3), msg, errorStyle);
+            errorMap.put("mobileNumber", msg);
         }
 
-        // 4. Email
+        // Email
         if (isEmpty(lead.getEmail()) || !lead.getEmail().matches(RegxConstant.EMAIL_REGEX)) {
-            markError(row.getCell(4), "Invalid Email", errorStyle);
-            hasError = true;
+            String msg = "Invalid Email";
+         //   markError(row.getCell(4), msg, errorStyle);
+            errorMap.put("email", msg);
         }
 
-        // 5. GSTIN
+        // GSTIN
         if (isEmpty(lead.getGstin()) || !lead.getGstin().matches(RegxConstant.GSTIN_REGEX)) {
-            markError(row.getCell(5), "Invalid GSTIN", errorStyle);
-            hasError = true;
+            String msg = "Invalid GSTIN";
+          //  markError(row.getCell(5), msg, errorStyle);
+            errorMap.put("gstin", msg);
         }
 
-        // 6. Interested Modules
-        if (lead.getInterestedModules() == null || lead.getInterestedModules().isEmpty()) {
-            markError(row.getCell(6), "No Modules Selected", errorStyle);
-            hasError = true;
+        // Modules
+        if (lead.getInterestedProducts() == null || lead.getInterestedProducts().isEmpty()) {
+            String msg = "No Modules Selected";
+          //  markError(row.getCell(6), msg, errorStyle);
+            errorMap.put("interestedProducts", msg);
         }
-//        else {
-//            for (String module : lead.getInterestedModules()) {
-//                if (!ALLOWED_MODULES.contains(module.toUpperCase())) {
-//                    markError(row.getCell(6), "Invalid Module: " + module, errorStyle);
-//                    hasError = true;
+
+        // Address
+        if (!isEmpty(lead.getBusinessAddress()) &&
+                !lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
+            String msg = "Invalid Address";
+          //  markError(row.getCell(7), msg, errorStyle);
+            errorMap.put("businessAddress", msg);
+        }
+
+        // Description
+        if (!isEmpty(lead.getDescription()) &&
+                !lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
+            String msg = "Invalid Description";
+        //    markError(row.getCell(8), msg, errorStyle);
+            errorMap.put("description", msg);
+        }
+
+        return errorMap;
+    }
+
+
+//    private void mergeLead(Map<String, Lead> leadMap, Lead lead) {
+//        String emailKey = lead.getEmail().trim().toLowerCase();
+//
+//        if (leadMap.containsKey(emailKey)) {
+//            Lead existingLead = leadMap.get(emailKey);
+//
+//            // Merge interested modules (avoid duplicates)
+//            existingLead.getInterestedProducts().addAll(lead.getInterestedProducts());
+//
+//            // Optional: If other fields are blank in the first record, fill them from new one
+//            if (isEmpty(existingLead.getFirstName()) && !isEmpty(lead.getFirstName()))
+//                existingLead.setFirstName(lead.getFirstName());
+//
+//            if (isEmpty(existingLead.getLastName()) && !isEmpty(lead.getLastName()))
+//                existingLead.setLastName(lead.getLastName());
+//
+//            if (isEmpty(existingLead.getMobileNumber()) && !isEmpty(lead.getMobileNumber()))
+//                existingLead.setMobileNumber(lead.getMobileNumber());
+//
+//            if (isEmpty(existingLead.getBusinessAddress()) && !isEmpty(lead.getBusinessAddress()))
+//                existingLead.setBusinessAddress(lead.getBusinessAddress());
+//
+//            if (isEmpty(existingLead.getDescription()) && !isEmpty(lead.getDescription()))
+//                existingLead.setDescription(lead.getDescription());
+//
+//        } else {
+//            leadMap.put(emailKey, lead);
+//        }
+//    }
+
+//    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
+//        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+//
+//        try (
+//                FileInputStream fis = new FileInputStream(templateFile);
+//                Workbook errorWorkbook = new XSSFWorkbook(fis)
+//        ) {
+//            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+//
+//            int startRow = 2; // after header
+//            for (Row sourceRow : errorRows) {
+//                Row targetRow = templateSheet.createRow(startRow++);
+//
+//                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+//                    Cell sourceCell = sourceRow.getCell(i);
+//                    if (sourceCell == null) continue;
+//
+//                    Cell targetCell = targetRow.createCell(i);
+//
+//                    // Copy cell value
+//                    switch (sourceCell.getCellType()) {
+//                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
+//                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
+//                        default -> targetCell.setCellValue(getCellValue(sourceCell));
+//                    }
+//
+//                    // If source has error style, apply it
+//                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
+//                        CellStyle style = errorWorkbook.createCellStyle();
+//                        style.cloneStyleFrom(sourceCell.getCellStyle());
+//                        targetCell.setCellStyle(style);
+//
+//                        // Copy comments if any
+//                        if (sourceCell.getCellComment() != null) {
+//                            CreationHelper factory = errorWorkbook.getCreationHelper();
+//                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
+//                            ClientAnchor anchor = factory.createClientAnchor();
+//                            anchor.setCol1(i);
+//                            anchor.setRow1(targetRow.getRowNum());
+//
+//                            Comment comment = drawing.createCellComment(anchor);
+//                            comment.setString(factory.createRichTextString(
+//                                    sourceCell.getCellComment().getString().getString()));
+//                            targetCell.setCellComment(comment);
+//                        }
+//                    }
 //                }
 //            }
+//            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+//            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
+//            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
+//                uploadHistory.setErrorFileName(errorFilePath);
+//                errorWorkbook.write(out);
+//            }
+//
+//            log.info("Error file generated with {} invalid rows", errorRows.size());
+//
+//        } catch (IOException e) {
+//            log.error("Error writing error file: {}", e.getMessage());
+//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
 //        }
+//    }
 
-        // 7. Address
-        if (!isEmpty(lead.getBusinessAddress())) {
-            if (!lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
-                markError(row.getCell(7), "Invalid Address", errorStyle);
-                hasError = true;
-            }
-        }
-
-        // 8. Description
-        if (!isEmpty(lead.getDescription())) {
-            if (!lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
-                markError(row.getCell(8), "Invalid Description", errorStyle);
-                hasError = true;
-            }
-        }
-        return hasError;
-    }
-
-    private void mergeLead(Map<String, Lead> leadMap, Lead lead) {
-        String emailKey = lead.getEmail().trim().toLowerCase();
-
-        if (leadMap.containsKey(emailKey)) {
-            Lead existingLead = leadMap.get(emailKey);
-
-            // Merge interested modules (avoid duplicates)
-            existingLead.getInterestedModules().addAll(lead.getInterestedModules());
-
-            // Optional: If other fields are blank in the first record, fill them from new one
-            if (isEmpty(existingLead.getFirstName()) && !isEmpty(lead.getFirstName()))
-                existingLead.setFirstName(lead.getFirstName());
-
-            if (isEmpty(existingLead.getLastName()) && !isEmpty(lead.getLastName()))
-                existingLead.setLastName(lead.getLastName());
-
-            if (isEmpty(existingLead.getMobileNumber()) && !isEmpty(lead.getMobileNumber()))
-                existingLead.setMobileNumber(lead.getMobileNumber());
-
-            if (isEmpty(existingLead.getBusinessAddress()) && !isEmpty(lead.getBusinessAddress()))
-                existingLead.setBusinessAddress(lead.getBusinessAddress());
-
-            if (isEmpty(existingLead.getDescription()) && !isEmpty(lead.getDescription()))
-                existingLead.setDescription(lead.getDescription());
-
-        } else {
-            leadMap.put(emailKey, lead);
-        }
-    }
-
-    private void writeErrorFile(List<Row> errorRows, UploadHistory uploadHistory) {
+    public byte[] generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
+        log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
         File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
-
         try (
                 FileInputStream fis = new FileInputStream(templateFile);
-                Workbook errorWorkbook = new XSSFWorkbook(fis)
+                Workbook workbook = new XSSFWorkbook(fis)
         ) {
-            Sheet templateSheet = errorWorkbook.getSheetAt(1);
+            Sheet sheet = workbook.getSheetAt(1);
 
-            int startRow = 2; // after header
-            for (Row sourceRow : errorRows) {
-                Row targetRow = templateSheet.createRow(startRow++);
+            // Error style (red background)
+            CellStyle errorStyle = workbook.createCellStyle();
+            errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+            errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
-                    Cell sourceCell = sourceRow.getCell(i);
-                    if (sourceCell == null) continue;
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
 
-                    Cell targetCell = targetRow.createCell(i);
+            int rowIndex = 3;
 
-                    // Copy cell value
-                    switch (sourceCell.getCellType()) {
-                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
-                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
-                        default -> targetCell.setCellValue(getCellValue(sourceCell));
-                    }
+            for (InvalidLeadError invalid : invalidLeads) {
 
-                    // If source has error style, apply it
-                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
-                        CellStyle style = errorWorkbook.createCellStyle();
-                        style.cloneStyleFrom(sourceCell.getCellStyle());
-                        targetCell.setCellStyle(style);
+                Lead lead = invalid.getLead();
+                Map<String, String> errors = invalid.getErrors();
+                Set<Product> products = lead.getInterestedProducts();
 
-                        // Copy comments if any
-                        if (sourceCell.getCellComment() != null) {
-                            CreationHelper factory = errorWorkbook.getCreationHelper();
-                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
-                            ClientAnchor anchor = factory.createClientAnchor();
-                            anchor.setCol1(i);
-                            anchor.setRow1(targetRow.getRowNum());
-
-                            Comment comment = drawing.createCellComment(anchor);
-                            comment.setString(factory.createRichTextString(
-                                    sourceCell.getCellComment().getString().getString()));
-                            targetCell.setCellComment(comment);
-                        }
-                    }
+                // If no products – write one row with empty product column
+                if (products == null || products.isEmpty()) {
+                    Row row = sheet.createRow(rowIndex);
+                    writeLeadRow(row, lead);   // null product
+                    writeComments(sheet, drawing, rowIndex, errors,errorStyle);
+                    rowIndex++;
+                    continue;
                 }
-            }
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
-            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
-                uploadHistory.setErrorFileName(errorFilePath);
-                errorWorkbook.write(out);
-            }
+                    Row row = sheet.createRow(rowIndex);
+                    // Write all lead fields + single product
+                    writeLeadRow(row, lead);
+                    // Add comments once per row
+                    writeComments(sheet, drawing, rowIndex, errors,errorStyle );
+                    rowIndex++;
 
-            log.info("Error file generated with {} invalid rows", errorRows.size());
-
-        } catch (IOException e) {
-            log.error("Error writing error file: {}", e.getMessage());
+            }
+            // Save
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            workbook.close();
+            return out.toByteArray();
+        }
+        catch (Exception exception){
+            log.error("Error writing error file: {}", exception.getMessage());
+            log.error("Exit : LeadExcelHelper.generateErrorExcelFromJson --->exception ");
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
+    }
+
+    private void writeLeadRow(Row row, Lead lead) {
+        row.createCell(1).setCellValue(lead.getFirstName());
+        row.createCell(2).setCellValue(lead.getLastName());
+        row.createCell(3).setCellValue(lead.getMobileNumber());
+        row.createCell(4).setCellValue(lead.getEmail());
+        row.createCell(5).setCellValue(lead.getGstin());
+
+        // Convert Set<Product> → Set<String> module names
+        Set<String> selectedModules = lead.getInterestedProducts()
+                .stream()
+                .map(Product::getModuleName)
+                .collect(Collectors.toSet());
+
+        // Write Yes/No columns for products
+        for (ProductColumn pc : ProductColumn.values()) {
+            boolean selected = selectedModules.contains(pc.getModuleName());
+            row.createCell(pc.getColumnIndex()).setCellValue(selected ? "Yes" : "No");
+        }
+
+        row.createCell(13).setCellValue(lead.getBusinessAddress());
+        row.createCell(14).setCellValue(lead.getDescription());
+    }
+
+    private void writeComments(Sheet sheet, Drawing<?> drawing, int rowIndex, Map<String, String> errors, CellStyle style) {
+
+        addComment(sheet, drawing, rowIndex, 1, errors.get("firstName"), style);
+        addComment(sheet, drawing, rowIndex, 2, errors.get("lastName"), style);
+        addComment(sheet, drawing, rowIndex, 3, errors.get("mobileNumber"), style);
+        addComment(sheet, drawing, rowIndex, 4, errors.get("email"), style);
+        addComment(sheet, drawing, rowIndex, 5, errors.get("gstin"), style);
+
+        // For module errors add comment to ALL YES/NO columns
+        if (errors.get("interestedModules") != null) {
+            for (ProductColumn pc : ProductColumn.values()) {
+                addComment(sheet, drawing, rowIndex, pc.getColumnIndex(), errors.get("interestedModules"), style);
+            }
+        }
+        addComment(sheet, drawing, rowIndex, 13, errors.get("businessAddress"), style);
+        addComment(sheet, drawing, rowIndex, 14, errors.get("description"), style);
+    }
+
+
+    private void addComment(Sheet sheet, Drawing<?> drawing, int row, int col, String text,CellStyle style) {
+        if (text == null) return;
+        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(col);
+        anchor.setCol2(col + 3);
+        anchor.setRow1(row);
+        anchor.setRow2(row + 2);
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(text));
+        comment.setAuthor("crm system");
+        sheet.getRow(row).getCell(col).setCellComment(comment);
+        sheet.getRow(row).getCell(col).setCellStyle(style);
     }
 
 

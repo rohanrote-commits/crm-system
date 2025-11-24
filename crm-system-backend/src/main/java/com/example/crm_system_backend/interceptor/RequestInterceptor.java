@@ -1,10 +1,10 @@
 package com.example.crm_system_backend.interceptor;
 
-
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
 import com.example.crm_system_backend.utils.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -41,46 +41,74 @@ public class RequestInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        log.info("Enter: RequestInterceptor.preHandle");
         String uri = request.getRequestURI();
+
         if (uri.startsWith("/crm/")) {
             log.info("Request URI: {}", uri);
 
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-                return true; // allow CORS preflight to pass
+                return true;
             }
 
             String token = request.getHeader("Authorization");
             log.info("Token: {}", token);
+
             if (token == null || !token.startsWith("Bearer ")) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }
             token = token.substring(7).trim();
 
-            //check expiry of token
-            if(jwtUtil.isTokenExpired(token)){
-                userSessionService.deleteSessionByEmail(jwtUtil.getEmail(token));
+            String email;
+
+            // ---- STEP 1: Extract email safely ----
+            try {
+                email = jwtUtil.getEmail(token);
+            } catch (ExpiredJwtException ex) {
+                email = ex.getClaims().getSubject();   // email from expired token
+
+                // token expired → delete session → return error
+                userSessionService.deleteSessionByEmail(email);
+
                 response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
+                log.error("Exit: RequestInterceptor.preHandle with error: Session expired for user: {}", email);
                 throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
-            //check  if session is already present
-            String email = jwtUtil.getEmail(token);
-            if (email == null || !userSessionService.findSessionByToken(token,email)) {
+
+            // ---- STEP 2: Check expiry normally ----
+            if (jwtUtil.isTokenExpired(token)) {
+                userSessionService.deleteSessionByEmail(email);
+
+                response.setStatus(ErrorCode.SESSION_EXPIRED.getStatus().value());
+                log.error("Exit: RequestInterceptor.preHandle with error: Session expired for user: {}", email);
+                throw new UserException(ErrorCode.SESSION_EXPIRED);
+            }
+
+            // ---- STEP 3: Validate active session ----
+            if (!userSessionService.findSessionByToken(token, email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("Exit: RequestInterceptor.preHandle with error: Another session active for user: {}", email);
                 throw new UserException(ErrorCode.ANOTHER_SESSION_ACTIVE_FOR_USER);
             }
+
+            // ---- STEP 4: Extract and set user details ----
             String role = jwtUtil.getRole(token);
-            if(role == null){
+            if (role == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("Exit: RequestInterceptor.preHandle with error: User not found for token: {}", token);
                 throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
+
             Long id = jwtUtil.getId(token);
             request.setAttribute("role", role);
             request.setAttribute("userId", id);
-            request.setAttribute("email", jwtUtil.getEmail(token));
+            request.setAttribute("email", email);
         }
 
         return true;
     }
+
+
 
 }

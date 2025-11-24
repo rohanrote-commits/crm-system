@@ -49,7 +49,7 @@ public class AutoEmailScheduler {
      * Cron Expression format:
      * <seconds> <minutes> <hours> <day-of-month> <month> <day-of-week> <year> (year is optional)
      */
-    @Scheduled(cron = "0 0 9 1 * *")
+    @Scheduled(cron = "0 26 18 1 * *")
     public void scheduleMonthlyReportEmail() {
 
         LOGGER.log(Level.INFO,"Scheduling monthly report");

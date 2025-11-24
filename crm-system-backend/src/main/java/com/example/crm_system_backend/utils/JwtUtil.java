@@ -3,13 +3,13 @@ package com.example.crm_system_backend.utils;
 import com.example.crm_system_backend.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -21,6 +21,8 @@ public class JwtUtil {
      * @return the signing key derived from the secret key using
      */
     private Key getSigningKey() {
+        log.info("Enter: JwtUtil:getSigningKey");
+        log.info("Exit: JwtUtil:getSigningKey");
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
@@ -33,6 +35,8 @@ public class JwtUtil {
      * and role, along with issuance and expiration dates.
      */
     public String generateToken(User user) {
+        log.info("Enter: JwtUtil:generateToken");
+        log.info("Exit: JwtUtil:generateToken");
         return Jwts.builder()
                 .setSubject(user.getId().toString())
                 .claim("email", user.getEmail())
@@ -51,6 +55,7 @@ public class JwtUtil {
      * @return the subject of the token if validation is successful; returns null if the token is invalid or an error occurs
      */
     public String validateToken(String token) {
+        log.info("Enter: JwtUtil:validateToken");
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
@@ -59,6 +64,7 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
         } catch (JwtException e) {
+            log.error("Exit: JwtUtil:validateToken with error: {}", e.getMessage());
             return null;
         }
     }
@@ -71,12 +77,16 @@ public class JwtUtil {
      * @param token the JWT as a String from which claims need to be extracted
      * @return the claims object that contains all the extracted claims from the token
      */
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+    public Claims extractAllClaims(String token) throws ExpiredJwtException {
+        log.info("Enter: JwtUtil:extractAllClaims");
+        log.info("Exit: JwtUtil:extractAllClaims");
+        return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 
     /**
      * Extracts and returns the user ID from the provided JWT (JSON Web Token).
@@ -85,6 +95,8 @@ public class JwtUtil {
      * @param token the JWT as a String
      */
     public Long getId(String token) {
+        log.info("Enter: JwtUtil:getId");
+        log.info("Exit: JwtUtil:getId");
         return Long.parseLong(extractAllClaims(token).getSubject());
     }
 
@@ -96,6 +108,8 @@ public class JwtUtil {
      * @return the email address as a String if it exists in the token, or null if the claim is missing or invalid
      */
     public String getEmail(String token) {
+        log.info("Enter: JwtUtil:getEmail");
+        log.info("Exit: JwtUtil:getEmail");
         return extractAllClaims(token).get("email").toString();
     }
 
@@ -107,6 +121,8 @@ public class JwtUtil {
      * @return the role of
      */
     public String getRole(String token) {
+        log.info("Enter: JwtUtil:getRole");
+        log.info("Exit: JwtUtil:getRole");
         return extractAllClaims(token).get("role").toString();
     }
 
@@ -119,6 +135,14 @@ public class JwtUtil {
      * @return true if the token has expired, false otherwise
      */
     public boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
+        log.info("Enter: JwtUtil:isTokenExpired");
+        try {
+            return extractAllClaims(token).getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            log.error("Exit: JwtUtil:isTokenExpired with error: {}", e.getMessage());
+            // Token is expired, return true without throwing exception
+            return true;
+        }
     }
+
 }

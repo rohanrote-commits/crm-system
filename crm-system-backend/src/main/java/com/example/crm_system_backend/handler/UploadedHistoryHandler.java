@@ -5,9 +5,15 @@ import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.LeadException;
+
+import com.example.crm_system_backend.exception.UserException;
+
+import com.example.crm_system_backend.exception.UserException;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.util.TempFile;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +34,56 @@ public class UploadedHistoryHandler {
     private ModelMapper modelMapper;
 
 
+
+
     public List<UploadHistoryDto> findLeadUploadHistoryByEmail(String email)
     {
         log.info("Enter : findLeadUploadHistoryByEmail");
-        try {
+
+
+
         List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream().
-                filter(uploadHistory -> uploadHistory.getFileTemplateType().name().equalsIgnoreCase(FileTemplateType.LEAD.name())).map(
+                filter(uploadHistory -> {
+                    FileTemplateType fileTemplateType = uploadHistory.getFileTemplateType();
+                    return fileTemplateType != null &&
+                            fileTemplateType.name().equalsIgnoreCase(FileTemplateType.LEAD.name());
+                        }
+                ).map(
                         uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class)
                 ).toList();
         log.info("Exit : findLeadUploadHistoryByEmail");
          return uploadHistoryDtos;
+
         }
-        catch (Exception ex){
-            log.info("Exit : findLeadUploadHistoryByEmail ${e}",ex);
-            throw new  LeadException(ErrorCode.FILE_HISTORY_NOT_FOUND);
+
+
+    /**
+     * Retrieves a list of upload history records for a user identified by their email.
+     * The records returned are filtered to include only those associated with the {@code USER} file template type.
+     *
+     * @param email the email address of the user whose upload history is to be retrieved
+     * @return a list of {@code UploadHistoryDto} objects representing the user's upload history
+     * @throws UserException if no user is found with the provided email address
+     */
+    public List<UploadHistoryDto> findUserUploadHistoryByEmail(String email) {
+        log.info("Enter : findUserUploadHistoryByEmail");
+        try {
+            List<UploadHistoryDto> uploadHistoryDtos = uploadHistoryService.findByUser(email).stream()
+                    .filter(uploadHistory -> {
+                        FileTemplateType templateType = uploadHistory.getFileTemplateType();
+                        return templateType != null &&
+                                templateType.name().equalsIgnoreCase(FileTemplateType.USER.name());
+                    })
+                    .map(uploadHistory -> modelMapper.map(uploadHistory, UploadHistoryDto.class))
+                    .toList();
+            log.info("Exit : findUserUploadHistoryByEmail");
+            return uploadHistoryDtos;
+        } catch (UserException e) {
+
+            if (log.isErrorEnabled()) {
+                log.error("Exception in findUserUploadHistoryByEmail", e.getMessage());
+            }
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
         }
     }
 

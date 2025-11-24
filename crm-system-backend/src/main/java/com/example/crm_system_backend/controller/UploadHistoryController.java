@@ -1,6 +1,10 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.annotations.RoleRequired;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
+import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.handler.DownloadHandler;
 import com.example.crm_system_backend.handler.UploadedHistoryHandler;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -23,10 +27,12 @@ import java.util.List;
 public class UploadHistoryController {
 
 
-    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
-    private final UploadedHistoryHandler uploadedHistoryHandler;
 
+    private final UploadedHistoryHandler uploadedHistoryHandler;
     private  final  ModelMapper modelMapper;
+    private final DownloadHandler downloadHandler;
+    private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
+
 
     /**
      * Retrieves the upload history associated with a specific user based on their email.
@@ -34,12 +40,41 @@ public class UploadHistoryController {
      * @param email the email address of the user whose upload history is to be retrieved
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
      */
-    @GetMapping("/{email}")
-    public ResponseEntity<List<UploadHistoryDto>> getUploadHistoryByUser(@PathVariable String email){
-        log.info("Enter: UploadHistoryController.getUploadHistoryByUser");
+    @GetMapping("/lead/{email}")
+    public ResponseEntity<List<UploadHistoryDto>> getLeadUploadHistoryByUser(@PathVariable String email){
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findLeadUploadHistoryByEmail(email);
-        log.info("Exit: UploadHistoryController.getUploadHistoryByUser");
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves the upload history for a specific user based on their email.
+     *
+     * @param email the email address of the user whose upload history is to be retrieved
+     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
+     *         the upload history associated with the user
+     */
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @GetMapping("/user/{email}")
+    public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@PathVariable String email){
+        List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUserUploadHistoryByEmail(email);
+        return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves the error file specified by the uploadHistoryId from the server.
+     *
+     * @param uploadHistoryId the name of the file to be retrieved
+     * @return a ResponseEntity containing the file as a byte array along with the appropriate
+     * HTTP headers and content type for a file download
+     */
+    @GetMapping("/lead/error/{uploadHistoryId}")
+    public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String uploadHistoryId){
+        byte [] file = downloadHandler.downloadErrorFile(uploadHistoryId);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+"Lead_Error_"+uploadHistoryId+".xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(file);
     }
 
     /**
@@ -49,22 +84,15 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
-    @GetMapping("/error/{filename}")
-    public ResponseEntity<byte []> getErrorFile(@PathVariable String filename){
-        log.info("Enter: UploadHistoryController.getErrorFile");
-        File file = new File(filename);
-        byte[] fileBytes = null;
-        try {
-            fileBytes = FileUtils.readFileToByteArray(file);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-        log.info("Exit: UploadHistoryController.getErrorFile");
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @GetMapping("/user/error/{uploadHistoryId}")
+    public ResponseEntity<byte []> getUserErrorFile(@PathVariable String uploadHistoryId){
+        byte [] file = downloadHandler.downloadUserErrorFile(uploadHistoryId);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+"User_"+uploadHistoryId+".xlsx")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(fileBytes);
+                .body(file);
     }
 
 }

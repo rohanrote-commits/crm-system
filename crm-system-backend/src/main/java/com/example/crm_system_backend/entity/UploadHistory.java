@@ -1,10 +1,10 @@
 package com.example.crm_system_backend.entity;
 
 import com.example.crm_system_backend.constants.FileTemplateType;
-import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.constants.UploadStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 
@@ -16,6 +16,7 @@ public class UploadHistory {
    private String id;
    private String fileName;
    private LocalDateTime uploadedAt;
+   private LocalDateTime updatedAt;
    private String uploadedBy;
    private int totalRecords;
    @Enumerated(EnumType.STRING)
@@ -25,4 +26,7 @@ public class UploadHistory {
    private String errorFileName;
    @Enumerated(EnumType.STRING)
    private FileTemplateType fileTemplateType;
+    @Column(columnDefinition = "JSON")
+   private String errorRecord;
+
 }

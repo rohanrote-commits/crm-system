@@ -55,6 +55,33 @@ public class GlobalExceptionHandler {
                 ex.errorCode.getStatus()
         );
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, response.getStatus());
     }
+    @ExceptionHandler(UploadHistoryException.class)
+    public  ResponseEntity<ErrorResponse> handleUploadHistoryException(UploadHistoryException exception){
+        ErrorResponse errorResponse = new ErrorResponse(
+                exception.errorCode.getMessage(),
+                exception.errorCode.getStatus()
+        );
+        return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(ProductException.class)
+    public ResponseEntity<ErrorResponse> handleProductException(ProductException exception){
+        ErrorResponse errorResponse = new ErrorResponse(
+                exception.errorCode.getMessage(),
+                exception.errorCode.getStatus()
+        );
+        return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(ErrorRecordException.class)
+    public ResponseEntity<ErrorResponse> handleErrorRecordException(ErrorRecordException exception){
+        ErrorResponse errorResponse = new ErrorResponse(
+                exception.errorCode.getMessage(),
+                exception.errorCode.getStatus()
+        );
+        return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
+    }
+
 }

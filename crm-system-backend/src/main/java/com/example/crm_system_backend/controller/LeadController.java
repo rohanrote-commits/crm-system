@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.handler.LeadHandler;
@@ -11,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/crm/lead")
@@ -50,23 +54,35 @@ public class LeadController {
     }
 
     @PutMapping("/{email}")
-    public ResponseEntity<LeadDto> updateLead(@PathVariable String email, @Valid @RequestBody LeadDto leadDto) {
+    public ResponseEntity<LeadDto> updateLead(@PathVariable String email ,@Valid @RequestBody LeadDto leadDto) {
+        log.info("Enter: LeadController.updateLead");
         Lead lead = leadHandler.getLeadByEmail(email);
-        return new ResponseEntity<>(leadHandler.edit(lead.getId(), leadDto), HttpStatus.OK);
+        return new ResponseEntity<>(leadHandler.edit(lead.getId(),leadDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<?> deleteLead(@RequestParam String email) {
+    public ResponseEntity<?>  deleteLead(@RequestParam String email) {
+        log.info("Enter: LeadController.deleteLead");
         Lead lead = leadHandler.getLeadByEmail(email);
         leadHandler.delete(lead.getId());
-        return new ResponseEntity<>("Lead Deleted Successfully", HttpStatus.OK);
+        log.info("Exit: LeadController.deleteLead");
+        return new ResponseEntity<>("Lead Deleted Successfully",HttpStatus.OK);
     }
 
     @PostMapping("/import/{id}")
-    public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file, @PathVariable Long id) {
-        leadHandler.bulkUpload(file, id);
+    public ResponseEntity<?> bulkSaveLead(@RequestParam MultipartFile file,@PathVariable Long id) {
+        log.info("Enter: LeadController.bulkSaveLead");
+         leadHandler.bulkUpload(file,id);
+         log.info("Exit: LeadController.bulkSaveLead");
         return new ResponseEntity<>("File uploaded successfully", HttpStatus.OK);
     }
 
+    @PutMapping("/status/{status}/{email}")
+    public ResponseEntity<?> updateLeadStatus(@PathVariable String email,@PathVariable Integer status) {
+        Map<String, Object> response = new HashMap<>();
+        LeadStatus updatedStatus = leadHandler.updateLeadStatus(email, status);
+        response.put("leadStatus", updatedStatus.getValue() ) ;
+        return ResponseEntity.ok(response);
+    }
 
 }

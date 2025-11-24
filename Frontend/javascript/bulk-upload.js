@@ -135,7 +135,7 @@ $(document).ready(function () {
 
         const token = sessionStorage.getItem("Authorization");
         if (!token) {
-            alert("⚠ Session expired. Please login again.");
+            showPopup("Warning","⚠ Session expired. Please login again.","warning");
             window.location.href = "/Frontend/html/login.html";
             return;
         }
@@ -150,12 +150,16 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
-            success: function () {
-                alert("✅ Data Inserted Successfully!");
+            success: function (response) {
+
+                showPopup("Success",response,"success");
+
                 fileInput.val(''); // Clear input
             },
-            error: function () {
-                alert("⚠ Error in uploading file. Please check the file format.");
+            error: function (xhr) {
+                 let error = xhr.responseJSON.message;
+             showPopup("Error",error,"error");
+
             }
         });
     });
@@ -182,20 +186,46 @@ $(document).ready(function () {
                 a.remove();
 
                 window.URL.revokeObjectURL(url);
-                showAlert("File Downloded successfully","success");
+                showPopup("Success","File Downloded successfully","success");
             },
             error: function () {
                     if (xhr.status === 401) {
-        showAlert("Session expired. Please login again.","warning");
+        showPopup("Warning","Session expired. Please login again.","warning");
         sessionStorage.clear();
         window.location.href = "/Frontend/html/login.html";
       } else {
         console.error("Token used:", token);
-        showAlert("Error while downloading the template.","danger");
+        showPopup("Error while downloading the template.","danger");
       }
             }
         });
 
     });
 
+        function showAlert(message, type) {
+      const alertContainer = $("#alert-container");
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      alertContainer.append(alert);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        alert.alert('close');
+      }, 5000);
+    }
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
+
+
 });
+

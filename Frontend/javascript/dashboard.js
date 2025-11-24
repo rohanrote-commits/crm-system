@@ -31,7 +31,6 @@ $(document).ready(function () {
     loadLeads(payload,token);
 
 
-
     // Sidebar navigation
     $(".sidebar-btn").click(function () {
         const target = $(this).data("target");
@@ -47,18 +46,14 @@ $(document).ready(function () {
             loadLeads(payload,token);
         }
 
+        if(target === "reports"){
+
+        }
+
     });
 
   $("#profilePic").click(function () {
-    $("#profileDropdown").toggle();
-  });
-
-  const $dropdown = $("#userDropdown");
-
-  // Toggle dropdown when clicking the main button
-  $("#addUserBtn").click(function (e) {
-    e.stopPropagation();
-    $dropdown.toggle();
+    $("#profileDropdown").toggleClass("show");
   });
 
   // Delete profile
@@ -103,17 +98,8 @@ $(document).ready(function () {
     $("#addressFields").slideUp();
   });
 
-//   // Close dropdown if clicked outside
-//   $(document).click(function (event) {
-//     if (!$(event.target).closest("#userDropdown, #addUserBtn").length) {
-//       $dropdown.hide();
-//     }
-//   });
 
-
-
-
-    // Toggle dropdown on button click
+// Toggle dropdown on button click
 $("#addLeadBtn").on("click", function (e) {
     e.stopPropagation(); // prevent click from closing instantly
     $("#leadDropdown").toggleClass("show");
@@ -123,8 +109,6 @@ $("#addLeadBtn").on("click", function (e) {
 $(document).on("click", function () {
     $("#leadDropdown").removeClass("show");
 });
-
-
 
 
     $("#importLead").click(function (event) {
@@ -181,12 +165,13 @@ $(document).on("click", function () {
                 showAlert(response,"success");
 
                 // remove token
-                localStorage.removeItem("Authorization");
+                sessionStorage.removeItem("Authorization");
 
                 // redirect to login
                 window.location.href = "/Frontend/html/login.html";
             },
             error: function (xhr) {
+              showPopup("Error","Failed to Logout", "error");
                 showAlert("Failed to logout: " + xhr.responseText,"warning");
             }
         });
@@ -232,44 +217,115 @@ $("#confirmDeleteBtn").click(function () {
                 data : JSON.stringify(user),
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
-                   showAlert("User deleted successfully.","success");
+                   showPopup("Success","User deleted successfully", "success");
+                   //showAlert("User deleted successfully.","success");
                     $('#user-table').DataTable().ajax.reload();
                 },
                 error: function() {
+                    showPopup("Error","Error deleting lead.", "error");
                     showAlert("Error deleting lead.","warning");
                 }
             });
         }
     });
 
-    $("#view-profile").click(function () {
 
-        $.ajax({
-            url: `http://localhost:8080/crm/user/get-user`,
-            type: "GET",
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (user) {
+  // View profile
+  $("#view-profile").click(function () {
+    $.ajax({
+      url: `http://localhost:8080/crm/user/get-user`,
+      type: "GET",
+      headers: { Authorization: "Bearer " + token },
+      success: function (user) {
+        $("#profileName").val(user.firstName + " " + user.lastName);
+        $("#profileEmail").val(user.email);
+        $("#profileMobile").val(user.mobileNumber);
+        $("#profileAddress").val(user.address || "");
+        $("#profileCity").val(user.city || "");
+        $("#profileState").val(user.state || "");
+        $("#profileCountry").val(user.country || "");
+        $("#profilePin").val(user.pinCode || "");
+        $("#profileRole").val(user.role);
+        $("#profileDate").val(user.registeredOn);
 
-                $("#profileName").text(user.firstName + " " + user.lastName);
-                $("#profileEmail").text(user.email);
-                $("#profileMobile").text(user.mobileNumber);
-                $("#profileAddress").text(user.address || "-");
-                $("#profileCity").text(user.city || "-");
-                $("#profileState").text(user.state || "-");
-                $("#profileCountry").text(user.country || "-");
-                $("#profilePin").text(user.pinCode || "-");
-                $("#profileRole").text(user.role);
-                $("#profileDate").text(user.registeredOn);
-
-                $("#profileModal").modal("show");
-            },
-            error: function () {
-                showAlert("Failed to fetch profile","info");
-            }
-        });
+        $("#profileModal input, #profileModal textarea").prop("readonly", true);
+        $("#editProfileBtn").removeClass("d-none");
+        $("#saveProfileBtn").addClass("d-none");
+        $("#profileModal").modal("show");
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to load profile";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+      },
     });
+  });
+
+  // Edit profile
+  $("#editProfileBtn").click(function () {
+    $("#profileMobile, #profileAddress, #profileCity, #profileState, #profileCountry, #profilePin").prop("readonly", false);
+    $("#editProfileBtn").addClass("d-none");
+    $("#saveProfileBtn").removeClass("d-none");
+  });
+
+  $.validator.addMethod("mobilePattern", function (value, element) {
+    return this.optional(element) || /^[789]\d{9}$/.test(value);
+  }, "Mobile must start with 7/8/9 and be 10 digits");
+
+  $.validator.addMethod("addressPattern", function (value, element) {
+    return this.optional(element) || /^[A-Za-z0-9 ,./#\-]{1,200}$/.test(value);
+  }, "Address can contain letters, numbers, ,./#- (max 100)");
+
+  $.validator.addMethod("pinPattern", function (value, element) {
+    return this.optional(element) || /^[0-9]{6}$/.test(value);
+  }, "Pin code must be 6 digits");
+
+  $("#profileForm").validate({
+    rules: {
+      profileMobile: { required: true, mobilePattern: true },
+      profileAddress: { required: true, addressPattern: true }
+    }
+  });
+
+  // Save profile
+  $("#saveProfileBtn").click(function () {
+    if (!$("#profileForm").valid()) return;
+
+    const updatedProfile = {
+      email: $("#profileEmail").val(),
+      mobileNumber: $("#profileMobile").val(),
+      address: $("#profileAddress").val(),
+      city: $("#profileCity").val(),
+      state: $("#profileState").val(),
+      country: $("#profileCountry").val(),
+      pinCode: $("#profilePin").val()
+    };
+
+    $.ajax({
+      url: `http://localhost:8080/crm/user/update`,
+      type: "POST",
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      data: JSON.stringify(updatedProfile),
+      success: function () {
+        showAlert("Profile updated successfully", "success");
+        showPopup("Success","Profile updated successfully", "success");
+        $("#profileModal input, #profileModal textarea").prop("readonly", true);
+        $("#editProfileBtn").removeClass("d-none");
+        $("#saveProfileBtn").addClass("d-none");
+        $("#profileModal").modal("hide");
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to update profile";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+        showPopup("Error","Failed to update profile", "error");
+      }
+    });
+  });
 
     $(document).on("click", ".view-lead-info", function () {
         const lead = JSON.parse($(this).attr("data-lead"));
@@ -351,16 +407,16 @@ function loadLeads(payload, token) {
         },
         error: function (xhr) {
             if (xhr.status === 401) {
-                showAlert("Session expired. Login again.","warning");
+                showPopup("Error","Session expired. Login again.", "error");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
             } else {
                 if (xhr.status === 23) {
-                    showAlert("Session expired. Login again.","warning");
+                  showPopup("Error","Session expired. Login again.", "error");
                     sessionStorage.clear();
                     window.location.href = "/Frontend/html/login.html";
                 }
-                showAlert("Error loading leads.","danger");
+                showPopup("Error","Error loading leads.", "error");
             }
         }
     },
@@ -449,3 +505,11 @@ function loadLeads(payload, token) {
       }, 5000);
     }
 
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

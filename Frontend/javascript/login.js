@@ -42,11 +42,9 @@ $(document).ready(function () {
                     window.location.href = "/Frontend/html/dashboard.html";
                 },
                 error: function (xhr) {
-                    if (xhr.status === 404) {
-                        showAlert("Invalid Credentials", "danger");
-                    } else {
-                        showAlert("Server Side Error", "danger");
-                    }
+                    const error = xhr.responseJSON.message;
+                    showPopup("Error",error,"error");
+                
                 }
             });
         }
@@ -77,3 +75,12 @@ $(document).ready(function () {
         alert.alert('close');
       }, 5000);
     }
+
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

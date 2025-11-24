@@ -35,7 +35,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService{
+public class ReportService {
 
     @Autowired
     ReportExcelHelper helper;
@@ -110,7 +110,7 @@ public class ReportService{
             }
 
             // Personalized Report
-            for (User user : users) {
+            for(User user : users) {
 
                 String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);
@@ -154,7 +154,8 @@ public class ReportService{
         // Sets the final downloaded filename
         headers.setContentDispositionFormData("attachment", "ReportTemplate.zip");
 
-        String excelFileName = "Report Template.xlsx";
+        // TODO: Rename filename
+        String excelFileName = "COVORO Report " + start + " To" + ".xlsx";
 
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {

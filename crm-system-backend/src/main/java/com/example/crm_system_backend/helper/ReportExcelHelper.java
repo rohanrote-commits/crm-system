@@ -4,7 +4,6 @@ import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
-import jakarta.transaction.Transactional;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -105,12 +104,11 @@ public class ReportExcelHelper {
      * @param end
      * @return list of all leads registered in time period between start date and end date
      */
-    @Transactional
     public List<Lead> getLeadList(Date start, Date end) {
         List<Lead> leadList = new ArrayList<>();
-        for (Lead lead : leadRepo.findAll()) {
+        for(Lead lead : leadRepo.findAll()) {
             Date createdAt = lead.getCreatedAt();
-            if ((createdAt.after(start) && createdAt.before(end))) {
+            if((createdAt.after(start) && createdAt.before(end))) {
                 leadList.add(lead);
             }
         }

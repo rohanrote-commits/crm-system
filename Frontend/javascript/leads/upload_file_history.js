@@ -16,6 +16,7 @@ jQuery(function() {
     const token = sessionStorage.getItem("Authorization");
     let fileName = "";
     if (!token) {
+       showPopup("Error","Unauthorized. Please login.", "error");
         showAlert("Unauthorized. Please login.","danger");
         window.location.href = "/Frontend/html/login.html";
         return;
@@ -26,97 +27,139 @@ jQuery(function() {
     console.log(payload.email)
 
       $("#upload-table").DataTable({
-      ajax: {
-          url: `http://localhost:8080/crm/history/${payload?.email}`,
+        ajax: {
+          url: `http://localhost:8080/crm/history/lead/${payload?.email}`,
           type: "GET",
           headers: {
-              Authorization: "Bearer " + token,
+            Authorization: "Bearer " + token,
           },
-          dataSrc: "" 
-      },
+          dataSrc: "",
+          error: function (xhr) {
+          // errorTable.clear().draw();
+              let error = xhr.responseJSON.message;
+            showPopup("Error",error,"error");
+            console.log(error);
 
-      columns: [
+        }
+        },
+
+        columns: [
           {
-              data: null,
-              title: "Sr.No.",
-              orderable: false,
-              render: function (data, type, row, meta) {
-                  return meta.row + meta.settings._iDisplayStart + 1;
-              }
+            data: null,
+            title: "Sr.No.",
+            orderable: false,
+            render: function (data, type, row, meta) {
+              return meta.row + meta.settings._iDisplayStart + 1;
+            },
           },
           { data: "fileName", title: "File Name" },
-                    {
+          {
             data: "uploadedAt",
-            render: function (data) {
-              if (!data) return "-";
+            render: function (data, type, row) {
 
-              const date = new Date(data);
+            if (type === "sort" || type === "type") {
+              return new Date(data).getTime(); // sortable timestamp
+            }
 
-              const options = {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              };
+            if (!data) return "-";
 
-              return date.toLocaleString("en-GB", options);
-            }},
-                    { data: "uploadedBy", title: "Uploaded By" },
+            const date = new Date(data);
+            const options = {
+              year: "numeric",
+              month: "short",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            };
+
+            return date.toLocaleString("en-GB", options);
+        },
+          },
+          { data: "uploadedBy", title: "Uploaded By" },
 
           {
-              data: "uploadStatus",
-              title: "Status",
-              orderable: false,
-              render: function (data) {
-                  let badgeClass = "";
-                  switch (data) {
-                      case "PROCESSING": badgeClass = "bg-primary"; break;
-                      case "PARTIALLY_SUCCESS": badgeClass = "bg-warning"; break;
-                      case "SUCCESS": badgeClass = "bg-success"; break;
-                      case "FAILED": badgeClass = "bg-danger"; break;
-                      default: badgeClass = "bg-secondary";
-                  }
-                  return `<span class="badge ${badgeClass}">
-                              ${data === "PARTIALLY_SUCCESS" ? "PARTIALLY SUCCESS" : data}
-                          </span>`;
+            data: "uploadStatus",
+            title: "Status",
+            orderable: false,
+            render: function (data) {
+              let badgeClass = "";
+              switch (data) {
+                case "PROCESSING":
+                  badgeClass = "bg-primary";
+                  break;
+                case "PARTIALLY_SUCCESS":
+                  badgeClass = "bg-warning";
+                  break;
+                case "SUCCESS":
+                  badgeClass = "bg-success";
+                  break;
+                case "FAILED":
+                  badgeClass = "bg-danger";
+                  break;
+                default:
+                  badgeClass = "bg-secondary";
               }
+              return `<span class="badge ${badgeClass}">
+                              ${
+                                data === "PARTIALLY_SUCCESS"
+                                  ? "PARTIALLY SUCCESS"
+                                  : data
+                              }
+                          </span>
+                          <a>next</a>
+                          `;
+            },
           },
 
           {
-              data: "errorFileName",
-              title: "Action",
-              orderable: false,
-              render: function (data, type, row) {
-                  return `
-                      <button class="btn btn-sm btn-secondary download-error" data-file="${data}">
-                          <i class="bi bi-download"></i>
-                      </button>
-                      <button class="btn btn-sm btn-secondary view-error-info" data-lead="${data}">
-                          <i class="bi bi-eye"></i>
-                      </button>
-                  `;
+            data: "uploadStatus",
+            title: "Action",
+            orderable: false,
+            render: function (data, type, row) {
+              console.log(row.id);
+              if (data === "SUCCESS") {
+                // Only show view button
+                return `
+                <button class="btn btn-sm btn-secondary view-error-info" data-id="${row.id}">
+                    <i class="bi bi-eye"></i>
+                </button>
+            `;
+              } else {
+                // Show both download + view
+                return `
+                <button class="btn btn-sm btn-secondary download-error" data-id="${row.id}">
+                    <i class="bi bi-download"></i>
+                </button>
+                <button class="btn btn-sm btn-secondary view-error-info" data-id="${row.id}">
+                    <i class="bi bi-eye"></i>
+                </button>
+            `;
               }
-          }
-      ],
+            },
+          },
+        ],
 
-    pageLength: 10,          // 👈 default selected option
-    lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-      destroy: true,
-      responsive: true,
-      searching: true,
-      paging: true,
-      ordering: true,
-      info: true
-  });
+        pageLength: 10, 
+        lengthMenu: [
+          [10, 25, 50, -1],
+          [10, 25, 50, "All"],
+        ],
+        destroy: true,
+        responsive: true,
+        searching: true,
+        paging: true,
+        ordering: true,
+        info: true,
+      });
 
 
         $("#upload-table").on("click", ".download-error", function (e) {
-          e.preventDefault();
-          const fileName = $(this).data("file");
+                    e.preventDefault();
+          const uploadHistoryId = $(this).data("id");
+          const fileName = "Lead_Error"
           $.ajax({
-            url: `http://localhost:8080/crm/history/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/lead/error/${uploadHistoryId}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,
@@ -125,7 +168,7 @@ jQuery(function() {
               responseType: "blob",
             },
             success: function (data, status, xhr) {
-              const filename = `${fileName.replace(" ", "_")}.xlsx`;
+              const filename = `${fileName.replace(" ", "_")}`;
               const blob = new Blob([data], {
                 type: xhr.getResponseHeader("Content-Type"),
               });
@@ -138,16 +181,25 @@ jQuery(function() {
               a.click();
               a.remove();
               window.URL.revokeObjectURL(url);
+              showPopup("Success","File downloded successfully", "success");
               showAlert("Error File downloded successfully", "success");
             },
             error: function (xhr) {
               if (xhr.status === 401) {
+                 showPopup("Error","Session expired. Login again.", "error");
                 showAlert("Session expired. Please login again.", "warning");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
-              } else {
-                console.error("Token used:", token);
-                showAlert("Error while downloading the Error File.", "danger");
+              } 
+              else if(xhr.status===404){
+                  showPopup("Error","Not Error Records Found this File", "error");
+                 showAlert("Not Error Records Found this File", "danger");
+              }
+              else {
+                 let error = xhr.responseJSON.message;
+                 showPopup("Error",error,"error");
+                // showAlert("Error while downloading the Error File.", "danger");
+                // showPopup("Error","Error while downloading the Error File.", "error");
               }
             },
           });
@@ -165,5 +217,12 @@ jQuery(function() {
         window.location.href = "/Frontend/html/leads/view_error_lead.html";
       });
 
-
+          function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}
 });

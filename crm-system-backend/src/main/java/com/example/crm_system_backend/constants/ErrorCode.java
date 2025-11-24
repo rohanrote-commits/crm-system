@@ -36,8 +36,15 @@ public enum ErrorCode {
     USER_DATA_NOT_UPDATABLE("UDNU", "User Data Not Updatable", HttpStatus.NOT_ACCEPTABLE),
     SESSION_EXPIRED("SE", "Session Expired", HttpStatus.UNAUTHORIZED),
     ANOTHER_SESSION_ACTIVE("ASA", "Another Session Active", HttpStatus.CONFLICT),
+    DATA_INSERTED_PARTIALLY("DIP", "Data Inserted Partially", HttpStatus.INTERNAL_SERVER_ERROR),
+    DATA_NOT_INSERTED("DNI", "Data Not Inserted", HttpStatus.INTERNAL_SERVER_ERROR),
     ERROR_IN_FILE_PROCESSING("EFP", "Error in File Processing", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_FILE_FORMAT("IF", "Invalid File Format", HttpStatus.NOT_ACCEPTABLE),
+
+    INVALID_USER_NOT_ACTIVE("INUA", "Invalid User Not Found", HttpStatus.NOT_ACCEPTABLE),
+    PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),
+    INVALID_LEAD_NOT_FOUND("ILNF", "Invalid Lead Not Found" , HttpStatus.NOT_FOUND ),
+
 
     FAILED_TO_SCHEDULE_EMAIL("FTSE", "Error in scheduling email", HttpStatus.CONFLICT),
     ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),;

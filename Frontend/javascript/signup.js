@@ -119,13 +119,14 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(user),
                 success: function(response) {
-                    alert("Sign Up Successful");
-                    window.location.href = "/Frontend/html/login.html";
-                },
+    showPopup("Success", "Sign Up Successful", "success", function() {
+        window.location.href = "/Frontend/html/login.html";
+    });
+}
+,
                 error: function(xhr) {
-                    if (xhr.status === 409) showAlertlert("Email already registered","warning");
-                    else if (xhr.status === 400) showAlert("Passwords do not match","danger");
-                    else showAlert("Sign Up Failed: " + (xhr.responseText || "Server error"),"danger");
+               let error = xhr.responseJSON;
+                 showPopup("Sign Up Failed: " + (error.message|| "Server error"),"error");
                 }
             });
         }
@@ -133,6 +134,7 @@ $.validator.addMethod("passwordPattern", function (value) {
 
 });
     // Function to show bootstrap alert dynamically
+
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`
@@ -148,3 +150,22 @@ $.validator.addMethod("passwordPattern", function (value) {
         alert.alert('close');
       }, 5000);
     }
+
+       function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
+function showPopup(title, message, iconType, callback) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType,
+        confirmButtonText: 'OK'
+    }).then(() => {
+        if (callback) callback();
+    });
+}

@@ -7,6 +7,8 @@ import com.example.crm_system_backend.repository.IUploadHistoryRepository;
 import com.example.crm_system_backend.service.IUploadHistoryService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,25 +17,33 @@ import java.util.List;
 @AllArgsConstructor
 public class UploadHistoryService implements IUploadHistoryService {
 
+    private static final Logger log = LoggerFactory.getLogger(UploadHistoryService.class);
     private final ModelMapper modelMapper;
     private IUploadHistoryRepository iUploadHistoryRepository;
 
 
+
     @Override
     public UploadHistory save(UploadHistory uploadHistory) {
-        return iUploadHistoryRepository.save(uploadHistory);
+        log.info("Enter: ErrorRecordHandler.save");
+      return iUploadHistoryRepository.save(uploadHistory);
     }
 
     @Override
     public UploadHistory findById(String id) {
-        UploadHistory uploadHistory = iUploadHistoryRepository.findById(id).orElseThrow(
-                () -> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
-        );
+        log.info("Enter: ErrorRecordHandler.findById");
+     UploadHistory uploadHistory =    iUploadHistoryRepository.findById(id).orElseThrow(
+             ()-> {
+                 log.error("Exception: ErrorRecordHandler.findById -->history not found for id {}",id);
+                return new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND);}
+     );
+        log.info("Exit: ErrorRecordHandler.findById");
         return uploadHistory;
     }
 
     @Override
     public UploadHistory update(UploadHistory uploadHistory) {
+        log.info("Enter: ErrorRecordHandler.update");
          UploadHistory savedUploadHistory = iUploadHistoryRepository.findById(uploadHistory.getId()).orElseThrow(
                  ()-> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
          );
@@ -43,13 +53,19 @@ public class UploadHistoryService implements IUploadHistoryService {
 
     @Override
     public void deleteById(String id) {
+        log.info("Enter: ErrorRecordHandler.deleteById");
         iUploadHistoryRepository.deleteById(id);
+        log.info("Exit: ErrorRecordHandler.deleteById");
     }
 
     @Override
     public List<UploadHistory> findByUser(String email) {
+        log.info("Enter: ErrorRecordHandler.findByUser");
         return iUploadHistoryRepository.findByUploadedBy(email).orElseThrow(
-                ()-> new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND)
+                ()-> {
+                    log.error("Exception: ErrorRecordHandler.findByUser -->history not found for email {}",email);
+                   return new ExcelException(ErrorCode.FILE_HISTORY_NOT_FOUND);
+                }
         );
     }
 }

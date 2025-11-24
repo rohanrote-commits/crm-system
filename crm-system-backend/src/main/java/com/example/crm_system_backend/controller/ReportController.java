@@ -6,7 +6,6 @@ import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.service.Report.ReportService;
-import com.example.crm_system_backend.service.serviceImpl.UserService;
 import com.example.crm_system_backend.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,12 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +79,6 @@ public class ReportController {
 
 
         // Save in DB
-
         downloadReport data = new downloadReport();
 
         // Access Token

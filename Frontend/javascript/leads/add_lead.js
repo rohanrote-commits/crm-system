@@ -40,11 +40,8 @@ $(document).ready(function (params) {
 
   //Edit Lead
   $("#confirmUpdateBtn").click(function () {
-
     const rowData = $(this).data("row");
-
     isEdit = true;
-
     $("#leadModalLabel").text("Edit Lead");
     $("#saveLeadBtn").text("Update Lead");
 
@@ -67,7 +64,7 @@ $(document).ready(function (params) {
         $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
     });
 
-    if (rowData.id) {
+    if (isEdit) {
         $("#email").prop("readOnly", true);
         $("#gstin").prop("readOnly", true);
     }
@@ -195,14 +192,16 @@ $.validator.addMethod(
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
-          showAlert(
-            isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
-          );
+           showPopup("Success", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
+          // showAlert(
+          //   isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
+          // );
           $("#leadModal").modal("hide");
             $("#lead-table").DataTable().ajax.reload();
         },
         error: function (err) {
-          showAlert("Something went wrong. Please try again.","warning");
+          showPopup("Error","Something went wrong. Please try again", "error");
+         // showAlert("Something went wrong. Please try again.","warning");
         },
       });
       isEdit = false;
@@ -226,3 +225,12 @@ $.validator.addMethod(
         alert.alert('close');
       }, 5000);
     }
+
+     function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+}

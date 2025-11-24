@@ -57,12 +57,14 @@ $(document).ready(function() {
       contentType: false,
       processData: false,
       success: function(response) {
-        showAlert('Leads imported successfully!',"success");
+        showPopup("Success","Leads imported successfully!", "success");
+        //showAlert('Leads imported successfully!',"success");
         $('#importLeadsModal').modal('hide');
         $('#importLeadsForm')[0].reset();
         $('#leadTable').DataTable().ajax.reload();
       },
       error: function(err) {
+         showPopup("Error","Error while importing the leads", "error");
         showAlert('Error importing leads: ' + err.responseText,"danger");
       }
     });
@@ -86,3 +88,12 @@ $(document).ready(function() {
         alert.alert('close');
       }, 5000);
     }
+    
+     function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
+  }

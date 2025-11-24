@@ -1,14 +1,18 @@
 package com.example.crm_system_backend.service.serviceImpl;
 
-import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UserDTO;
+import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.User;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +24,9 @@ public class UserService implements IUserService {
     @Autowired
     private IUserRepo userRepo;
 
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
     /**
      * Registers a new user by saving their details to the repository.
      *
@@ -28,6 +35,9 @@ public class UserService implements IUserService {
      */
     @Override
     public User registerUser(User user) {
+        log.info("Enter : UserService:registerUser");
+        log.info("Exit : UserService:registerUser");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }
 
@@ -49,8 +59,9 @@ public class UserService implements IUserService {
      */
     @Override
     public void deleteUser(User user) {
-
+log.info("Enter : UserService:deleteUser");
         userRepo.delete(user);
+        log.info("Exit : UserService:deleteUser");
     }
 
     /**
@@ -60,6 +71,8 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUsers() {
+        log.info("Enter : UserService:getAllUsers");
+
         return List.of();
     }
 
@@ -76,7 +89,7 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUserByMasterAdmin(Long id) {
-        log.info("Request for getting users is in user Handler for master admin");
+       log.info("Enter : UserService:getAllUserByMasterAdmin");
         List<User> user = new ArrayList<>();
         List<User> users = userRepo.findUsersByRegisteredBy(id);
         user.addAll(users);
@@ -90,6 +103,7 @@ public class UserService implements IUserService {
             user.addAll(users2);
             log.info("users2:{}", users2);
         });
+        log.info("Exit : UserService:getAllUserByMasterAdmin");
         return user;
     }
 
@@ -100,6 +114,9 @@ public class UserService implements IUserService {
      */
     @Override
     public List<User> getAllUsersByAdmin(Long id) {
+        log.info("Enter : UserService:getAllUsersByAdmin");
+        log.info("id:{}", id);
+        log.info("Exit : UserService:getAllUsersByAdmin");
         return userRepo.findUsersByRegisteredBy(id);
     }
 
@@ -109,8 +126,31 @@ public class UserService implements IUserService {
      **/
     @Override
     public Optional<User> getUser(UserDTO dto) {
-        return userRepo.findByEmailAndPassword(dto.getEmail(), dto.getPassword());
+        log.info("Enter : UserService:getUser");
+
+        Optional<User> userOptional = userRepo.findUserByEmail(dto.getEmail());
+
+        if (!userOptional.isPresent()) {
+            log.error("User not found with email: {}", dto.getEmail());
+            throw new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL);
+        }
+
+        User user = userOptional.get();
+
+        // Compare raw password with stored hashed password
+        boolean isPasswordCorrect = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+
+        if (!isPasswordCorrect) {
+            log.error("Incorrect password for email: {}", dto.getEmail());
+            throw new UserException(ErrorCode.WRONG_CREDENTIALS);
+        }
+
+        log.info("Password matched successfully");
+        log.info("Exit : UserService:getUser");
+
+        return Optional.of(user);
     }
+
 
     /**
      * Checks if a user exists in the repository based on the provided email.
@@ -120,7 +160,8 @@ public class UserService implements IUserService {
      */
     @Override
     public boolean checkUserByEmail(String email) {
-
+        log.info("Enter : UserService:checkUserByEmail");
+        log.info("Exiit : UserService:checkUserByEmail");
         return userRepo.existsByEmail(email);
     }
 
@@ -132,7 +173,8 @@ public class UserService implements IUserService {
      */
     @Override
     public boolean checkUserByMobileNumber(String number) {
-
+        log.info("Enter : UserService:checkUserByMobileNumber");
+        log.info("Exiit : UserService:checkUserByMobileNumber");
         return userRepo.existsByMobileNumber(number);
     }
 
@@ -142,6 +184,9 @@ public class UserService implements IUserService {
      * @param id the unique ID of the user to be retrieved
      */
     public Optional<User> getUserById(Long id) {
+        log.info("Enter : UserService:getUserById");
+        log.info("id:{}", id);
+        log.info("Exit : UserService:getUserById");
         return userRepo.findById(id);
     }
 
@@ -163,11 +208,16 @@ public class UserService implements IUserService {
      * @return an Optional containing the user entity if found, or an empty Optional if no user is found
      */
     public Optional<User> getUserByEmail(String email) {
+        log.info("Enter : UserService:getUserByEmail");
+        log.info("email:{}", email);
+        log.info("Exit : UserService:getUserByEmail");
         return userRepo.getUserByEmail(email);
     }
 
     public Optional<List<User>> getAllUsersRegisterById(Long id) {
+        log.info("Enter: UserService.getAllUsersRegisterById");
         List<User> users = userRepo.findUsersByRegisteredBy(id);
+        log.info("Exit: UserService.getAllUsersRegisterById");
         return Optional.ofNullable(users);
     }
 }

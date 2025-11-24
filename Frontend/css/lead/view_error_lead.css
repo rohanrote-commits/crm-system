@@ -143,7 +143,7 @@ body {
 
 .modal-title {
   font-weight: 600;
-  color: #1d3557;
+  /* color: #1d3557; */
 }
 
 
@@ -210,3 +210,98 @@ body {
     background-color: #f5f5f5;
 }
 
+label.error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+.required {
+  color: red;
+}
+
+/* Error message styling */
+.error-message {
+    color: #d9534f;            /* red */
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+    font-weight: 500;
+}
+
+/* Highlight input on validation error */
+input.error,
+select.error,
+textarea.error {
+    border: 1px solid #d9534f !important;
+    background-color: #ffeaea;
+}
+
+/* Remove highlight when valid */
+input.valid,
+select.valid,
+textarea.valid {
+    border: 1px solid #28a745 !important;
+    background-color: #eaffea;
+}
+
+/* Optional: style wrapper for password fields */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 40px; /* space for eye button */
+}
+
+/* Eye toggle button */
+.pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.pw-toggle .eye-icon {
+    width: 20px;
+    height: 20px;
+    fill: #6c757d; /* grey */
+}
+
+/* Eye hover effect */
+.pw-toggle:hover .eye-icon {
+    fill: #000;
+}
+
+/* Error highlight for input */
+input.error {
+    border: 1px solid #da1c15 !important;
+}
+.btn-orange {
+    background-color: orangered !important;
+    color: white !important;
+    transition: 0.2s ease-in-out;
+}
+
+.btn-orange:hover {
+    background-color: #cc3300 !important; /* darker orange */
+    color: white !important;
+}
+
+#saveUserBtn {
+    background-color: rgb(7, 172, 7) !important;
+    color: white !important;
+    transition: 0.2s ease-in-out;
+}
+
+#saveUserBtn:hover {
+    background-color: #006400 !important; /* darker green */
+    color: white !important;
+}

@@ -58,7 +58,9 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 24px 32px;
   transition: all 0.2s ease-in-out;
+  
 }
+
 
 .dashboard-section:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -113,6 +115,7 @@ body {
 
 /* Upload History Table */
 .upload-history-table-container {
+  /* display: -webkit-inline-box; */
   margin-top: 10px;
 }
 
@@ -120,7 +123,25 @@ body {
   border-radius: 8px;
   overflow: hidden;
 }
+/* Optional: add space between header and first row */
+#upload-table thead th {
+  background-color: #0b2a5b;   /* dark blue or any color you like */
+    color: #fff;                 /* white text */
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 3px solid #0a1f46;
+}
 
+/* Optional: separate body rows more clearly */
+#upload-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6; /* subtle row separators */
+}
+
+/* Optional: hover effect for rows */
+#upload-table tbody tr:hover {
+    background-color: #0a43ee;
+}
 .table thead {
   background-color: #f1f3f5;
   color: #333;
