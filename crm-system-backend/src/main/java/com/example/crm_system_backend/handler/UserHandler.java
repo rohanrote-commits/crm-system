@@ -131,7 +131,7 @@ public class UserHandler implements IHandler<UserDTO> {
             if (userRepo.findRoleById(id) == Roles.ADMIN) {
                 users.add(userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND)));
                 log.info("Request for getting users is in user Handler for admin");
-                users = userService.getAllUsersByAdmin(id);
+                users.addAll(userService.getAllUsersByAdmin(id));
             } else if (userRepo.findRoleById(id) == Roles.BASIC) {
                 users.add(accessingUser);
                 User registeringUser = userService.getUserById(accessingUser.getRegisteredBy()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));

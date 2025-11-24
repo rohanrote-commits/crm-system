@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.annotations.RoleRequired;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -52,6 +53,7 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
      *         the upload history associated with the user
      */
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @GetMapping("/user/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@PathVariable String email){
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUserUploadHistoryByEmail(email);
@@ -82,19 +84,15 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
-    @GetMapping("/user/error/{filename}")
-    public ResponseEntity<byte []> getUserErrorFile(@PathVariable String filename){
-        File file = new File(filename);
-        byte[] fileBytes = null;
-        try {
-            fileBytes = FileUtils.readFileToByteArray(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @GetMapping("/user/error/{uploadHistoryId}")
+    public ResponseEntity<byte []> getUserErrorFile(@PathVariable String uploadHistoryId){
+        byte [] file = downloadHandler.downloadUserErrorFile(uploadHistoryId);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+"User_"+uploadHistoryId+".xlsx")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(fileBytes);
+                .body(file);
     }
 
 }

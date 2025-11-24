@@ -23,13 +23,14 @@ $(document).ready(function () {
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
-    showAlert("Unauthorized. Please login.", "danger");
+    showPopup("Warning","Unauthorized. Please login.", "warning");
     window.location.href = "/Frontend/html/login.html";
     return;
   }
 
   const decoded = parseJwt(token);
 const userRole = decoded ? decoded.role : null; 
+console.log("Role of User is  :", userRole)
 // --- START: ROLE-BASED UI RESTRICTIONS ---
   // Hide Add/Import button for USER role
   if (userRole === "BASIC") {
@@ -53,7 +54,7 @@ const userRole = decoded ? decoded.role : null;
   // Delete profile (Deletes the logged-in user's own account)
   $("#delete-profile").click(function () {
     if (!token) {
-      showAlert("User not logged in!", "danger");
+      showPopup("Warning","User not logged in!", "warning");
       return;
     }
 
@@ -67,7 +68,7 @@ showDeleteConfirm().then((ok) => {
         Authorization: "Bearer " + token,
       },
       success: function (response) {
-        showAlert(response.message || response, "info");
+        showPopup("Info",response.message || response, "info");
 
         localStorage.removeItem("Authorization");
         window.location.href = "/Frontend/html/login.html";
@@ -77,7 +78,7 @@ showDeleteConfirm().then((ok) => {
         if (xhr.responseJSON && xhr.responseJSON.message) {
           errorMsg = xhr.responseJSON.message;
         }
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
       },
     });
   });
@@ -109,7 +110,7 @@ showDeleteConfirm().then((ok) => {
   $("#user-table").on("click", ".delete-user", function () {
     // RESTRICTION: Block USER role from deleting sub-users
     if (userRole === "BASIC") {
-        showAlert("Access Denied: You do not have permission to delete users.", "danger");
+        showPopup("Warning","Access Denied: You do not have permission to delete users.", "warning");
         return;
     }
    
@@ -125,7 +126,7 @@ showDeleteConfirm().then((ok) => {
         data: JSON.stringify(user),
         headers: { Authorization: "Bearer " + token },
         success: function () {
-          showAlert("User deleted successfully.", "success");
+          showPopup("Success","User deleted successfully.", "success");
           loadUsers(token, userRole);
         },
         error: function (xhr) {
@@ -133,7 +134,7 @@ showDeleteConfirm().then((ok) => {
           if (xhr.responseJSON && xhr.responseJSON.message) {
             errorMsg = xhr.responseJSON.message;
           }
-          showAlert(errorMsg, "danger");
+          showPopup("Error",errorMsg, "error");
         },
       });
     });
@@ -150,7 +151,7 @@ showDeleteConfirm().then((ok) => {
       type: "GET",
       headers: { Authorization: "Bearer " + token },
       success: function (response) {
-        showAlert(response.message || response, "success");
+        showPopup("Success",response.message || response, "success");
         localStorage.removeItem("Authorization");
         window.location.href = "/Frontend/html/login.html";
       },
@@ -159,7 +160,7 @@ showDeleteConfirm().then((ok) => {
         if (xhr.responseJSON && xhr.responseJSON.message) {
           errorMsg = xhr.responseJSON.message;
         }
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
       },
     });
   });
@@ -192,7 +193,7 @@ showDeleteConfirm().then((ok) => {
         if (xhr.responseJSON && xhr.responseJSON.message) {
           errorMsg = xhr.responseJSON.message;
         }
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
       },
     });
   });
@@ -243,7 +244,7 @@ showDeleteConfirm().then((ok) => {
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
       data: JSON.stringify(updatedProfile),
       success: function () {
-        showAlert("Profile updated successfully", "success");
+        showPopup("Success","Profile updated successfully", "success");
         $("#profileModal input, #profileModal textarea").prop("readonly", true);
         $("#editProfileBtn").removeClass("d-none");
         $("#saveProfileBtn").addClass("d-none");
@@ -254,7 +255,7 @@ showDeleteConfirm().then((ok) => {
         if (xhr.responseJSON && xhr.responseJSON.message) {
           errorMsg = xhr.responseJSON.message;
         }
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
       }
     });
   });
@@ -331,14 +332,15 @@ showDeleteConfirm().then((ok) => {
                },
               render: function (data, type, row) {
                 return `
-                  <div class="d-flex align-items-center justify-content-center gap-2 p-0">
-                    <button class="btn btn-sm btn-warning py-0 edit-user" data-email="${row.email}">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger py-0 delete-user" data-email="${row.email}">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
+<div class="action-buttons d-flex">
+    <button class="btn btn-warning btn-sm action-btn edit-user" data-email="${row.email}">
+        <i class="bi bi-pencil"></i>
+    </button>
+    <button class="btn btn-danger btn-sm action-btn delete-user" data-email="${row.email}">
+        <i class="bi bi-trash"></i>
+    </button>
+</div>
+
                 `;
               },
             },
@@ -361,11 +363,11 @@ showDeleteConfirm().then((ok) => {
         }
         console.log(xhr.responseJSON.status);
         if(xhr.responseJSON.status === "UNAUTHORIZED"){
-           showAlert(errorMsg, "danger");
-           
+           showPopup("Error",errorMsg, "error");
+          
            window.location.href = `/Frontend/html/users/login.html`
         }else{
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
         }
       }
     });
@@ -475,14 +477,23 @@ function showDeleteConfirm() {
         }
         console.log(xhr.responseJSON.status);
         if(xhr.responseJSON.status === "UNAUTHORIZED"){
-           showAlert(errorMsg, "danger");
+           showPopup("Error",errorMsg, "error");
            window.location.href = `/Frontend/html/users/login.html`
         }else{
-        showAlert(errorMsg, "danger");
+        showPopup("Error",errorMsg, "error");
         }
       }
     });
   }
+   function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
+
 // });
 
 //     modal.show();

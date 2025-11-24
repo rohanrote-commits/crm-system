@@ -1,10 +1,13 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.constants.UploadStatus;
+import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -23,10 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -546,4 +546,89 @@ public class UserExcelHelper {
         return user;
     }
 
+    public byte[] generateErrorExcelFromJson(List<InvalidUserError> invalidUsers) throws Exception {
+        log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
+        File templateFile = new ClassPathResource("templates/UsersTemplate.xlsx").getFile();
+        try (
+                FileInputStream fis = new FileInputStream(templateFile);
+                Workbook workbook = new XSSFWorkbook(fis)
+        ) {
+            Sheet sheet = workbook.getSheetAt(1);
+
+            // Error style (red background)
+            CellStyle errorStyle = workbook.createCellStyle();
+            errorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+            errorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Drawing<?> drawing = sheet.createDrawingPatriarch();
+
+            int rowIndex = 2;
+
+            for (InvalidUserError invalid : invalidUsers) {
+                User user = invalid.getUser();
+                Map<String, String> errors = invalid.getErrors();
+                Row row = sheet.createRow(rowIndex);
+                writeUserRow(row, user);
+                writeComments(sheet, drawing, rowIndex, errors,errorStyle);
+                rowIndex++;
+
+            }
+            // Save
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            workbook.close();
+            return out.toByteArray();
+        }
+        catch (Exception exception){
+            log.error("Error writing error file: {}", exception.getMessage());
+            log.error("Exit : UserExcelHelper.generateErrorExcelFromJson --->exception ");
+            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
+
+    private void writeUserRow(Row row, User user) {
+
+        row.createCell(1).setCellValue(user.getFirstName());
+        row.createCell(2).setCellValue(user.getLastName());
+        row.createCell(3).setCellValue(user.getMobileNumber());
+        row.createCell(4).setCellValue(user.getEmail());
+        row.createCell(5).setCellValue(user.getAddress());
+        row.createCell(6).setCellValue(user.getCity());
+        row.createCell(7).setCellValue(user.getState());
+        row.createCell(8).setCellValue(user.getCountry());
+        row.createCell(9).setCellValue(user.getPinCode());
+        row.createCell(10).setCellValue(user.getRole().name());
+        row.createCell(11).setCellValue(user.getPassword());
+        row.createCell(12).setCellValue(user.getPassword());
+
+    }
+    private void writeComments(Sheet sheet, Drawing<?> drawing, int rowIndex, Map<String, String> errors ,CellStyle style) {
+        addComment(sheet, drawing, rowIndex, 1, errors.get("firstName"),style);
+        addComment(sheet, drawing, rowIndex, 2, errors.get("lastName"),style);
+        addComment(sheet, drawing, rowIndex, 3, errors.get("mobileNumber"),style);
+        addComment(sheet, drawing, rowIndex, 4, errors.get("email"),style);
+        addComment(sheet, drawing, rowIndex, 5, errors.get("address"),style);
+        addComment(sheet, drawing, rowIndex, 6, errors.get("city"),style);
+        addComment(sheet, drawing, rowIndex, 7, errors.get("state"),style);
+        addComment(sheet, drawing, rowIndex, 8, errors.get("country"),style);
+        addComment(sheet, drawing, rowIndex, 9, errors.get("pinCode"),style);
+        addComment(sheet, drawing, rowIndex, 10, errors.get("role"),style);
+        addComment(sheet, drawing, rowIndex, 11, errors.get("password"),style);
+        addComment(sheet, drawing, rowIndex, 12, errors.get("confirmPassword"),style);
+    }
+
+    private void addComment(Sheet sheet, Drawing<?> drawing, int row, int col, String text,CellStyle style) {
+        if (text == null) return;
+        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(col);
+        anchor.setCol2(col + 3);
+        anchor.setRow1(row);
+        anchor.setRow2(row + 2);
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(text));
+        comment.setAuthor("Validation");
+        sheet.getRow(row).getCell(col).setCellComment(comment);
+        sheet.getRow(row).getCell(col).setCellStyle(style);
+    }
 }

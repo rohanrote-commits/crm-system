@@ -16,7 +16,7 @@ jQuery(function () {
         }
     }
     if (!token) {
-        showAlert("Unauthorized. Please login.","danger");
+        showPopup("Error","Unauthorized. Please login.","warning");
         window.location.href = "/Frontend/html/login.html";
         return;
     }
@@ -59,15 +59,15 @@ jQuery(function () {
         },
         error: function (xhr) {
             if (xhr.status === 401) {
-                showAlert("Session expired. Login again.", "warning");
+                showPopup("Warning","Session expired. Login again.", "warning");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
                 return;
             }
             if (xhr.status === 400) {
-                showAlert("No Invalid Users for the Record", "info");
+                showPopup("Info","No Invalid Users for the Record", "info");
             } else {
-                showAlert("No Invalid Users Found.", "danger");
+                showPopup("Warning","No Invalid Users Found.", "warning");
             }
         }
     },
@@ -429,14 +429,14 @@ $("#userForm").validate({
             headers: { Authorization: "Bearer " + token },
             data: JSON.stringify(userData),
             success: function () {
-                showAlert("User updated successfully!", "success");
+                showPopup("Success","User updated successfully!", "success");
                 $("#userModal").modal("hide");
                 $("#lead-table").DataTable().ajax.reload();
             },
             error: function (xhr) {
                 let error = xhr.responseJSON.message;
 
-                showAlert(error, "warning");
+                showPopup("Error",error, "warning");
             }
         });
     }
@@ -453,9 +453,10 @@ $("#userForm").validate({
       $("#downloadErrorFile").click(function (e) {
         console.log("Now in downloadErrorFile");
           const fileName = sessionStorage.getItem("file");
+          const uploadHistoryId = sessionStorage.getItem("id");
           console.log(fileName);
           $.ajax({
-            url: `http://localhost:8080/crm/history/user/error/${fileName}`,
+            url: `http://localhost:8080/crm/history/user/error/${uploadHistoryId}`,
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,
@@ -477,16 +478,16 @@ $("#userForm").validate({
               a.click();
               a.remove();
               window.URL.revokeObjectURL(url);
-              showAlert("Error File downloded successfully", "success");
+              showPopup("Success","Error File downloded successfully", "success");
             },
             error: function (xhr) {
               if (xhr.status === 401) {
-                showAlert("Session expired. Please login again.", "warning");
+                showPopup("Warning","Session expired. Please login again.", "warning");
                 sessionStorage.clear();
                 window.location.href = "/Frontend/html/login.html";
               } else {
                 console.error("Token used:", token);
-                showAlert("Error while downloading the Error File.", "danger");
+                showPopup("Error","Error while downloading the Error File.", "error");
               }
             },
           });
@@ -513,11 +514,11 @@ const rowData = $("#lead-table").DataTable().row($(this).parents("tr")).data();
               data: { email: deleteEmail },
               headers: { "Authorization": "Bearer " + token },
               success: function () {
-                  showAlert("User deleted successfully.", "success");
+                  showPopup("Success","User deleted successfully.", "success");
                   $("#lead-table").DataTable().ajax.reload(null, false);
               },
               error: function () {
-                  showAlert("Error deleting User.", "warning");
+                  showPopup("Warning","Error deleting User.", "warning");
               }
           });
 
@@ -553,12 +554,12 @@ $('#uploadErrorFile').on('change', function () {
         processData: false,
         contentType: false,
         success: function () {
-            showAlert(" Data Inserted Successfully!","success");
+            showPopup("Success","Data Inserted Successfully!","success");
             $('#uploadErrorFile').val('');
         },
         error: function (xhr) {
             let error = xhr.responseJSON.message;
-            showAlert(error,"danger");
+            showPopup("Error",error,"error");
         }
     });
 
@@ -639,5 +640,13 @@ function highlightError(data, row, field) {
         : data;
 }
 
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
 
 
