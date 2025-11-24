@@ -119,12 +119,14 @@ $.validator.addMethod("passwordPattern", function (value) {
                 contentType: "application/json",
                 data: JSON.stringify(user),
                 success: function(response) {
-                    showAlert("Sign Up Successful","success");
-                    window.location.href = "/Frontend/html/login.html";
-                },
+    showPopup("Success", "Sign Up Successful", "success", function() {
+        window.location.href = "/Frontend/html/login.html";
+    });
+}
+,
                 error: function(xhr) {
                let error = xhr.responseJSON;
-                 showAlert("Sign Up Failed: " + (error.message|| "Server error"),"danger");
+                 showPopup("Sign Up Failed: " + (error.message|| "Server error"),"error");
                 }
             });
         }
@@ -148,3 +150,22 @@ $.validator.addMethod("passwordPattern", function (value) {
         alert.alert('close');
       }, 5000);
     }
+
+       function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    })
+}
+function showPopup(title, message, iconType, callback) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType,
+        confirmButtonText: 'OK'
+    }).then(() => {
+        if (callback) callback();
+    });
+}
