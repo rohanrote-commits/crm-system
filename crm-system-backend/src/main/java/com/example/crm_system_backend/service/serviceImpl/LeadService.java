@@ -39,29 +39,55 @@ public class LeadService implements ILeadService {
 
     @Override
     public Lead save(LeadDto leadDto) {
-        log.info("Enter: LeadService.save ");
-        User user = userRepo.getUserByEmail(leadDto.getUser()).orElseThrow(
-                ()-> {
-                    log.error("Exception: LeadService.save---> user not found");
-                   return new UserException(ErrorCode.USER_NOT_FOUND);
-                }
-        );
-        Lead lead = modelMapper.map(leadDto, Lead.class);
+
+        log.info("Enter: LeadService.save");
+
+        User user = userRepo.getUserByEmail(leadDto.getUser())
+                .orElseThrow(() -> {
+                    log.error("Exception: LeadService.save -> user not found");
+                    return new UserException(ErrorCode.USER_NOT_FOUND);
+                });
+
+        Optional<Lead> existingLeadOpt = leadRepository.getLeadsByEmail(leadDto.getEmail());
+
+        Lead lead;
+
+        if (existingLeadOpt.isPresent()) {
+            // Update existing lead
+            lead = existingLeadOpt.get();
+            // Map updatable fields only
+            lead.setFirstName (leadDto.getFirstName());
+            lead.setLastName(leadDto.getLastName());
+            lead.setGstin(leadDto.getGstin().toUpperCase());
+            lead.setUpdatedAt(new Date());
+            lead.setLeadStatus(leadDto.getLeadStatus());
+            lead.setBusinessAddress(leadDto.getBusinessAddress());
+            lead.setDescription(leadDto.getDescription());
+        } else {
+            // Create new lead
+            lead = modelMapper.map(leadDto, Lead.class);
+            lead.setCreatedAt(new Date());
+            lead.setUpdatedAt(new Date());
+            lead.setLeadStatus(LeadStatus.ADDED);
+        }
+
+        // Common fields for both create & update
         lead.setUser(user);
-        lead.setGstin(leadDto.getGstin().toUpperCase());
-        lead.setCreatedAt(new Date());
-        lead.setUpdatedAt(new Date());
-        lead.setLeadStatus(LeadStatus.ADDED);
-          Set<Product> productSet =  leadDto.getInterestedModules().stream().map(
-                    interestedModule -> productRepo.getProductByModuleName(interestedModule).orElseThrow(
-                            ()-> {
-                                log.error("Exception: LeadService.save---> product not found");
-                               return new ProductException(ErrorCode.PRODUCT_NOT_FOUND);}
-                    )
-            ).collect(Collectors.toSet());
-          lead.setInterestedProducts(productSet);
-          log.info("Exit: LeadService.save");
-       return leadRepository.save(lead);
+
+        // Modules → Products
+        Set<Product> productSet = leadDto.getInterestedModules().stream()
+                .map(module -> productRepo.getProductByModuleName(module)
+                        .orElseThrow(() -> {
+                            log.error("Exception: LeadService.save -> product not found");
+                            return new ProductException(ErrorCode.PRODUCT_NOT_FOUND);
+                        }))
+                .collect(Collectors.toSet());
+
+        lead.setInterestedProducts(productSet);
+
+        log.info("Exit: LeadService.save");
+
+        return leadRepository.save(lead);
     }
 
     @Override

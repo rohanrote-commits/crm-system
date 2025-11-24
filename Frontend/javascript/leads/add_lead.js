@@ -40,11 +40,8 @@ $(document).ready(function (params) {
 
   //Edit Lead
   $("#confirmUpdateBtn").click(function () {
-
     const rowData = $(this).data("row");
-
     isEdit = true;
-
     $("#leadModalLabel").text("Edit Lead");
     $("#saveLeadBtn").text("Update Lead");
 
@@ -195,10 +192,10 @@ $.validator.addMethod(
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
-           showPopup("Error", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
-          showAlert(
-            isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
-          );
+           showPopup("Success", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
+          // showAlert(
+          //   isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
+          // );
           $("#leadModal").modal("hide");
             $("#lead-table").DataTable().ajax.reload();
         },

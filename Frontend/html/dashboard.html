@@ -85,6 +85,7 @@
                             <th>Description</th>
                             <th>Address</th>
                             <th>Status</th>
+                            <th>Change Status</th>
                             <th>Interested Modules</th>
                             <th>Action</th>
                         </tr>
@@ -118,7 +119,6 @@
 </div>
 
 <!-- Add / Edit Lead Modal -->
-<!-- <div id="add_edit_model"></div> -->
 <div class="modal fade" id="leadModal" tabindex="-1" aria-labelledby="leadModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -134,23 +134,23 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="firstName" class="form-label">First Name<span class="required">*</span></label>
-                            <input type="text" id="firstName" name="firstName" class="form-control" required>
+                            <input type="text" id="firstName" name="firstName" class="form-control" required placeholder="Enter first name">
                         </div>
                         <div class="col-md-6">
                             <label for="lastName" class="form-label">Last Name<span class="required">*</span></label>
-                            <input type="text" id="lastName" name="lastName" class="form-control">
+                            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name">
                         </div>
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email<span class="required">*</span></label>
-                            <input type="email" id="email" name="email" class="form-control" required>
+                            <input type="email" id="email" name="email" class="form-control" required placeholder="Enter email address">
                         </div>
                         <div class="col-md-6">
                             <label for="mobileNumber" class="form-label">Mobile<span class="required">*</span></label>
-                            <input type="text" id="mobileNumber" name="mobileNumber" class="form-control" required>
+                            <input type="text" id="mobileNumber" name="mobileNumber" class="form-control" required placeholder="Enter mobile number">
                         </div>
                         <div class="col-md-6">
                             <label for="gstin" class="form-label">GSTIN<span class="required">*</span></label>
-                            <input type="text" id="gstin" name="gstin" class="form-control">
+                            <input type="text" id="gstin" name="gstin" class="form-control" placeholder="Enter GSTIN">
                         </div>
                         <div class="col-md-6">
                             <label for="leadStatus" class="form-label">Status</label>
@@ -163,11 +163,11 @@
                         </div>
                         <div class="col-12">
                             <label for="businessAddress" class="form-label">Address</label>
-                            <textarea id="businessAddress" name="businessAddress" class="form-control" rows="2"></textarea>
+                            <textarea id="businessAddress" name="businessAddress" class="form-control" rows="2" placeholder="Enter business address"></textarea>
                         </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+                            <textarea id="description" name="description" class="form-control" rows="2" placeholder="Enter description"></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Interested Modules<span class="required">*</span></label>

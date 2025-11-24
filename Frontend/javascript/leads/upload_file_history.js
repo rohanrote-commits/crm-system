@@ -35,22 +35,11 @@ jQuery(function() {
           },
           dataSrc: "",
           error: function (xhr) {
-          errorTable.clear().draw();
-            if (xhr.status === 401) {
-                showPopup("Error","Session expired. Login again.", "error");
-                showAlert("Session expired. Login again.", "warning");
-                sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.html";
-                return;
-            }
-            if(xhr.status===400){
-               showPopup("Error","No File Histroy Found.", "error");
-              showAlert("No Invalid Leads for the Record","info")
-            }
-            else{
-              showPopup("Error","No File Histroy Found.", "error");
-              showAlert("No Invalid Leads Found.", "danger");
-            }
+          // errorTable.clear().draw();
+              let error = xhr.responseJSON.message;
+            showPopup("Error",error,"error");
+            console.log(error);
+
         }
         },
 
@@ -66,22 +55,26 @@ jQuery(function() {
           { data: "fileName", title: "File Name" },
           {
             data: "uploadedAt",
-            render: function (data) {
-              if (!data) return "-";
+            render: function (data, type, row) {
 
-              const date = new Date(data);
+            if (type === "sort" || type === "type") {
+              return new Date(data).getTime(); // sortable timestamp
+            }
 
-              const options = {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              };
+            if (!data) return "-";
 
-              return date.toLocaleString("en-GB", options);
-            },
+            const date = new Date(data);
+            const options = {
+              year: "numeric",
+              month: "short",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            };
+
+            return date.toLocaleString("en-GB", options);
+        },
           },
           { data: "uploadedBy", title: "Uploaded By" },
 
@@ -113,7 +106,9 @@ jQuery(function() {
                                   ? "PARTIALLY SUCCESS"
                                   : data
                               }
-                          </span>`;
+                          </span>
+                          <a>next</a>
+                          `;
             },
           },
 
@@ -186,7 +181,7 @@ jQuery(function() {
               a.click();
               a.remove();
               window.URL.revokeObjectURL(url);
-              showPopup("Success","Error File downloded successfully", "success");
+              showPopup("Success","File downloded successfully", "success");
               showAlert("Error File downloded successfully", "success");
             },
             error: function (xhr) {
@@ -201,8 +196,10 @@ jQuery(function() {
                  showAlert("Not Error Records Found this File", "danger");
               }
               else {
-                showAlert("Error while downloading the Error File.", "danger");
-                showPopup("Error","Error while downloading the Error File.", "error");
+                 let error = xhr.responseJSON.message;
+                 showPopup("Error",error,"error");
+                // showAlert("Error while downloading the Error File.", "danger");
+                // showPopup("Error","Error while downloading the Error File.", "error");
               }
             },
           });

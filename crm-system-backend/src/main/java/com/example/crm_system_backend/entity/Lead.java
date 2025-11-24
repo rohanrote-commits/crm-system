@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.annotations.Cascade;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -37,7 +38,7 @@ public class Lead {
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus;
 
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
             name = "lead_products",
             joinColumns = @JoinColumn(name = "lead_id"),

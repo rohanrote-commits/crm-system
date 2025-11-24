@@ -5,8 +5,6 @@ import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.ErrorRecord;
-import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -14,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.example.crm_system_backend.dto.UserDTO;
 
 import java.util.List;
 
