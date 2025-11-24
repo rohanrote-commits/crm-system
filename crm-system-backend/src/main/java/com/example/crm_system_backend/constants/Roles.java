@@ -1,9 +1,6 @@
 package com.example.crm_system_backend.constants;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 public enum Roles {

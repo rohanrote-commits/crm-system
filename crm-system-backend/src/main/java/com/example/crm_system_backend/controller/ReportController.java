@@ -1,39 +1,122 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.downloadReport;
+import com.example.crm_system_backend.helper.ReportExcelHelper;
+import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.service.Report.ReportService;
+import com.example.crm_system_backend.service.serviceImpl.UserService;
+import com.example.crm_system_backend.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import java.io.IOException;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 @RestController
-@CrossOrigin("*")
-
+@RequestMapping("/crm/report")
 public class ReportController {
 
     @Autowired
-    private ReportService service;
+    private DownloadReportHistoryRepo historyRepo;
+
+    @Autowired
+    ReportExcelHelper helper;
+
+    @Autowired
+    private ReportService reportService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     private static final Logger LOGGER = Logger.getLogger(ReportController.class.getName());
 
-    @GetMapping("/getTemplate")
-    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) throws IOException {
+    /**
+     * Returns complete Report template including summary report and per user reports
+     * @param start start date
+     * @param end end date
+     * @return zip file with Excel template in it
+     */
+//    @GetMapping("/getTemplate")
+//    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+//                                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
+//                                                             ) {
+//
+//        Set<Lead> leadList = reportService.getLeads(start, end);
+//        if(leadList.isEmpty()) {
+//            LOGGER.log(Level.WARNING, "No leads are registered in this time period.");
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        }
+//        LOGGER.log(Level.INFO, "Successfully generated Zip file");
+//
+//        return reportService.excelToZipConverter(leadList, start, end);
+//    }
 
-        Set<Lead> leadList = service.getLeads(start, end);
+
+
+    @PostMapping("/getTemplate")
+    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
+                                                             @RequestHeader("Authorization")String authorizationHeader) {
+
+        String token = authorizationHeader.replace("Bearer ", "");
+
+        Set<Lead> leadList = reportService.getLeads(start, end);
         if(leadList.isEmpty()) {
             LOGGER.log(Level.WARNING, "No leads are registered in this time period.");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return service.excelToZipConverter(leadList, start, end);
+        LOGGER.log(Level.INFO, "Successfully generated Zip file");
+
+
+        // Save in DB
+
+        downloadReport data = new downloadReport();
+
+        // Access Token
+        String email = jwtUtil.getEmail(token);
+        String role = jwtUtil.getRole(token);
+
+        String name = helper.getName(email);
+
+        data.setStartDate(start);
+        data.setEndDate(end);
+        data.setEmail(email);
+        data.setUserName(name);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        data.setDateOfDownload(now.format(dateFormatter));
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        data.setTimeOfDownload(now.format(timeFormatter));
+
+
+        if (role.equalsIgnoreCase(Roles.MASTER_ADMIN.name())) {
+            data.setRole(Roles.MASTER_ADMIN.getDescription());
+        } else if (role.equalsIgnoreCase(Roles.ADMIN.name())) {
+            data.setRole(Roles.ADMIN.getDescription());
+        } else if (role.equalsIgnoreCase(Roles.BASIC.name()) || role.equalsIgnoreCase(Roles.USER.name())) {
+            data.setRole(Roles.BASIC.getDescription());
+        }
+
+        data.setStatus("Success");
+
+        historyRepo.save(data);
+        LOGGER.log(Level.INFO, "Made necessary changes in data and saved the data in database");
+
+        return reportService.excelToZipConverter(leadList, start, end);
     }
 }
 

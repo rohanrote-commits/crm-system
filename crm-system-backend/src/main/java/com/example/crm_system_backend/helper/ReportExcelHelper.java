@@ -1,29 +1,19 @@
 package com.example.crm_system_backend.helper;
 
-import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
-import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
-import com.example.crm_system_backend.service.Report.ReportService;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 @Component
 public class ReportExcelHelper {
@@ -34,6 +24,7 @@ public class ReportExcelHelper {
     @Autowired
     IUserRepo userRepo;
 
+    public static final Logger LOGGER = Logger.getLogger(ReportExcelHelper.class.getName());
 
     /**
      * Contains head style for workbook
@@ -57,6 +48,7 @@ public class ReportExcelHelper {
         headStyle.setBorderLeft(BorderStyle.THIN);
         headStyle.setBorderRight(BorderStyle.THIN);
 
+        LOGGER.log(Level.INFO, "headStyle created");
         return headStyle;
     }
 
@@ -74,7 +66,7 @@ public class ReportExcelHelper {
         headerStyle.setFont(headerFont);
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setFillBackgroundColor(IndexedColors.BLACK.getIndex());
-        headerStyle.setFillForegroundColor(IndexedColors.LIME.getIndex());
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         headerStyle.setWrapText(true);
@@ -84,6 +76,7 @@ public class ReportExcelHelper {
         headerStyle.setBorderLeft(BorderStyle.THIN);
         headerStyle.setBorderRight(BorderStyle.THIN);
 
+        LOGGER.log(Level.INFO, "headerStyle created");
         return headerStyle;
     }
 
@@ -102,6 +95,7 @@ public class ReportExcelHelper {
         dataStyle.setBorderLeft(BorderStyle.THIN);
         dataStyle.setBorderRight(BorderStyle.THIN);
 
+        LOGGER.log(Level.INFO, "dataStyle created");
         return dataStyle;
     }
 
@@ -120,6 +114,7 @@ public class ReportExcelHelper {
                 leadList.add(lead);
             }
         }
+        LOGGER.log(Level.INFO, "Received all Leads registered from "  + start + " to " + end);
         return leadList;
     }
 
@@ -140,8 +135,5 @@ public class ReportExcelHelper {
         }
         return name;
     }
-
-    //-----------Email Helper methods----------------
-
 
 }

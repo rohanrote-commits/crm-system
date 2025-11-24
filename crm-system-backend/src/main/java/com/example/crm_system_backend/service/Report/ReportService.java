@@ -7,6 +7,7 @@ import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
+import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService {
+public class ReportService{
 
     @Autowired
     ReportExcelHelper helper;
@@ -45,20 +46,25 @@ public class ReportService {
     @Autowired
     IUserRepo userRepo;
 
+    @Autowired
+    DownloadReportHistoryRepo historyRepo;
+
     private static final Logger LOGGER = Logger.getLogger(ReportService.class.getName());
 
     /**
      * Creates the Excel Template and adds multiple sheets (summary report-1, per user reports-multiple) in it according to requirement
-     * @param leads
-     * @param start
-     * @param end
-     * @param outputStream
-     * @throws IOException
+     * @param leads leads to be considered
+     * @param start start date
+     * @param end end date
+     * @param outputStream for zip file conversion
+     * @throws IOException for workbook creation (required)
      */
     public void ListToExcelStream(Set<Lead> leads, Date start, Date end, OutputStream outputStream) throws IOException {
 
         // Create new workbook and sheet
         try (Workbook workbook = new XSSFWorkbook()) {;
+
+            LOGGER.log(Level.INFO, "Excel Workbook Created");
 
             CellStyle head_style = helper.headStyle(workbook);       // Create style for Head
             CellStyle header_style = helper.headerStyle(workbook);   // Create style for headers
@@ -92,7 +98,10 @@ public class ReportService {
                 SummaryReport(head_style, header_style, data_style,
                         summaryReport_sheet, summaryReport_headers,
                         users, start, end);
+                LOGGER.log(Level.INFO, "Summary report generated successfully !!");
+
             } else {
+                LOGGER.log(Level.WARNING, "Service :: Report :: ReportService :: ListToExcelStream()");
                 throw new LeadException(ErrorCode.LEAD_NOT_FOUND);
             }
 
@@ -103,7 +112,7 @@ public class ReportService {
             // Personalized Report
             for (User user : users) {
 
-                String name = user.getFirstName() + " " + user.getLastName() + "_" + user.getEmail();
+                String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);
 
 
@@ -122,6 +131,13 @@ public class ReportService {
     }
 
 
+    /**
+     * Recieved Excel Template from ListToExcelStream, and converts it into Zip file
+     * @param leadList required to pass as a parameter to ListToExcelStream()
+     * @param start start date
+     * @param end end date
+     * @return zip file
+     */
     public ResponseEntity<StreamingResponseBody> excelToZipConverter(Set<Lead> leadList, Date start, Date end) {
 
         LOGGER.log(Level.INFO, "Converting Excel Template into a ZIP file");
@@ -169,14 +185,14 @@ public class ReportService {
 
     /**
      * Accepts all required data from ListToExcelStream() method and creates summary report sheet
-     * @param head_style
-     * @param header_style
-     * @param data_style
-     * @param sheet
-     * @param headers
-     * @param users
-     * @param start
-     * @param end
+     * @param head_style head style for workbook
+     * @param header_style header style for workbook
+     * @param data_style data style for workbook
+     * @param sheet Multiple sheets generated for multiple users
+     * @param headers column names
+     * @param users Set of all applicable users to be considered
+     * @param start start date
+     * @param end end date
      */
     public void SummaryReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                               Sheet sheet, String[] headers,
@@ -230,7 +246,7 @@ public class ReportService {
 
             Row row = sheet.createRow(rowNum++);
             int cellNum = 0;
-            String name = user.getFirstName() + " " + user.getEmail();
+            String name = user.getFirstName() + " " + user.getLastName();
 
             // Column 0:
             row.createCell(cellNum++).setCellValue(++index);
@@ -279,13 +295,13 @@ public class ReportService {
 
     /**
      * Accepts all required data from ListToExcelStream() method and creates per user report sheets
-     * @param head_style
-     * @param header_style
-     * @param data_style
-     * @param sheet
-     * @param headers
-     * @param columnCount
-     * @param leads
+     * @param head_style head style for workbook
+     * @param header_style header style for workbook
+     * @param data_style data style for workbook
+     * @param sheet Multiple sheets generated for multiple users
+     * @param headers column names
+     * @param columnCount to auto-increment
+     * @param leads leads to be displayed for specific user (according to their role) and for specific time period
      */
     public void perUserReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                               Sheet sheet, String[] headers, int columnCount,
@@ -340,22 +356,23 @@ public class ReportService {
 
     /**
      * Required to get the set of leads according to the role of the user (Master Admin, Admin and Basic)
-     * @param start
-     * @param end
+     * @param start leads registered from start date = start
+     * @param end leads registered till end date = end
      * @return Set of leads to be written in Report Template in all sheets
      */
-//    @Transactional
     public Set<Lead> getLeads(Date start, Date end) {
 
-        LOGGER.log(Level.INFO, "Getting leads list ");
+        LOGGER.log(Level.INFO, "Getting appropriate leads list ");
 
-        List<User> userList = new ArrayList<>();
         List<Lead> leadList = helper.getLeadList(start, end);
         Set<Lead> finalLeads = new HashSet<>(leadList);
+        Set<Lead> leadsToAdd = new HashSet<>();
 
         for (Lead lead : finalLeads) {
             if (lead.getUser().getRole().equals(MASTER_ADMIN) || lead.getUser().getRole().equals(ADMIN)) {
                 Long id = lead.getUser().getId();
+                List<User> userList = new ArrayList<>();
+
                 for (User user : userRepo.findAll()) {
                     if (user.getRegisteredBy() == id) {
                         userList.add(user);
@@ -365,19 +382,104 @@ public class ReportService {
                 for (Lead lead1 : leadRepo.findAll()) {
                     for (User user : userList) {
                         if (lead1.getUser().getId().equals(user.getId())) {
-                            finalLeads.add(lead1);
+                            leadsToAdd.add(lead1);
                         }
                     }
                 }
             }
         }
 
+        finalLeads.addAll(leadsToAdd);
+
         LOGGER.log(Level.INFO, "Received leads list ");
         return finalLeads;
     }
 
-    public List<downloadReport> getFilteredDownloadHistory(String currentUserRole, Long currentUserId, String currentUserEmail) {
-        return List.of();
+
+    /**
+     * Filters the downloaded Report's records according to logged-in user's role
+     * @param id logged-in user id
+     * @param role logged-in user role
+     * @param email logged-in user email
+     * @return filtered Set of downloaded report's record according to user's role
+     */
+    public Set<downloadReport> getFilteredDownloadHistory(Long id, String role, String email) {
+
+        Set<User> users = new HashSet<>();
+        Set<Long> adminIds = new HashSet<>();
+        Set<String> emailList = new HashSet<>();
+        Set<downloadReport> filteredRecords = new HashSet<>();
+        Set<downloadReport> finalFilteredRecords = new HashSet<>();
+
+        if(role.equalsIgnoreCase("MASTER_ADMIN")) {
+            for(User user : userRepo.findAll()) {
+                if(user.getId().equals(id)) {
+                    users.add(user);
+                }
+                if(user.getRegisteredBy() == id) {
+                    users.add(user);
+                }
+            }
+
+            for(User user : users) {
+                if(user.getRole().equals(ADMIN)) {
+                    adminIds.add(user.getId());
+                }
+            }
+
+            for(Long adminId : adminIds) {
+                for(User user : userRepo.findAll()) {
+                    if(user.getRegisteredBy() == adminId) {
+                        users.add(user);
+                    }
+                }
+            }
+
+            for(User user : users) {
+                emailList.add(user.getEmail());
+            }
+
+            for(downloadReport record : historyRepo.findAll()) {
+                for(String one_email : emailList) {
+                    if(record.getEmail().equals(one_email)) {
+                        filteredRecords.add(record);
+                    }
+                }
+            }
+            finalFilteredRecords.addAll(filteredRecords);
+
+        } else if(role.equalsIgnoreCase("ADMIN")) {
+            for(User user : userRepo.findAll()) {
+                if(user.getId().equals(id)) {
+                    users.add(user);
+                }
+                if(user.getRegisteredBy() == id) {
+                    users.add(user);
+                }
+            }
+
+            for(User user : users) {
+                emailList.add(user.getEmail());
+            }
+
+            for(downloadReport record : historyRepo.findAll()) {
+                for(String one_email : emailList) {
+                    if(record.getEmail().equals(one_email)) {
+                        filteredRecords.add(record);
+                    }
+                }
+            }
+            finalFilteredRecords.addAll(filteredRecords);
+
+        }  else if(role.equalsIgnoreCase("USER")) {
+            for(downloadReport record : historyRepo.findAll()) {
+                if(record.getEmail().equals(email)) {
+                    filteredRecords.add(record);
+                }
+            }
+            finalFilteredRecords.addAll(filteredRecords);
+        }
+        return finalFilteredRecords;
     }
 }
 
