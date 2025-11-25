@@ -7,23 +7,18 @@ import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.ErrorRecordException;
-import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
-import com.example.crm_system_backend.exception.UserException;
-import com.example.crm_system_backend.service.serviceImpl.ErrorRecordService;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -41,7 +36,6 @@ public class ErrorRecordHandler {
 
 
     private static final Logger log = LoggerFactory.getLogger(ErrorRecordHandler.class);
-    private final ErrorRecordService errorRecordService;
     private final UploadHistoryService uploadHistoryService;
     private final LeadService leadService;
     private final ModelMapper modelMapper;
@@ -50,21 +44,6 @@ public class ErrorRecordHandler {
     private final ObjectMapper objectMapper;
 
 
-
-    public ErrorRecord saveErrorRecord(ErrorRecord errorRecord){
-        log.info("Enter: ErrorRecordHandler.saveErrorRecord");
-      return  errorRecordService.saveErrorRecord(errorRecord);
-    }
-
-    public ErrorRecord findErrorRecordById(String id){
-        log.info("Enter:ErrorRecordHandler.findErrorRecordById");
-        return errorRecordService.findErrorRecordById(id).orElseThrow(
-                ()-> {
-                    log.error("Exit : ErrorRecordHandler.findErrorRecordById");
-                   return new ExcelException(ErrorCode.NO_ERROR_RECORDS);
-                }
-        );
-    }
 
     public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");

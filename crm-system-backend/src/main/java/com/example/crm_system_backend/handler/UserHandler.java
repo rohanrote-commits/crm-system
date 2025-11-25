@@ -6,7 +6,6 @@ import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.LeadException;
@@ -380,14 +379,6 @@ public class UserHandler implements IHandler<UserDTO> {
             if (!userList.getInvalidUserList().isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.FAILED);
                 UploadHistory savedUploadHistory = uploadHistoryService.save(uploadHistory);
-
-                ErrorRecord errorRecord = new ErrorRecord();
-                errorRecord.setUplodedBy(savedUser.getEmail());
-                errorRecord.setUploadHistoryId(savedUploadHistory.getId());
-                errorRecord.setErrorUserList(userList.getInvalidUserList());
-                errorRecord.setFileName(file.getOriginalFilename());
-                log.error("Invalid User List: {}", userList.getInvalidUserList());
-                errorRecordHandler.saveErrorRecord(errorRecord);
 
 
             }

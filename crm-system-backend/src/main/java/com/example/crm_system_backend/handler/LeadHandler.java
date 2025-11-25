@@ -245,4 +245,19 @@ public class LeadHandler implements IHandler<LeadDto> {
     private String ProductEntityToItsName(Product product) {
         return  "";
     }
+
+    public LeadStatus updateLeadStatus(String email,int status) {
+        log.info("Enter: LeadHandler.updateLeadStatus");
+        Lead lead =  leadService.getLeadByEmail(email).orElseThrow(
+                ()-> {
+                    log.error("Exception: LeadHandler.updateLeadStatus -> Lead not found");
+                    return new  LeadException(ErrorCode.LEAD_NOT_FOUND);
+                }
+        );
+        LeadStatus leadStatus = LeadStatus.values()[status];
+        lead.setLeadStatus(leadStatus);
+        leadService.editLead(lead.getId(), lead);
+        log.info("Exit: LeadHandler.updateLeadStatus");
+        return lead.getLeadStatus();
+    }
 }

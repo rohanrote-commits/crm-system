@@ -316,6 +316,46 @@ jQuery(function () {
     rowData.interestedModules.forEach(mod => {
         $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
     });
+
+
+         const fieldIdMap = {
+        firstName: "firstName",
+        lastName: "lastName",
+        email: "email",
+        mobileNumber: "mobileNumber",
+        gstin: "gstin",
+        leadStatus: "leadStatus",
+        businessAddress: "businessAddress",
+        description: "description"
+    };
+
+    // Set field values
+    for (const field in fieldIdMap) {
+        const inputId = fieldIdMap[field];
+        $(`#${inputId}`).val(rowData[field] || "");
+    }
+     // Highlight backend errors
+    for (const field in fieldIdMap) {
+        const inputId = fieldIdMap[field];
+        const errorMsg = rowData.errors && rowData.errors[field] ? rowData.errors[field] : null;
+
+        if (errorMsg) {
+            const $input = $(`#${inputId}`);
+            $input.addClass("is-invalid");
+            if ($input.next(".error-message").length === 0) {
+                $input.after(`<span class="error-message">${errorMsg}</span>`);
+            } else {
+                $input.next(".error-message").text(errorMsg);
+            }
+            // Remove error when user starts typing
+            $input.off("input.clearError").on("input.clearError", function () {
+                $input.removeClass("is-invalid");
+                $input.next(".error-message").remove();
+            });
+        }
+    }
+
+
     console.log(rowData)
      rowNumber = rowData.rowNumber;
     $("#updateConfirmModal").modal("hide");
@@ -404,7 +444,6 @@ jQuery(function () {
           .get(),
           
       };
-      console.log(rowNumber ,uploadHistoryId)
       //Edit Lead
       const url =  `http://localhost:8080/crm/error/${rowNumber}/${uploadHistoryId}`;
       $.ajax({
@@ -460,6 +499,7 @@ jQuery(function () {
               a.remove();
               window.URL.revokeObjectURL(url);
               showAlert("Error File downloded successfully", "success");
+              showPopup("Success","Error File downloded successfully", "success");
             },
             error: function (xhr) {
               if (xhr.status === 401) {
