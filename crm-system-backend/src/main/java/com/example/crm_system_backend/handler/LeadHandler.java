@@ -6,7 +6,6 @@ import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
-import com.example.crm_system_backend.entity.ErrorRecord;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.UploadHistory;

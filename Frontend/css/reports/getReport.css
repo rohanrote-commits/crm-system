@@ -207,8 +207,6 @@ label.error {
 #report-table td:nth-child(2),
 #report-table td:nth-child(3),
 #report-table td:nth-child(4),
-#report-table td:nth-child(5),
-#report-table td:nth-child(6),
-#report-table td:nth-child(7) {
+#report-table td:nth-child(5) {
     white-space: nowrap;
 }

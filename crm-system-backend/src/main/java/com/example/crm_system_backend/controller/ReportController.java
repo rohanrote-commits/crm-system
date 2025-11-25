@@ -1,6 +1,5 @@
 package com.example.crm_system_backend.controller;
 
-import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
@@ -77,13 +76,11 @@ public class ReportController {
         }
         LOGGER.log(Level.INFO, "Successfully generated Zip file");
 
-
         // Save in DB
         downloadReport data = new downloadReport();
 
         // Access Token
         String email = jwtUtil.getEmail(token);
-        String role = jwtUtil.getRole(token);
 
         String name = helper.getName(email);
 
@@ -92,22 +89,9 @@ public class ReportController {
         data.setEmail(email);
         data.setUserName(name);
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        data.setDateOfDownload(now.format(dateFormatter));
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        data.setTimeOfDownload(now.format(timeFormatter));
-
-
-        if (role.equalsIgnoreCase(Roles.MASTER_ADMIN.name())) {
-            data.setRole(Roles.MASTER_ADMIN.getDescription());
-        } else if (role.equalsIgnoreCase(Roles.ADMIN.name())) {
-            data.setRole(Roles.ADMIN.getDescription());
-        } else if (role.equalsIgnoreCase(Roles.BASIC.name()) || role.equalsIgnoreCase(Roles.USER.name())) {
-            data.setRole(Roles.BASIC.getDescription());
-        }
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        data.setDownloadedAt(now.format(formatter));
         data.setStatus("Success");
-
         historyRepo.save(data);
         LOGGER.log(Level.INFO, "Made necessary changes in data and saved the data in database");
 

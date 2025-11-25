@@ -19,11 +19,13 @@ public class downloadReport {
     @NotBlank
     private String userName;
     @NotBlank
-    private String dateOfDownload;
-    @NotBlank
-    private String timeOfDownload;
-    @NotNull
-    private String role;
+    private String downloadedAt;
+//    @NotBlank
+//    private String dateOfDownload;
+//    @NotBlank
+//    private String timeOfDownload;
+//    @NotNull
+//    private String role;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -34,9 +36,10 @@ public class downloadReport {
     public String toString(){
         return "\nID: " + id +
                 "\nUser Email: " + userName +
-                "\ndateOfDownload: " + dateOfDownload +
-                "\ntimeOfDownload: " + timeOfDownload +
-                "\nrole: " + role +
+                "\nDownloaded At: " + downloadedAt +
+//                "\ndateOfDownload: " + dateOfDownload +
+//                "\ntimeOfDownload: " + timeOfDownload +
+//                "\nrole: " + role +
                 "\nstartDate: " + startDate +
                 "\nendDate: " + endDate +
                 "\nstatus: " + status;

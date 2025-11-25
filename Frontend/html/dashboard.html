@@ -142,14 +142,18 @@
                             <table id="report-table" class="table table-bordered table-hover" style="width:100%; margin: 20px auto;">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th>Sr No</th>
-                                        <th>User Name</th>
-                                        <th width="100px">Date of Download</th>
+                                        <th rowspan="2">Sr No</th>
+                                        <th rowspan="2">User Name</th>
+                                        <!-- <th>Date of Download</th>
                                         <th>Time of Download</th>
-                                        <th>Role</th>
-                                        <th width="100px">Start Date</th>
-                                        <th width="100px">End Date</th>
-                                        <th>Download Status</th>
+                                        <th>Role</th> -->
+                                        <th rowspan="2">Downloaded At</th>
+                                        <th colspan="2" style="border-bottom:white;">Selected Date Range</th>
+                                        <th rowspan="2">Download Status</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -543,7 +547,7 @@
     <script src="/Frontend/javascript/users/add_users.js"></script>
     <script src="/Frontend/javascript/leads/upload_lead.js"></script>
     <script src="/Frontend/javascript/users/upload-users.js"></script>
-    <script src="/Frontend/javascript/reports/getReport.js"></script>
+    <!-- <script src="/Frontend/javascript/reports/getReport.js"></script> -->
 
 </body>
 

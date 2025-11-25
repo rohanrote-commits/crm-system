@@ -2,6 +2,7 @@ package com.example.crm_system_backend.service.Report;
 
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -151,11 +152,13 @@ public class ReportService {
         // Sets the content type to ZIP
         headers.setContentType(MediaType.parseMediaType("application/zip"));
 
-        // Sets the final downloaded filename
-        headers.setContentDispositionFormData("attachment", "ReportTemplate.zip");
+        String fileName = "COVORO Report-" + start + " To " + end;
+        String zipFileName = fileName + ".zip";
 
-        // TODO: Rename filename
-        String excelFileName = "COVORO Report " + start + " To" + ".xlsx";
+        // Sets the final downloaded filename
+        headers.setContentDispositionFormData("attachment", zipFileName);
+
+        String excelFileName = fileName + ".xlsx";
 
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
@@ -329,9 +332,9 @@ public class ReportService {
 
         for (Lead lead : leads) {
 
-            Set<String> products = lead.getInterestedModules();
+            Set<Product> products = lead.getInterestedProducts();
 
-            for (String product : products) {
+            for (Product product : products) {
                 Row row = sheet.createRow(rowNum++);
                 int cellNum = 0;
                 row.createCell(cellNum++).setCellValue(++index);
@@ -344,7 +347,7 @@ public class ReportService {
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getGstin());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
-                row.createCell(cellNum++).setCellValue(product);
+                row.createCell(cellNum++).setCellValue((RichTextString) product);
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getLeadStatus().toString());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
@@ -483,5 +486,3 @@ public class ReportService {
         return finalFilteredRecords;
     }
 }
-
-

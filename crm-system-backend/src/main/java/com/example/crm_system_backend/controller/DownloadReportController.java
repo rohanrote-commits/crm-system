@@ -44,7 +44,7 @@ public class DownloadReportController {
         Long loggedInUserId = (Long) id;
         String loggedInUserEmail = (String) email;
 
-        Set<downloadReport> filteredHistory = reportService.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
-        return ResponseEntity.ok(filteredHistory);
+        Set<downloadReport> filteredHistoryRecords = reportService.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
+        return ResponseEntity.ok(filteredHistoryRecords);
     }
 }
