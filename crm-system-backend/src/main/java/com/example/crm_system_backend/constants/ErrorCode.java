@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
+    INVALID_TOKEN("401", "Invalid Token", HttpStatus.UNAUTHORIZED),
     INVALID_ADDRESS("400", "Invalid Address", HttpStatus.BAD_REQUEST),
     USER_NOT_FOUND("404", "User Not Found", HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_FOUND("401", "Account Not Found", HttpStatus.NOT_FOUND),
