@@ -75,7 +75,10 @@ public class RequestInterceptor implements HandlerInterceptor {
                 log.error("Exit: RequestInterceptor.preHandle with error: Session expired for user: {}", email);
                 throw new UserException(ErrorCode.SESSION_EXPIRED);
             }
-
+            //validate token
+            if(jwtUtil.validateToken(token).isEmpty() || jwtUtil.validateToken(token)== null){
+                throw new UserException(ErrorCode.INVALID_TOKEN);
+            }
             // ---- STEP 2: Check expiry normally ----
             if (jwtUtil.isTokenExpired(token)) {
                 userSessionService.deleteSessionByEmail(email);

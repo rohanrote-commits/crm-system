@@ -1,0 +1,412 @@
+/* General Page */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Header */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0b2c5a;
+  color: white;
+  padding: 12px 30px;
+  height: 60px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+}
+.settings-icon{
+    font-size: 32px; /* Increase size as needed */
+    cursor: pointer;
+    color: #ffffff; /* Optional: change color */
+}
+.profile-icon {
+    font-size: 32px;            /* Same size as your settings icon */
+    color: #ffffff;             /* White icon visible on dark background */
+    cursor: pointer;            /* Pointer on hover */
+    margin-left: 10px;          /* Optional spacing */
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.profile-icon:hover {
+    transform: scale(1.1);      /* Slight zoom on hover */
+    color: #f0f0f0;             /* Optional: lighter color on hover */
+}
+
+.required {
+  color: red;
+}
+
+
+.logo span {
+  color: #f46a28;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Profile menu */
+.profile-menu {
+  position: relative;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.modal-header {
+    border-bottom: 2px solid  #f5f5f5;
+    background-color: #0b2c5a;;
+}
+.dropdown {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  z-index: 3;
+  right: 0;
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.drop-item {
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.drop-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Layout */
+.dashboard-layout {
+  display: flex;
+  /* height: calc(100vh - 40px); */
+}
+/* Dashboard Container */
+.dashboard-container {
+  flex: 1;
+  padding: 40px;
+  overflow-x: auto; 
+  overflow-y: auto;
+  width: auto;
+  position:relative;
+  
+}
+
+.dashboard-section {
+  /* flex-wrap: wrap; */
+  /* overflow-x: auto;  */
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  text-align: center;
+  display: -webkit-inline-box;
+}
+.top-container{
+  justify-content: center;
+}
+.top-section{
+    /* flex-wrap: wrap; */
+  /* overflow-x: auto;  */
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  text-align: center;
+  height: 80px;
+  margin: 0 auto; 
+
+}
+
+.section-buttons {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content:space-between;
+  gap: 10px;
+  align-items: center;
+}
+.dropdown{
+    margin-top: 10px;
+}
+
+.btn-section {
+    background-color: #f46a28;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+    margin-bottom: 20px;
+    width: 100px;
+}
+
+.btn-section:hover {
+    background-color: #d95514;
+    transform: scale(1.05);
+}
+/* #profileModal .modal-header {
+    background-color: #0d6efd;   /* Same bootstrap primary */
+    /* border-bottom: none;
+} */
+
+#profileModal .btn-close {
+    filter: invert(1);
+} */
+
+
+
+.modal-header {
+  border-bottom: 2px solid  #f5f5f5;
+  background-color: #0b2c5a;;
+}
+
+.form-label {
+  font-weight: 500;
+}
+#saveLeadBtn{
+  background-color: #d95514;
+}
+
+
+.btn-orange {
+  background-color: #ff6b35;
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+.btn-orange:hover {
+  background-color: #df4502;
+}
+
+.template-menu {
+  position: relative;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+}
+
+.template-menu a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-orange {
+  background-color: #ff7f50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-orange:hover,
+.btn-orange:focus {
+  background-color: #ff6333;
+  color: #fff;
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-section{
+  margin-top: 20px;
+    overflow-x: auto; 
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.section-buttons {
+    position: relative;
+    border-radius: 8px;
+}
+
+
+
+.dropdown.show {
+    display: flex;
+}
+
+.drop-item {
+    padding: 10px 15px;
+    background: white;
+    border: none;
+    width: 130px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.top-section{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+
+}
+#delete-profile:hover {
+    background-color: #e15e5e;
+}
+/* Red text for validation error messages */
+.error-message {
+  color: #d93025;             /* Google-style red */
+  font-size: 0.875rem;        /* Slightly smaller than input text */
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Highlight invalid fields */
+input.error,
+select.error,
+textarea.error {
+  border-color: #d93025 !important;
+  box-shadow: 0 0 4px rgba(217, 48, 37, 0.3);
+  background-color: #fff5f5;
+}
+
+/* Remove highlight when fixed */
+input.valid,
+select.valid,
+textarea.valid {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 4px rgba(40, 167, 69, 0.3);
+  background-color: #f6fff8;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.password-wrapper input {
+  padding-right: 40px; 
+}
+
+.eye-icon {
+  fill: #6c757d;
+}
+
+/* Make header row background distinct */
+#user-table thead th {
+    background-color: #0b2a5b;   /* dark blue or any color you like */
+    color: #fff;                 /* white text */
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 3px solid #0a1f46; /* thick border to separate header */
+}
+
+/* Optional: add space between header and first row */
+#user-table thead th {
+    text-align: left;           /* align text if needed */
+    letter-spacing: 0.5px;
+}
+
+/* Optional: separate body rows more clearly */
+#user-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6; /* subtle row separators */
+}
+
+/* Optional: hover effect for rows */
+#user-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+.btn-clear {
+  background-color: #6c757d; /* grey */
+  border: none;
+}
+
+.btn-green {
+  background-color: #01a10c; /* green */
+  border: none;
+}
+
+/* Optional: hover effects */
+.btn-clear:hover {
+  background-color: #5a6268;
+}
+
+.btn-green:hover {
+  background-color: #05681a;
+}
+/* Make buttons small, same size, and prevent stretching */
+#user-table .action-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto !important;   /* prevents stretching */
+}
+
+/* Make action buttons stay close and centered */
+#user-table .action-buttons {
+    display: flex !important;
+    justify-content: center !important;  /* center inside column */
+    align-items: center !important;
+    gap: 6px !important;   /* distance between buttons */
+    width: 100% !important;
+}
+
+/* Fix icon alignment */
+#user-table .action-btn i {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    font-size: 14px !important;   /* adjust icon size if needed */
+}
+
+
+
+/* Corrected Action column width */
+#user-table th:nth-child(8),
+#user-table td:nth-child(8) {
+    width: 100px;      /* not 50px */
+    max-width: 100px;
+    padding: 0.1rem;
+    text-align: center;
+    white-space: nowrap;
+}

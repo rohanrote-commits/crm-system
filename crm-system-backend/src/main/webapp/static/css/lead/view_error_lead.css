@@ -1,0 +1,307 @@
+/* General Page */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Header */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0b2c5a;
+    color: white;
+    padding: 12px 30px;
+    height: 60px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.logo span {
+    color: #f46a28;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Profile menu */
+.profile-menu {
+    position: relative;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* General page spacing */
+.dashboard-container {
+  padding: 40px 60px;
+  background-color: #f6f8fa;
+  min-height: 100vh;
+}
+
+/* Reusable card style for white containers */
+.section-body {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 24px 32px;
+  margin-top: 40px;
+  transition: all 0.2s ease-in-out;
+}
+
+.dashboard-section:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Top section (Upload controls) */
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.upload-header h3 {
+  font-weight: 600;
+  color: #1d3557;
+}
+
+.upload-header p {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+/* Buttons */
+#downloadErrorFile {
+  color: #1d3557;
+  border-color: #1d3557;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+
+#downloadErrorFile:hover {
+  background-color: #1d3557;
+  color: #fff;
+  border-color: #0b2c5a;
+}
+
+.btn-success {
+  background-color: #f76c24;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 8px 18px;
+  transition: all 0.2s;
+}
+
+.btn-success:hover {
+  background-color: #e55d14;
+}
+
+/* Upload History Table */
+.upload-history-table-container {
+  margin-top: 10px;
+}
+
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead {
+  background-color: #f1f3f5;
+  color: #333;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  font-weight: 600;
+  /* color: #1d3557; */
+}
+
+
+.dropdown {
+    position: absolute;
+    top: 100%; /* dropdown opens below button */
+    right: 0;
+    background-color: white;
+    border: 1px solid #fffbfb;
+    border-radius: 6px;
+    display: none;
+    border-radius: 10px;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 3;
+}
+
+.dropdown.show {
+    display: flex;
+}
+
+.drop-item {
+    padding: 10px 15px;
+    background: white;
+    border: none;
+    width: 130px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.drop-item:hover {
+    background-color: #c5c1c1;
+}
+
+
+#delete-profile:hover {
+    background-color: #e15e5e;
+}
+
+/* Make header row background distinct */
+#upload-table thead th {
+    background-color:  #0b2c5a;;   
+    color: #fff;                
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 3px solid  #0b2c5a;; 
+}
+
+/* add space between header and first row */
+#upload-table thead th {
+    text-align: left;           /* align text if needed */
+    letter-spacing: 0.5px;
+}
+
+/*separate body rows more clearly */
+#upload-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+/*hover effect for rows */
+#upload-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+label.error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+.required {
+  color: red;
+}
+
+/* Error message styling */
+.error-message {
+    color: #d9534f;            /* red */
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+    font-weight: 500;
+}
+
+/* Highlight input on validation error */
+input.error,
+select.error,
+textarea.error {
+    border: 1px solid #d9534f !important;
+    background-color: #ffeaea;
+}
+
+/* Remove highlight when valid */
+input.valid,
+select.valid,
+textarea.valid {
+    border: 1px solid #28a745 !important;
+    background-color: #eaffea;
+}
+
+/* Optional: style wrapper for password fields */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 40px; /* space for eye button */
+}
+
+/* Eye toggle button */
+.pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.pw-toggle .eye-icon {
+    width: 20px;
+    height: 20px;
+    fill: #6c757d; /* grey */
+}
+
+/* Eye hover effect */
+.pw-toggle:hover .eye-icon {
+    fill: #000;
+}
+
+/* Error highlight for input */
+input.error {
+    border: 1px solid #da1c15 !important;
+}
+.btn-orange {
+    background-color: orangered !important;
+    color: white !important;
+    transition: 0.2s ease-in-out;
+}
+
+.btn-orange:hover {
+    background-color: #cc3300 !important; /* darker orange */
+    color: white !important;
+}
+
+#saveUserBtn {
+    background-color: rgb(7, 172, 7) !important;
+    color: white !important;
+    transition: 0.2s ease-in-out;
+}
+
+#saveUserBtn:hover {
+    background-color: #006400 !important; /* darker green */
+    color: white !important;
+}
