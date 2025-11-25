@@ -13,23 +13,23 @@ public class PageController {
         return "users/login";
     }
 
-    @GetMapping("/bulk-upload")
+    @GetMapping("users/bulk-upload")
     public String bulkUpload(){
         return "users/bulk-upload";
     }
-    @GetMapping("/reset-password")
+    @GetMapping("users/reset-password")
     public String resetPassword(){
-        return "reset-password";
+        return "users/reset-password";
     }
-    @GetMapping("/sign-up")
+    @GetMapping("users/sign-up")
     public String signUp(){
         return "users/signup";
     }
-    @GetMapping("/dashboard")
+    @GetMapping("users/dashboard")
     public String dashboard(){
         return "dashboard";
     }
-    @GetMapping("/view-error")
+    @GetMapping("users/view-error")
     public String error(){
         return "users/view_error_user";
     }
