@@ -189,7 +189,7 @@
   <script src="${pageContext.request.contextPath}/static/javascript/jquery.js"></script>
   <script src="${pageContext.request.contextPath}/static/javascript/jquery.validate.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="${pageContext.request.contextPath}/static/javascript/signup.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/signup.js?v=1"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

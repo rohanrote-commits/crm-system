@@ -49,7 +49,8 @@ $.validator.addMethod("passwordPattern", function (value) {
                 data: JSON.stringify(user),
                 success: function () {
                     showAlert("Password reset successfully","success");
-                    window.location.href = "login.jsp";
+                    console.log("Password reset successfully");
+                    window.location.href = "/crm/login";
                 },
                 error: function (xhr) {
                     let error = xhr.responseJSON;

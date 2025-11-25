@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset Password | CRM Lead Management</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/Frontend/css/login.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/login.css">
 
   <!-- jQuery + jQuery Validate -->
-  <script src="/Frontend/javascript/jquery.js"></script>
-  <script src="/Frontend/javascript/jquery.validate.min.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/jquery.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/jquery.validate.min.js"></script>
 
 </head>
 <body>
@@ -60,11 +60,11 @@
       <button type="submit" class="btn-orange">Reset Password</button>
     </form>
 
-    <a class="forgot-link" href="login.jsp">Back to Login</a>
+    <a class="forgot-link" href="/crm/login">Back to Login</a>
 
   </div>
 </div>
 
-<script src="/Frontend/javascript/reset-password.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/reset-password.js?v=2"></script>
 </body>
 </html>

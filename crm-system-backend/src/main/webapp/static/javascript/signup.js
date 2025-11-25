@@ -50,7 +50,7 @@ $.validator.addMethod("passwordPattern", function (value) {
     }, "Pin code must be 6 digits");
 
     $('#cancelBtn').on('click', function() {
-    window.location.href = 'login.jsp';
+    window.location.href = '/crm/login';
 });
 
     // jQuery Validate setup
@@ -120,7 +120,7 @@ $.validator.addMethod("passwordPattern", function (value) {
                 data: JSON.stringify(user),
                 success: function(response) {
     showPopup("Success", "Sign Up Successful", "success", function() {
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
     });
 }
 ,
