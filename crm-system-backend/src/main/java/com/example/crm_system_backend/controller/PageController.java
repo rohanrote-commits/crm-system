@@ -25,7 +25,7 @@ public class PageController {
     public String signUp(){
         return "users/signup";
     }
-    @GetMapping("users/dashboard")
+    @GetMapping("/dashboard")
     public String dashboard(){
         return "dashboard";
     }
@@ -33,7 +33,7 @@ public class PageController {
     public String error(){
         return "users/view_error_user";
     }
-    @GetMapping("/user-dashboard")
+    @GetMapping("users/user-dashboard")
     public String userDashboard(){
         return "users/user-dashboard";
     }

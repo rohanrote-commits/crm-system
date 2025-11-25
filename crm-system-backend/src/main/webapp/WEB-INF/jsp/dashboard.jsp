@@ -33,7 +33,7 @@
       <div class="profile-menu">
         <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
         <div class="dropdown" id="profileDropdown">
-          <button id="back" class="drop-item" onclick="window.location.href =`/static/html/users/user-dashboard.html`">Manage Users</button>
+          <button id="back" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
           <button id="delete-profile" class="drop-item">Delete Profile</button>
           <button id="logout" class="drop-item">Logout</button>
 

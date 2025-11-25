@@ -76,7 +76,7 @@
     </div>
   </div>
 
-  <script src="${pageContext.request.contextPath}/static/javascript/login.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/login.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
