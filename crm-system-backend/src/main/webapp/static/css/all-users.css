@@ -1,0 +1,17 @@
+.top-bar {
+  background: #0b2a5b;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  padding-left: 460px;
+}
+.logo span {
+  color: #f15623;
+}

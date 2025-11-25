@@ -1,0 +1,27 @@
+/* Profile menu */
+.profile-menu {
+    position: relative;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Header */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0b2c5a;
+    color: white;
+    padding: 12px 30px;
+    height: 60px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+#header{
+    margin-bottom: 0px;
+    padding: 0px;
+}
