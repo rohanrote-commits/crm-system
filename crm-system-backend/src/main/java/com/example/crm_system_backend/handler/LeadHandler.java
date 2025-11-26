@@ -1,4 +1,4 @@
-package com.example.crm_system_backend;
+package com.example.crm_system_backend.handler;
 
 import com.example.crm_system_backend.beans.LeadList;
 import com.example.crm_system_backend.constants.ErrorCode;

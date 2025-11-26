@@ -2,8 +2,8 @@ package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.annotations.RoleRequired;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
-import com.example.crm_system_backend.DownloadHandler;
-import com.example.crm_system_backend.UploadedHistoryHandler;
+import com.example.crm_system_backend.handler.DownloadHandler;
+import com.example.crm_system_backend.handler.UploadedHistoryHandler;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
