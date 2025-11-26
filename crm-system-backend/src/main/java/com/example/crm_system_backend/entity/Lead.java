@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,11 +31,19 @@ public class Lead {
     @Column(length = 1000)
     private String description;
     private String businessAddress;
-    @ManyToOne(fetch = FetchType.LAZY)
+//    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus;
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @CollectionTable(
+//            name = "lead_interested_modules",
+//            joinColumns = @JoinColumn(name = "lead_id")
+//    )
+//    @Column(name = "module_name")
+//    private Set<String> interestedModules = new HashSet<>();
 
     @ManyToMany
     @JoinTable(

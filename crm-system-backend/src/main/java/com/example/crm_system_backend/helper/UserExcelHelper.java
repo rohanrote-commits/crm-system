@@ -195,6 +195,7 @@ public class UserExcelHelper {
                     hasError = true;
                 }
                     user.setFirstName(firstName);
+                }
 
                 if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
                     markError(row.getCell(2), "Invalid Last Name", errorStyle);
