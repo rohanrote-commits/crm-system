@@ -182,7 +182,7 @@ jQuery(function () {
     sessionStorage.setItem("file", row.errorFileName);
 
     sessionStorage.setItem("id", row.id);
-    window.location.href = "/Frontend/html/users/view_error_user.jsp";
+    window.location.href = "/crm/users/view-error";
   });
 });
  function showPopup(title, message, iconType) {
