@@ -1,4 +1,4 @@
-package com.example.crm_system_backend.handler;
+package com.example.crm_system_backend;
 
 
 import com.example.crm_system_backend.beans.InvalidLeadError;
@@ -288,6 +288,7 @@ public class ErrorRecordHandler {
                         log.error("Exception : ErrorRecordHandler.deleteErrorRecordByEmail -->InvalidLeadNotFound");
                         return new ErrorRecordException(ErrorCode.INVALID_USER_NOT_ACTIVE);
                     });
+//            InvalidUserError toFix = errorList.get(rowNumber-1);
             errorList.remove(toFix);
             // 4 Save updated JSON back to DB
             uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
@@ -295,7 +296,7 @@ public class ErrorRecordHandler {
             uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
             uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
             uploadHistory.setUpdatedAt(LocalDateTime.now());
-            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            UploadHistory savedUploadHistory1 =  uploadHistoryService.update(uploadHistory);
             //if no error record then status is success
            if(hasNoErrors(savedUploadHistory1)){
                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);

@@ -20,7 +20,7 @@ $(document).ready(function () {
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
         showAlert("Unauthorized. Please login.","danger");
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
         return;
     }
 
@@ -78,7 +78,7 @@ $(document).ready(function () {
         showAlert(response.message || response, "info");
 
         localStorage.removeItem("Authorization");
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
       },
       error: function (xhr) {
         let errorMsg = "Failed to delete user";
@@ -109,7 +109,7 @@ $(document).on("click", function () {
 
 
     $("#importLead").click(function (event) {
-          window.location.href = "leads/upload_lead.html";
+          window.location.href = "/crm/leads/upload";
     });
 
 
@@ -149,7 +149,7 @@ $(document).on("click", function () {
 //logout
     $("#logout").click(function () {
         if (!token) {
-            window.location.href = "/Frontend/html/login.jsp";
+            window.location.href = "/crm/login";
             return;
         }
         $.ajax({
@@ -165,7 +165,7 @@ $(document).on("click", function () {
                 sessionStorage.removeItem("Authorization");
 
                 // redirect to login
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
             },
             error: function (xhr) {
               showPopup("Error","Failed to Logout", "error");
@@ -406,12 +406,12 @@ function loadLeads(payload, token) {
             if (xhr.status === 401) {
                 showPopup("Error","Session expired. Login again.", "error");
                 sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
             } else {
                 if (xhr.status === 23) {
                   showPopup("Error","Session expired. Login again.", "error");
                     sessionStorage.clear();
-                    window.location.href = "/Frontend/html/login.jsp";
+                    window.location.href = "/crm/login";
                 }
                 showPopup("Error","Error loading leads.", "error");
             }

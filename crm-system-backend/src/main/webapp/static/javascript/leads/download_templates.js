@@ -46,7 +46,7 @@ $(document).ready(function () {
       if (xhr.status === 401) {
         showAlert("Session expired. Please login again.","warning");
         sessionStorage.clear();
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
       } else {
         console.error("Token used:", token);
          showPopup("Error","Something went wrong. Please try again", "error");

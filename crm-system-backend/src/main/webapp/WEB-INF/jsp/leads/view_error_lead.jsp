@@ -12,8 +12,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
-    <link rel="stylesheet" href="/Frontend/css/lead/view_error_lead.css">
-    <link rel="stylesheet" href="/Frontend/css/dashboard-test.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/lead/view_error_lead.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/dashboard-test.css">
     <!-- Then DataTables -->
     <link rel="stylesheet"
           href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
@@ -30,7 +30,7 @@
             <div class="dropdown" id="profileDropdown">
                 <button id = "view-profile" class="drop-item">View Profile</button>
                 <button id = "delete-profile" class="drop-item">Delete Profile</button>
-                   <button id ="manage-users" class="drop-item" onclick="window.location.href='/Frontend/html/users/user-dashboard.html'">Manage Users</button>
+                   <button id ="manage-users" class="drop-item" onclick="window.location.href='/static/html/users/user-dashboard.html'">Manage Users</button>
                 <button id = "logout" class="drop-item">Logout</button>
             </div>
         </div>
@@ -280,6 +280,6 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="/Frontend/javascript/leads/view_error_lead.js"></script>
-<script src="/Frontend/javascript/users/delete_profile.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/leads/view_error_lead.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/users/delete_profile.js"></script>
 </html>
