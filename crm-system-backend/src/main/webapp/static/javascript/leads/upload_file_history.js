@@ -18,7 +18,7 @@ jQuery(function() {
     if (!token) {
        showPopup("Error","Unauthorized. Please login.", "error");
         showAlert("Unauthorized. Please login.","danger");
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
         return;
     }
     
@@ -40,7 +40,7 @@ jQuery(function() {
                 showPopup("Error","Session expired. Login again.", "error");
                 showAlert("Session expired. Login again.", "warning");
                 sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
                 return;
             }
             if(xhr.status===400){
@@ -194,7 +194,7 @@ jQuery(function() {
                  showPopup("Error","Session expired. Login again.", "error");
                 showAlert("Session expired. Please login again.", "warning");
                 sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
               } 
               else if(xhr.status===404){
                   showPopup("Error","Not Error Records Found this File", "error");
@@ -217,7 +217,7 @@ jQuery(function() {
 
         sessionStorage.setItem("id", row.id);
         sessionStorage.setItem("file",row.errorFileName)
-        window.location.href = "/Frontend/html/leads/view_error_lead.html";
+        window.location.href = "/crm/leads/view-error";
       });
 
           function showPopup(title, message, iconType) {

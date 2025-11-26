@@ -54,7 +54,7 @@
       <button type="submit" class="btn-orange">Continue</button>
     </form>
 
-    <a class="forgot-link" href="">I forgot my password</a>
+    <a class="forgot-link" href="/">I forgot my password</a>
 
     <hr>
     <p>Don’t have an account? Signup as Master Admin</p>

@@ -71,14 +71,14 @@ $(document).ready(function () {
         $("#userFirstName, #userLastName, #userEmail, #userRole, #userPassword, #userConfirmPassword").prop("readonly", false);
         $("#userPassword, #userConfirmPassword").prop("required", true).closest(".col-md-6").show();
 
-        const roleSelect = $("#userRole");
-        if (role === "MASTER_ADMIN") {
-            roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`);
-        } else if (role === "ADMIN") {
-            roleSelect.append(`<option value="BASIC">BASIC</option>`);
-        } else {
-            roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
-        }
+        // const roleSelect = $("#userRole");
+        // if (role === "MASTER_ADMIN") {
+        //     roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`);
+        // } else if (role === "ADMIN") {
+        //     roleSelect.append(`<option value="BASIC">BASIC</option>`);
+        // } else {
+        //     roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
+        // }
 
         new bootstrap.Modal(document.getElementById('userModal')).show();
     });
@@ -140,15 +140,15 @@ $(document).ready(function () {
         }
     });
 
-    // // Populate Role dropdown
-    // const roleSelect = $("#userRole");
-    // if (role === "MASTER_ADMIN") {
-    //     roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`);
-    // } else if (role === "ADMIN") {
-    //     roleSelect.append(`<option value="BASIC">BASIC</option>`);
-    // } else {
-    //     roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
-    // }
+    // Populate Role dropdown
+    const roleSelect = $("#userRole");
+    if (role === "MASTER_ADMIN") {
+        roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`);
+    } else if (role === "ADMIN") {
+        roleSelect.append(`<option value="BASIC">BASIC</option>`);
+    } else {
+        roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
+    }
 
     // Validation Methods
     $.validator.addMethod("namePattern", function (value, element) {

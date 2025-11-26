@@ -65,18 +65,18 @@
         <button type="submit" class="btn-orange">Continue</button>
       </form>
 
-      <a class="forgot-link" href="${pageContext.request.contextPath}/crm/reset-password">I forgot my password</a>
+      <a class="forgot-link" href="/crm/reset-password">I forgot my password</a>
 
       <hr>
       <p>Dont have an account? Signup as Master Admin</p>
-      <button class="btn-blue" onclick="window.location.href='/users/crm/sign-up'">Register</button>
+        <button class="btn-blue" onclick="window.location.href='/crm/sign-up'">Register</button>
 
 
 
     </div>
   </div>
 
-  <script src="${pageContext.request.contextPath}/static/javascript/login.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/login.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

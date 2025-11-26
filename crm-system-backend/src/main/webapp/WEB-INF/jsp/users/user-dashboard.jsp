@@ -363,9 +363,9 @@
 
 
   <!-- Custom JS -->
-  <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js?v=1"></script>
   <script src="${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
-  <script src="${pageContext.request.contextPath}/static/javascript/users/user-dashboard.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/users/user-dashboard.js?v=1"></script>
 
 </body>
 

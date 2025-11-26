@@ -17,7 +17,7 @@ jQuery(function () {
     }
     if (!token) {
         showPopup("Error","Unauthorized. Please login.","warning");
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
         return;
     }
 
@@ -61,7 +61,7 @@ jQuery(function () {
             if (xhr.status === 401) {
                 showPopup("Warning","Session expired. Login again.", "warning");
                 sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
                 return;
             }
             if (xhr.status === 400) {
@@ -484,7 +484,7 @@ $("#userForm").validate({
               if (xhr.status === 401) {
                 showPopup("Warning","Session expired. Please login again.", "warning");
                 sessionStorage.clear();
-                window.location.href = "/Frontend/html/login.jsp";
+                window.location.href = "/crm/login";
               } else {
                 console.error("Token used:", token);
                 showPopup("Error","Error while downloading the Error File.", "error");

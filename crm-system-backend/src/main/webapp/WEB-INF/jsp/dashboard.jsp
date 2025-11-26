@@ -33,7 +33,7 @@
       <div class="profile-menu">
         <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
         <div class="dropdown" id="profileDropdown">
-          <button id="back" class="drop-item" onclick="window.location.href =`/static/html/users/user-dashboard.html`">Manage Users</button>
+          <button id="back" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
           <button id="delete-profile" class="drop-item">Delete Profile</button>
           <button id="logout" class="drop-item">Logout</button>
 
@@ -525,7 +525,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Custom JS -->
-<script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/dashboard.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/add_lead.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>

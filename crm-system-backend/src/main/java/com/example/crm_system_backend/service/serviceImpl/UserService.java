@@ -137,8 +137,14 @@ log.info("Enter : UserService:deleteUser");
 
         User user = userOptional.get();
 
+
         // Compare raw password with stored hashed password
-        boolean isPasswordCorrect = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+        log.info("Password from dto: {}", dto.getPassword());
+        log.info("Password from user: {}", user.getPassword());
+        boolean isPasswordCorrect = false;
+        if(passwordEncoder.matches(dto.getPassword(), user.getPassword()) ||passwordEncoder.equals(dto.getPassword())){
+            isPasswordCorrect = true;
+        };
 
         if (!isPasswordCorrect) {
             log.error("Incorrect password for email: {}", dto.getEmail());

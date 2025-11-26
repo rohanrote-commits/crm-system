@@ -17,14 +17,14 @@ $(document).ready(function () {
   }
 
   $("#back").click(function () {
-    window.location.href = "/Frontend/html/dashboard.jsp";
+    window.location.href = "/crm/dashboard";
   });
 
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
     showPopup("Warning", "Unauthorized. Please login.", "warning");
-    window.location.href = "/Frontend/html/login.jsp";
+    window.location.href = "/crm/login";
     return;
   }
 
@@ -68,7 +68,7 @@ $(document).ready(function () {
           showPopup("Info", response.message || response, "info");
 
           localStorage.removeItem("Authorization");
-          window.location.href = "/Frontend/html/login.jsp";
+          window.location.href = "/crm/login";
         },
         error: function (xhr) {
           let errorMsg = "Failed to delete user";
@@ -94,7 +94,7 @@ $(document).ready(function () {
 
   $("#importUser").click(function () {
     $dropdown.hide();
-    window.location.href = "bulk-upload.jsp";
+    window.location.href = "/crm/users/bulk-upload";
   }); // Load users (pass role to handle column visibility)
 
   loadUsers(token, userRole);
@@ -138,7 +138,7 @@ $(document).ready(function () {
 
   $("#logout").click(function () {
     if (!token) {
-      window.location.href = "/Frontend/html/login.jsp";
+      window.location.href = "/crm/login";
       return;
     }
     $.ajax({
@@ -148,7 +148,7 @@ $(document).ready(function () {
       success: function (response) {
         showPopup("Success", response.message || response, "success");
         localStorage.removeItem("Authorization");
-        window.location.href = "/Frontend/html/login.jsp";
+        window.location.href = "/crm/login";
       },
       error: function (xhr) {
         let errorMsg = "Failed to logout";
@@ -381,7 +381,7 @@ $(document).ready(function () {
         console.log(xhr.responseJSON.status);
         if (xhr.responseJSON.status === "UNAUTHORIZED") {
           showPopup("Error", errorMsg, "error");
-          window.location.href = `/Frontend/html/users/login.html`;
+          window.location.href = `/crm/login`;
         } else {
           showPopup("Error", errorMsg, "error");
         }
@@ -486,7 +486,7 @@ function loadUsers(token) {
       console.log(xhr.responseJSON.status);
       if (xhr.responseJSON.status === "UNAUTHORIZED") {
         showPopup("Error", errorMsg, "error");
-        window.location.href = `/Frontend/html/users/login.html`;
+        window.location.href = `/crm/login`;
       } else {
         showPopup("Error", errorMsg, "error");
       }
