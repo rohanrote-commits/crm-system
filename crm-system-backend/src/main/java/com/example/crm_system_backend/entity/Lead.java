@@ -37,13 +37,6 @@ public class Lead {
     private User user;
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus;
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @CollectionTable(
-//            name = "lead_interested_modules",
-//            joinColumns = @JoinColumn(name = "lead_id")
-//    )
-//    @Column(name = "module_name")
-//    private Set<String> interestedModules = new HashSet<>();
 
     @ManyToMany
     @JoinTable(

@@ -14,4 +14,8 @@ public class Product {
 
     @Column(unique = true, nullable = false)
     private String moduleName; // Example: GSTR, Accounting, Billing
+
+    public Object getProductName() {
+        return moduleName;
+    }
 }

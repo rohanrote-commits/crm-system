@@ -206,29 +206,24 @@ $("#confirmDeleteBtn").click(function () {
         }
     });
 
-    const savedTarget = localStorage.getItem("activeDashboardSection");
+    // Restore last opened section, default = leads
+    let savedTarget = localStorage.getItem("activeDashboardSection") || "leads";
 
-    if (savedTarget && savedTarget !== 'leads') {
-    
-    $(".sidebar-btn").removeClass("active"); 
-    $(`.sidebar-btn[data-target="${savedTarget}"]`).addClass("active"); 
+    // Highlight sidebar
+    $(".sidebar-btn").removeClass("active");
+    $(`.sidebar-btn[data-target="${savedTarget}"]`).addClass("active");
 
+    // Show correct section
     $(".dashboard-section").hide();
     $("#" + savedTarget).show();
 
-    if (savedTarget === "reports") {
-        initializeReportModule(payload, token); 
+    // Load the correct module
+    if (savedTarget === "leads") {
+        loadLeads(payload, token);
     }
-    
-} else { 
-    $(".sidebar-btn").removeClass("active"); // Clear previous active
-    $(".sidebar-btn[data-target='leads']").addClass("active");
-    
-    $(".dashboard-section").hide();
-    $("#leads").show();
-    
-    loadLeads(payload, token);
-}
+    if (savedTarget === "reports") {
+        initializeReportModule(payload, token);
+    }
 
 
   // View profile
@@ -391,292 +386,6 @@ function loadUsers(token){
     })
 };
 
-
-// Function: Load Report from API
-/**
- * Initializes the Report Dashboard module,
- * report history loading, 
- * DataTable setup, 
- * form validation, and 
- * report downloading.
- */
-function initializeReportModule(payload, token) {
-    
-    // --- Configuration Variables ---
-    const ReportHistoryAllUrl = "http://localhost:8080/crm/report/getDownloadedRecordHistory";
-    const ReportTemplateBaseUrl = "http://localhost:8080/crm/report/getTemplate";
-
-    let reportDataTableInstance = null;
-
-
-    /**
-     * Calculates the day immediately after start date
-     * Used to restrict the minimum selectable end date (which should be after start date).
-     * @param {string} dateString The start date in YYYY-MM-DD format.
-     * @returns {string} The next day's date in YYYY-MM-DD format.
-     */
-    function getNextDay(dateString) {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        date.setDate(date.getDate() + 1);
-        return date.toISOString().split("T")[0];
-    }
-
-
-    // --- DataTable Setup ---
-
-    /**
-     * Initializes or re-initializes the DataTables instance for the report history.
-     * @param {Array} initialData The data to load into the table.
-     */
-    function initializeReportDataTable(initialData = []) {
-        // Destroy existing instance if it exists
-        if ($.fn.DataTable.isDataTable("#report-table")) {
-            reportDataTableInstance.destroy();
-        }
-
-        // Initialize the new DataTable instance
-        reportDataTableInstance = $("#report-table").DataTable({
-            pageLength: 10,
-            data: initialData,
-            columns: [
-                { data: null, title: "Sr No" },
-                { data: "userName", title: "User Name" },
-                { data: "downloadedAt", title: "Downloaded At"},
-                // { data: "dateOfDownload", title: "Date of Download" },
-                // { data: "timeOfDownload", title: "Time of Download" },
-                // { data: "role", title: "Role" },
-                { data: "startDate", title: "Start Date" },
-                { data: "endDate", title: "End Date" },
-                { data: "status", title: "Download Status" }
-            ],
-            order: [
-                [2, "desc"], // Sort by Date descending
-                // [3, "desc"], // Sort by Time descending
-            ],
-            // Auto-generate Serial Number
-            drawCallback: function (settings) {
-                let api = this.api();
-                let startIndex = api.context[0]._iDisplayStart;
-
-                api.column(0, { page: "current" })
-                    .nodes()
-                    .each(function (cell, i) {
-                        cell.innerHTML = startIndex + i + 1;
-                    });
-            },
-        });
-    }
-
-    // --- Data Fetching ---
-
-    /**
-     * Fetches all existing report history records.
-     */
-    function loadReportHistory(token) {
-        fetch(ReportHistoryAllUrl, {
-            method: "GET",
-            headers: {
-                Authorization: token ? `Bearer ${token}` : "",
-            },
-        })
-        .then((response) => {
-            if (!response.ok) {
-                console.error("Failed to fetch report history. Status:", response.status);
-                initializeReportDataTable([]);
-                return null;
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data) {
-                initializeReportDataTable(data);
-            }
-        })
-        .catch((error) => {
-            console.error("Network error fetching report history:", error);
-            initializeReportDataTable([]);
-        });
-    }
-
-    // --- Main Logic: Run on Document Ready ---
-
-    $(document).ready(function () {
-      
-        const userRole = payload?.role?.trim() || "N/A";
-        const userName = payload?.email || "N/A";
-
-        // 2. Initial Data Load
-        loadReportHistory(token);
-
-        // 3. Modal Handlers Setup
-        const reportModalElement = document.getElementById("reportModal");
-        if (reportModalElement) {
-             $("#showReportModal").click(function () {
-                 reportModalElement.style.display = "flex";
-             });
-             $("#closeReportModal").click(function () {
-                 reportModalElement.style.display = "none";
-             });
-             $("#reportModal").click(function (event) {
-                 if (event.target.id === "reportModal") {
-                     reportModalElement.style.display = "none";
-                 }
-             });
-        }
-
-
-        // 4. Custom Validator Setup
-        $.validator.addMethod(
-            "dateMaxToday",
-            function (value, element) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const inputDate = new Date(value);
-                inputDate.setHours(0, 0, 0, 0);
-
-                return this.optional(element) || inputDate.getTime() <= today.getTime();
-            },
-            "**Date cannot be in the future"
-        );
-
-        // 5. Date Picker Restrictions
-        const today = new Date().toISOString().split("T")[0];
-        $("#startDateInput").attr("max", today);
-        $("#endDateInput").attr("max", today);
-
-        // Event listener for Start Date to enforce date range
-        $("#startDateInput").on("change", function () {
-            const startDateValue = $(this).val();
-            const minEndDate = getNextDay(startDateValue);
-            
-            $("#endDateInput").attr("min", minEndDate);
-
-            const endDateValue = $("#endDateInput").val();
-            if (
-                endDateValue &&
-                startDateValue &&
-                new Date(endDateValue) <= new Date(startDateValue)
-            ) {
-                $("#endDateInput").val(""); // Clear invalid End Date
-            }
-        });
-
-        // 6. Form Validation and Submission
-        $("#getReport").validate({
-            rules: {
-                startDate: {
-                    required: true,
-                    dateMaxToday: true,
-                },
-                endDate: {
-                    required: true,
-                    dateMaxToday: true,
-                },
-            },
-            messages: {
-                startDate: {
-                    required: "**Start date is missing",
-                    dateMaxToday: "**Start date cannot be in the future",
-                },
-                endDate: {
-                    required: "**End date is missing",
-                    dateMaxToday: "**End date cannot be in the future",
-                },
-            },
-
-            submitHandler: function (form) {
-                const startDate = $("#startDateInput").val();
-                const endDate = $("#endDateInput").val();
-                const getTemplateUrl = `${ReportTemplateBaseUrl}?start=${startDate}&end=${endDate}`;
-
-                fetch(getTemplateUrl, {
-                    method: "POST",
-                    headers: {
-                        Authorization: token ? `Bearer ${token}` : "",
-                    },
-                })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`Http Error! status: ${response.status}`);
-                    }
-                    return response.blob();
-                })
-                .then((blob) => {
-                    // Create temporary link for download
-                    const href = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.href = href;
-                    link.download = "Report Template.zip";
-                    link.style.display = "none";
-
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(href); // Clean up temp URL
-
-                    // Reload history and clear form/modal
-                    // loadReportHistory();
-
-                    updateDownloadStatus(token, startDate, endDate, "SUCCESS");
-
-                    reportModalElement.style.display = "none";
-                    $("#startDateInput").val("");
-                    $("#endDateInput").val("");
-
-                    loadReportHistory();
-
-                })
-                .catch((error) => {
-                    alert("Failed to download the file, Error: " + error.message);
-                    updateDownloadStatus(token, startDate, endDate, "FAILED");
-                    reportModalElement.style.display = "none";
-                });
-            },
-        });
-    });
-}
-
-
-/**
- * Updates the download status on the server.
- * @param {string} startDate The report start date.
- * @param {string} endDate The report end date.
- * @param {string} finalStatus The status to set ('Success' or 'Fail').
- */
-function updateDownloadStatus(token, startDate, endDate, finalStatus) {
-    const updateUrl = `${ReportTemplateBaseUrl}/updateStatus`;
-    
-    // We only need to inform the server of the outcome
-    const data = {
-        startDate: startDate,
-        endDate: endDate,
-        status: finalStatus
-    };
-
-    fetch(updateUrl, {
-        method: "POST", // Or PUT, depending on your API design
-        headers: {
-            "Authorization": token ? `Bearer ${token}` : "",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            console.error("Failed to update status record on server.");
-        }
-        // After updating the status, reload the table to show the new status
-        loadReportHistory(token); 
-    })
-    .catch(error => {
-        console.error("Network error when updating status:", error);
-    });
-}
-
-
-
 // Function: Load Leads from API
 function loadLeads(payload, token) {
 
@@ -773,6 +482,208 @@ function loadLeads(payload, token) {
 
 }
 
+
+function initializeReportModule(payload, token) {
+
+    // --- Configuration Variables ---
+    const ReportHistoryAllUrl = "http://localhost:8080/crm/report/getDownloadedRecordHistory";
+    const ReportTemplateBaseUrl = "http://localhost:8080/crm/report";
+
+    let reportDataTableInstance = null;
+
+    // --- Helper: start of End Date restriction ---
+    function getNextDay(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split("T")[0];
+    }
+
+    // --- Helper: end of End Date restriction ---
+    function formatEndDateForFullDay(dateString) {
+        if (!dateString) return "";
+        return dateString + " 23:59:59";
+    }
+
+    // --- Initialize or Re-initialize DataTable ---
+    function initializeReportDataTable(initialData = []) {
+        if ($.fn.DataTable.isDataTable("#report-table")) {
+            reportDataTableInstance.destroy();
+        }
+
+        reportDataTableInstance = $("#report-table").DataTable({
+            pageLength: 10,
+            data: initialData,
+            columns: [
+                { data: null, title: "Sr No" },
+                { data: "userName", title: "User Name" },
+                { data: "downloadedAt", title: "Downloaded At" },
+                { data: "dateRange", title: "Selected Date Range" },
+                { data: "status", title: "Download Status" }
+            ],
+            order: [[2, "desc"]],
+            drawCallback: function (settings) {
+                let api = this.api();
+                let startIndex = api.context[0]._iDisplayStart;
+
+                api.column(0, { page: "current" })
+                    .nodes()
+                    .each(function (cell, i) {
+                        cell.innerHTML = startIndex + i + 1;
+                    });
+            }
+        });
+    }
+
+    // --- Fetch Report History from Backend ---
+    function loadReportHistory() {
+        if (!token) {
+            console.error("Token missing. Cannot fetch report history.");
+            initializeReportDataTable([]);
+            return;
+        }
+
+        fetch(ReportHistoryAllUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Failed to fetch report history. Status:", response.status);
+                    initializeReportDataTable([]);
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) initializeReportDataTable(data);
+            })
+            .catch(error => {
+                console.error("Network error:", error);
+                initializeReportDataTable([]);
+            });
+    }
+
+    function updateDownloadStatus(startDate, endDate, status) {
+    if (!reportDataTableInstance) return;
+
+    // Find the row(s) matching startDate and endDate
+    reportDataTableInstance.rows().every(function () {
+        const data = this.data();
+        if (new Date(data.startDate).getTime() === new Date(startDate).getTime() &&
+        new Date(data.endDate).getTime() === new Date(endDate).getTime()) {
+            data.status = status;  // update status field
+            this.data(data);       // update row in DataTable
+        }
+    });
+
+    reportDataTableInstance.draw(false); // redraw table without resetting pagination
+}
+
+    // --- Document Ready ---
+    $(document).ready(function () {
+
+        // --- Modal Handlers ---
+        const reportModalElement = $("#reportModal");
+        $("#showReportModal").click(() => reportModalElement.show());
+        $("#closeReportModal").click(() => reportModalElement.hide());
+        reportModalElement.click(function (e) {
+            if (e.target.id === "reportModal") $(this).hide();
+        });
+
+        // --- Date Picker Restrictions ---
+        const today = new Date().toISOString().split("T")[0];
+        $("#startDateInput").attr("max", today);
+        $("#endDateInput").attr("max", today);
+
+        $("#startDateInput").on("change", function () {
+            const startDateValue = $(this).val();
+            $("#endDateInput").attr("min", getNextDay(startDateValue));
+
+            const endDateValue = $("#endDateInput").val();
+            if (endDateValue && new Date(endDateValue) <= new Date(startDateValue)) {
+                $("#endDateInput").val("");
+            }
+        });
+
+        // --- Custom Validator ---
+        $.validator.addMethod("dateMaxToday", function (value, element) {
+            const inputDate = new Date(value);
+            inputDate.setHours(0, 0, 0, 0);
+            const maxDate = new Date();
+            maxDate.setHours(0, 0, 0, 0);
+            return this.optional(element) || inputDate <= maxDate;
+        }, "**Date cannot be in the future");
+
+        // --- Form Validation and Submission ---
+        $("#getReport").validate({
+            rules: {
+                startDate: { required: true, dateMaxToday: true },
+                endDate: { required: true, dateMaxToday: true }
+            },
+            messages: {
+                startDate: { required: "**Start date is missing", dateMaxToday: "**Start date cannot be in the future" },
+                endDate: { required: "**End date is missing", dateMaxToday: "**End date cannot be in the future" }
+            },
+            submitHandler: function () {
+                const startDate = $("#startDateInput").val(); 
+                const endDate = $("#endDateInput").val(); 
+
+                const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
+
+                fetch(getTemplateUrl, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                .then(resp => {
+                    if (!resp.ok) throw new Error(`HTTP Error! status: ${resp.status}`);
+                    const contentType = resp.headers.get("content-type");
+                    if(contentType && contentType.includes("application/zip")) {
+                        return resp.blob().then(blob => ({ blob, resp }));
+                    } else {
+                        alert("No leads Registered from " + startDate + " To " + endDate + " !!");
+                        reportModalElement.hide();
+                    }
+                })
+                .then(({ blob, resp }) => {
+                    // Use backend-provided filename
+                        const disposition = resp.headers.get("Content-Disposition");
+                        let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
+                        if (disposition && disposition.includes("filename=")) {
+                            filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
+                        }
+
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        updateDownloadStatus(startDate, endDate, "SUCCESS");
+                        loadReportHistory();
+                        reportModalElement.hide();
+                        
+                        $("#startDateInput, #endDateInput").val("");
+                })
+                .catch(err => {
+                    alert("Failed to download file : " + error.message);
+                    reportModalElement.hide();
+                });
+            }
+
+        });
+
+        // --- Initial Load of Report History ---
+        loadReportHistory(); 
+
+    });
+}
+
+
     // Function to show bootstrap alert dynamically
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
@@ -791,11 +702,11 @@ function loadLeads(payload, token) {
       }, 5000);
     }
 
- function showPopup(title, message, iconType) {
-    Swal.fire({
-        title: title,
-        text: message,
-        icon: iconType, // success, error, warning, info
-        confirmButtonText: 'OK'
-    });
+    function showPopup(title, message, iconType) {
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: iconType, // success, error, warning, info
+            confirmButtonText: 'OK'
+        });
 }
