@@ -1,8 +1,7 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.exception.FileDownloadException;
-import com.example.crm_system_backend.handler.DownloadHandler;
-import lombok.extern.slf4j.Slf4j;
+import com.example.crm_system_backend.DownloadHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +20,10 @@ public class FileDownloadController {
     @Autowired
     private DownloadHandler downloadHandler;
 
+
     /**
-     * Downloads the user template file and returns it as a response entity
+     * Downloads the user
+     * template file and returns it as a response entity
      * to allow the client to download it. The file is returned as a byte array
      * with appropriate response headers.
      *

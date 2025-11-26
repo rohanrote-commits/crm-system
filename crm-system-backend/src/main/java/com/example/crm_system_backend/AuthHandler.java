@@ -1,4 +1,4 @@
-package com.example.crm_system_backend.handler;
+package com.example.crm_system_backend;
 
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.Roles;
