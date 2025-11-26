@@ -37,7 +37,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService {
+public class ReportService{
 
     @Autowired
     ReportExcelHelper helper;
@@ -112,7 +112,7 @@ public class ReportService {
             }
 
             // Personalized Report
-            for(User user : users) {
+            for (User user : users) {
 
                 String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);
@@ -497,7 +497,6 @@ public class ReportService {
             for(downloadReport record : historyRepo.findAll()) {
                 for(String one_email : emailList) {
                     if(record.getEmail().equals(one_email)) {
-//                        record.setStartDate(DateF);
                         filteredRecords.add(record);
                     }
                 }
@@ -515,3 +514,5 @@ public class ReportService {
         return finalFilteredRecords;
     }
 }
+
+

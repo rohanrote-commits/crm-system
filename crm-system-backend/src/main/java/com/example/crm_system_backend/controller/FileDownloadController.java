@@ -1,7 +1,7 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.exception.FileDownloadException;
-import com.example.crm_system_backend.DownloadHandler;
+import com.example.crm_system_backend.handler.DownloadHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

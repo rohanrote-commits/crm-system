@@ -3,7 +3,7 @@ package com.example.crm_system_backend.controller;
 import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.entity.Lead;
-import com.example.crm_system_backend.LeadHandler;
+import com.example.crm_system_backend.handler.LeadHandler;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

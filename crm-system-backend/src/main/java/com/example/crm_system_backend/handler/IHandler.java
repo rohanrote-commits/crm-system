@@ -1,4 +1,4 @@
-package com.example.crm_system_backend;
+package com.example.crm_system_backend.handler;
 
 import org.springframework.web.multipart.MultipartFile;
 

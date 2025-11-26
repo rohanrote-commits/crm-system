@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
@@ -80,11 +81,14 @@ public class ReportController {
         }
         LOGGER.log(Level.INFO, "Successfully generated Zip file");
 
+
         // Save in DB
+
         downloadReport data = new downloadReport();
 
         // Access Token
         String email = jwtUtil.getEmail(token);
+        String role = jwtUtil.getRole(token);
 
         String name = helper.getName(email);
 
@@ -105,6 +109,7 @@ public class ReportController {
         DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         data.setDownloadedAt(now.format(formatter2));
         data.setStatus("Success");
+
         historyRepo.save(data);
         LOGGER.log(Level.INFO, "Made necessary changes in data and saved the data in database");
 

@@ -109,7 +109,7 @@ $(document).ready(function () {
   });
 
 
-// Toggle dropdown on button click
+    // Toggle dropdown on button click
 $("#addLeadBtn").on("click", function (e) {
     e.stopPropagation(); // prevent click from closing instantly
     $("#leadDropdown").toggleClass("show");
@@ -205,25 +205,6 @@ $("#confirmDeleteBtn").click(function () {
             });
         }
     });
-
-    // Restore last opened section, default = leads
-    let savedTarget = localStorage.getItem("activeDashboardSection") || "leads";
-
-    // Highlight sidebar
-    $(".sidebar-btn").removeClass("active");
-    $(`.sidebar-btn[data-target="${savedTarget}"]`).addClass("active");
-
-    // Show correct section
-    $(".dashboard-section").hide();
-    $("#" + savedTarget).show();
-
-    // Load the correct module
-    if (savedTarget === "leads") {
-        loadLeads(payload, token);
-    }
-    if (savedTarget === "reports") {
-        initializeReportModule(payload, token);
-    }
 
 
   // View profile
@@ -385,6 +366,7 @@ function loadUsers(token){
         }
     })
 };
+
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
@@ -629,8 +611,8 @@ function initializeReportModule(payload, token) {
                 endDate: { required: "**End date is missing", dateMaxToday: "**End date cannot be in the future" }
             },
             submitHandler: function () {
-                const startDate = $("#startDateInput").val(); 
-                const endDate = $("#endDateInput").val(); 
+                const startDate = $("#startDateInput").val();
+                const endDate = $("#endDateInput").val();
 
                 const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
 
@@ -666,7 +648,7 @@ function initializeReportModule(payload, token) {
                         updateDownloadStatus(startDate, endDate, "SUCCESS");
                         loadReportHistory();
                         reportModalElement.hide();
-                        
+
                         $("#startDateInput, #endDateInput").val("");
                 })
                 .catch(err => {
@@ -678,7 +660,7 @@ function initializeReportModule(payload, token) {
         });
 
         // --- Initial Load of Report History ---
-        loadReportHistory(); 
+        loadReportHistory();
 
     });
 }
@@ -702,11 +684,11 @@ function initializeReportModule(payload, token) {
       }, 5000);
     }
 
-    function showPopup(title, message, iconType) {
-        Swal.fire({
-            title: title,
-            text: message,
-            icon: iconType, // success, error, warning, info
-            confirmButtonText: 'OK'
-        });
+ function showPopup(title, message, iconType) {
+    Swal.fire({
+        title: title,
+        text: message,
+        icon: iconType, // success, error, warning, info
+        confirmButtonText: 'OK'
+    });
 }
