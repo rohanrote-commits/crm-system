@@ -235,7 +235,7 @@ public class UserHandler implements IHandler<UserDTO> {
         List<UserDTO> users = getUsers(id);
         UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
                 .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
-        Optional<User> user = userService.getUser(userDTO1);
+        Optional<User> user = userService.getUserByEmail(userDTO1.getEmail());
         boolean flag = false;
         if (user.isPresent()) {
 
@@ -323,7 +323,7 @@ public class UserHandler implements IHandler<UserDTO> {
         List<UserDTO> users = getUsers(id);
         UserDTO userDTO1 = users.stream().filter(user -> user.getEmail().equals(userDTO.getEmail()))
                 .findFirst().orElseThrow(() -> new UserException(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL));
-        Optional<User> user = userService.getUser(userDTO1);
+        Optional<User> user = userService.getUserByEmail(userDTO1.getEmail());
         if (user.isPresent()) {
             userService.deleteUser(user.get());
         } else {

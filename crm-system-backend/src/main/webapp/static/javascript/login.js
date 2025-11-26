@@ -39,7 +39,7 @@ $(document).ready(function () {
                 success: function (token) {
                     showAlert("Login Successful", "success");
                     sessionStorage.setItem("Authorization", token);
-                    window.location.href = "/crm/dashboard";
+                    window.location.href = "/crm/users/dashboard";
                 },
                 error: function (xhr) {
                     const error = xhr.responseJSON.message;

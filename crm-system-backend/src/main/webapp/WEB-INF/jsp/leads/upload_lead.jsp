@@ -11,13 +11,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="/Frontend/css/lead/upload_lead.css" />
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/lead/upload_lead.css" />
 
   <!-- jQuery & Plugins -->
-  <script src="/Frontend/javascript/jquery.js"></script>
-  <script src="/Frontend/javascript/jquery.validate.min.js"></script>
-  <link rel="stylesheet" href="/Frontend/javascript/datatables.min.css" />
-  <script src="/Frontend/javascript/datatables.min.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/jquery.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/jquery.validate.min.js"></script>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/static/javascript/datatables.min.css" />
+  <script src="${pageContext.request.contextPath}/static/javascript/datatables.min.js"></script>
 </head>
 
 <body>
@@ -35,7 +35,7 @@
         </div>
         
       </div>
-       <img src="/Frontend/assests/profile.png" class="profile-pic" id="view-profile"></div>
+       <img src="${pageContext.request.contextPath}/static/assests/profile.png" class="profile-pic" id="view-profile"></div>
     </div>
   </header>
   
@@ -188,10 +188,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom JS -->
-  <script src="/Frontend/javascript/leads/upload_lead.js"></script>
-  <script src="/Frontend/javascript/leads/download_templates.js"></script>
-   <script src="/Frontend/javascript/leads/upload_file_history.js"></script>
-  <script src="/Frontend/javascript/dashboard.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
+   <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_file_history.js"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>
 </body>
 
 </html>

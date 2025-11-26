@@ -93,7 +93,7 @@ public class RequestInterceptor implements HandlerInterceptor {
             if (!userSessionService.findSessionByToken(token, email)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 log.error("Exit: RequestInterceptor.preHandle with error: Another session active for user: {}", email);
-                throw new UserException(ErrorCode.ANOTHER_SESSION_ACTIVE_FOR_USER);
+                throw new UserException(ErrorCode.SESSION_NOT_FOUND);
             }
 
             // ---- STEP 4: Extract and set user details ----

@@ -97,8 +97,8 @@
     </form>
 </div> -->
     </main>
-    <script src="${pageContext.request.contextPath}/static/javascript/bulk-upload.js"></script>
-    <script src="${pageContext.request.contextPath}/static/javascript/users/upload_file_history.js"></script>
+    <script src="${pageContext.request.contextPath}/static/javascript/bulk-upload.js?v=1"></script>
+    <script src="${pageContext.request.contextPath}/static/javascript/users/upload_file_history.js?v=1"></script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

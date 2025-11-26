@@ -19,7 +19,7 @@ $(document).ready(function (params) {
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
     alert("⚠ Unauthorized. Please login.");
-    window.location.href = "/Frontend/html/login.jsp";
+    window.location.href = "/crm/login";
     return;
   }
 

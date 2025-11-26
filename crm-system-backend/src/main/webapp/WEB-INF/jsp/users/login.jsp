@@ -65,11 +65,11 @@
         <button type="submit" class="btn-orange">Continue</button>
       </form>
 
-      <a class="forgot-link" href="/crm/users/reset-password">I forgot my password</a>
+      <a class="forgot-link" href="/crm/reset-password">I forgot my password</a>
 
       <hr>
       <p>Dont have an account? Signup as Master Admin</p>
-        <button class="btn-blue" onclick="window.location.href='/crm/users/sign-up'">Register</button>
+        <button class="btn-blue" onclick="window.location.href='/crm/sign-up'">Register</button>
 
 
 
