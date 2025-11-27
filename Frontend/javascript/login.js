@@ -39,12 +39,24 @@ $(document).ready(function () {
                 success: function (token) {
                     showAlert("Login Successful", "success");
                     sessionStorage.setItem("Authorization", token);
+                    localStorage.removeItem("activeDashboardSection");
                     window.location.href = "/Frontend/html/dashboard.html";
                 },
                 error: function (xhr) {
-                    const error = xhr.responseJSON.message;
-                    showPopup("Error",error,"error");
-                
+                    // const error = xhr.responseJSON.message;
+                    // showPopup("Error",error,"error");
+
+                    let errorMessage = "Something went wrong";
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            errorMessage = xhr.responseText;
+                        }
+                    } catch (e) {
+                        errorMessage = "Login failed";
+                    }
+                    showPopup("Error", errorMessage, "error");
                 }
             });
         }

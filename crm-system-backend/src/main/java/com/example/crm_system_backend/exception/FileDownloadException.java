@@ -9,6 +9,7 @@ import java.io.IOException;
 @Getter
 public class FileDownloadException extends IOException {
     private final ErrorCode errorCode;
+
     public FileDownloadException(ErrorCode errorInFileDownload) {
         this.errorCode = errorInFileDownload;
     }

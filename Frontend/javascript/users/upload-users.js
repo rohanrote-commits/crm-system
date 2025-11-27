@@ -67,4 +67,5 @@ function showAlert(message, type) {
         text: message,
         icon: iconType, // success, error, warning, info
         confirmButtonText: 'OK'
-    })}
+    });
+  }
