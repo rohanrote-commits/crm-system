@@ -5,7 +5,7 @@ import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.ErrorRecordHandler;
+import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
