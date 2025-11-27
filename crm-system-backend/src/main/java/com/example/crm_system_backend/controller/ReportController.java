@@ -13,8 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
@@ -79,6 +83,7 @@ public class ReportController {
 
 
         // Save in DB
+
         downloadReport data = new downloadReport();
 
         // Access Token
@@ -87,25 +92,22 @@ public class ReportController {
 
         String name = helper.getName(email);
 
-        data.setStartDate(start);
-        data.setEndDate(end);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDate startLocal = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endLocal = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        String formattedStart = formatter.format(startLocal);
+        String formattedEnd = formatter.format(endLocal);
+
+        String dateRange = formattedStart + " To " + formattedEnd;
+
+        data.setDateRange(dateRange);
         data.setEmail(email);
         data.setUserName(name);
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        data.setDateOfDownload(now.format(dateFormatter));
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        data.setTimeOfDownload(now.format(timeFormatter));
-
-
-        if (role.equalsIgnoreCase(Roles.MASTER_ADMIN.name())) {
-            data.setRole(Roles.MASTER_ADMIN.getDescription());
-        } else if (role.equalsIgnoreCase(Roles.ADMIN.name())) {
-            data.setRole(Roles.ADMIN.getDescription());
-        } else if (role.equalsIgnoreCase(Roles.BASIC.name()) || role.equalsIgnoreCase(Roles.USER.name())) {
-            data.setRole(Roles.BASIC.getDescription());
-        }
-
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        data.setDownloadedAt(now.format(formatter2));
         data.setStatus("Success");
 
         historyRepo.save(data);

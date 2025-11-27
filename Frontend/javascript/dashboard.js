@@ -1,5 +1,9 @@
 
 $(document).ready(function () {
+
+
+  // ----- 1. Initial Setup -----
+
     $("#header").load("/Frontend/html/components/header.html");
     $("#profile-model").load("/Frontend/html/models/profile_model.html");
     // Parse JWT
@@ -31,7 +35,7 @@ $(document).ready(function () {
     loadLeads(payload,token);
 
 
-    // Sidebar navigation
+    // ----- 2. Sidebar navigation Handler -----
     $(".sidebar-btn").click(function () {
         const target = $(this).data("target");
 
@@ -42,15 +46,21 @@ $(document).ready(function () {
         $("#" + target).show();
         console.log(target);
 
+        // Saving the state
+        localStorage.setItem("activeDashboardSection", target);
+
         if(target === "leads"){
             loadLeads(payload,token);
         }
 
         if(target === "reports"){
-
+            initializeReportModule(payload, token);
         }
 
     });
+
+
+    // ----- 3. Profile, Logout, Lead/User Deletion Handlers -----
 
   $("#profilePic").click(function () {
     $("#profileDropdown").toggleClass("show");
@@ -99,7 +109,7 @@ $(document).ready(function () {
   });
 
 
-// Toggle dropdown on button click
+    // Toggle dropdown on button click
 $("#addLeadBtn").on("click", function (e) {
     e.stopPropagation(); // prevent click from closing instantly
     $("#leadDropdown").toggleClass("show");
@@ -115,39 +125,6 @@ $(document).on("click", function () {
           window.location.href = "leads/upload_lead.html";
     });
 
-
-    // //delete profile
-    // $("#delete-profile").click(function () {
-
-    //     if (!token) {
-    //         alert("User not logged in!");
-    //         return;
-    //     }
-
-    //     if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
-    //         return;
-    //     }
-
-    //     $.ajax({
-    //         url: `http://localhost:8080/crm/user/delete-user`,
-    //         type: "DELETE",
-    //         headers: {
-    //             "Authorization": "Bearer " + token
-    //         },
-    //         success: function (response) {
-    //             showAlert(response,"success");
-
-    //             // remove token after success
-    //             localStorage.removeItem("Authorization");
-
-    //             // redirect to login page
-    //             window.location.href = "/Frontend/html/login.html";
-    //         },
-    //         error: function (xhr) {
-    //             showAlert("Failed to delete user: " + xhr.responseText,"danger");
-    //         }
-    //     });
-    // });
 
 //logout
     $("#logout").click(function () {
@@ -486,6 +463,208 @@ function loadLeads(payload, token) {
 });
 
 }
+
+
+function initializeReportModule(payload, token) {
+
+    // --- Configuration Variables ---
+    const ReportHistoryAllUrl = "http://localhost:8080/crm/report/getDownloadedRecordHistory";
+    const ReportTemplateBaseUrl = "http://localhost:8080/crm/report";
+
+    let reportDataTableInstance = null;
+
+    // --- Helper: start of End Date restriction ---
+    function getNextDay(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split("T")[0];
+    }
+
+    // --- Helper: end of End Date restriction ---
+    function formatEndDateForFullDay(dateString) {
+        if (!dateString) return "";
+        return dateString + " 23:59:59";
+    }
+
+    // --- Initialize or Re-initialize DataTable ---
+    function initializeReportDataTable(initialData = []) {
+        if ($.fn.DataTable.isDataTable("#report-table")) {
+            reportDataTableInstance.destroy();
+        }
+
+        reportDataTableInstance = $("#report-table").DataTable({
+            pageLength: 10,
+            data: initialData,
+            columns: [
+                { data: null, title: "Sr No" },
+                { data: "userName", title: "User Name" },
+                { data: "downloadedAt", title: "Downloaded At" },
+                { data: "dateRange", title: "Selected Date Range" },
+                { data: "status", title: "Download Status" }
+            ],
+            order: [[2, "desc"]],
+            drawCallback: function (settings) {
+                let api = this.api();
+                let startIndex = api.context[0]._iDisplayStart;
+
+                api.column(0, { page: "current" })
+                    .nodes()
+                    .each(function (cell, i) {
+                        cell.innerHTML = startIndex + i + 1;
+                    });
+            }
+        });
+    }
+
+    // --- Fetch Report History from Backend ---
+    function loadReportHistory() {
+        if (!token) {
+            console.error("Token missing. Cannot fetch report history.");
+            initializeReportDataTable([]);
+            return;
+        }
+
+        fetch(ReportHistoryAllUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Failed to fetch report history. Status:", response.status);
+                    initializeReportDataTable([]);
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) initializeReportDataTable(data);
+            })
+            .catch(error => {
+                console.error("Network error:", error);
+                initializeReportDataTable([]);
+            });
+    }
+
+    function updateDownloadStatus(startDate, endDate, status) {
+    if (!reportDataTableInstance) return;
+
+    // Find the row(s) matching startDate and endDate
+    reportDataTableInstance.rows().every(function () {
+        const data = this.data();
+        if (new Date(data.startDate).getTime() === new Date(startDate).getTime() &&
+        new Date(data.endDate).getTime() === new Date(endDate).getTime()) {
+            data.status = status;  // update status field
+            this.data(data);       // update row in DataTable
+        }
+    });
+
+    reportDataTableInstance.draw(false); // redraw table without resetting pagination
+}
+
+    // --- Document Ready ---
+    $(document).ready(function () {
+
+        // --- Modal Handlers ---
+        const reportModalElement = $("#reportModal");
+        $("#showReportModal").click(() => reportModalElement.show());
+        $("#closeReportModal").click(() => reportModalElement.hide());
+        reportModalElement.click(function (e) {
+            if (e.target.id === "reportModal") $(this).hide();
+        });
+
+        // --- Date Picker Restrictions ---
+        const today = new Date().toISOString().split("T")[0];
+        $("#startDateInput").attr("max", today);
+        $("#endDateInput").attr("max", today);
+
+        $("#startDateInput").on("change", function () {
+            const startDateValue = $(this).val();
+            $("#endDateInput").attr("min", getNextDay(startDateValue));
+
+            const endDateValue = $("#endDateInput").val();
+            if (endDateValue && new Date(endDateValue) <= new Date(startDateValue)) {
+                $("#endDateInput").val("");
+            }
+        });
+
+        // --- Custom Validator ---
+        $.validator.addMethod("dateMaxToday", function (value, element) {
+            const inputDate = new Date(value);
+            inputDate.setHours(0, 0, 0, 0);
+            const maxDate = new Date();
+            maxDate.setHours(0, 0, 0, 0);
+            return this.optional(element) || inputDate <= maxDate;
+        }, "**Date cannot be in the future");
+
+        // --- Form Validation and Submission ---
+        $("#getReport").validate({
+            rules: {
+                startDate: { required: true, dateMaxToday: true },
+                endDate: { required: true, dateMaxToday: true }
+            },
+            messages: {
+                startDate: { required: "**Start date is missing", dateMaxToday: "**Start date cannot be in the future" },
+                endDate: { required: "**End date is missing", dateMaxToday: "**End date cannot be in the future" }
+            },
+            submitHandler: function () {
+                const startDate = $("#startDateInput").val();
+                const endDate = $("#endDateInput").val();
+
+                const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
+
+                fetch(getTemplateUrl, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                .then(resp => {
+                    if (!resp.ok) throw new Error(`HTTP Error! status: ${resp.status}`);
+                    const contentType = resp.headers.get("content-type");
+                    if(contentType && contentType.includes("application/zip")) {
+                        return resp.blob().then(blob => ({ blob, resp }));
+                    } else {
+                        alert("No leads Registered from " + startDate + " To " + endDate + " !!");
+                        reportModalElement.hide();
+                    }
+                })
+                .then(({ blob, resp }) => {
+                    // Use backend-provided filename
+                        const disposition = resp.headers.get("Content-Disposition");
+                        let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
+                        if (disposition && disposition.includes("filename=")) {
+                            filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
+                        }
+
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        updateDownloadStatus(startDate, endDate, "SUCCESS");
+                        loadReportHistory();
+                        reportModalElement.hide();
+
+                        $("#startDateInput, #endDateInput").val("");
+                })
+                .catch(err => {
+                    alert("Failed to download file : " + error.message);
+                    reportModalElement.hide();
+                });
+            }
+
+        });
+
+        // --- Initial Load of Report History ---
+        loadReportHistory();
+
+    });
+}
+
 
     // Function to show bootstrap alert dynamically
     function showAlert(message, type) {

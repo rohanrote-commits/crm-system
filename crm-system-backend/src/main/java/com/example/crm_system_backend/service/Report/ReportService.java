@@ -1,7 +1,9 @@
 package com.example.crm_system_backend.service.Report;
 
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.Lead;
+import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.exception.ExcelException;
@@ -35,7 +37,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService {
+public class ReportService{
 
     @Autowired
     ReportExcelHelper helper;
@@ -110,7 +112,7 @@ public class ReportService {
             }
 
             // Personalized Report
-            for(User user : users) {
+            for (User user : users) {
 
                 String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);
@@ -143,43 +145,52 @@ public class ReportService {
         LOGGER.log(Level.INFO, "Converting Excel Template into a ZIP file");
 
         if (leadList.isEmpty()) {
+            LOGGER.log(Level.WARNING, "Excel to zip converter :: No leads registered in this time period.");
             return ResponseEntity.noContent().build();
+        } else {
+
+            HttpHeaders headers = new HttpHeaders();
+
+            // Sets the content type to ZIP
+            headers.setContentType(MediaType.parseMediaType("application/zip"));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setTimeZone(TimeZone.getDefault());
+            String startDate = sdf.format(start);
+            String endDate = sdf.format(end);
+
+            String fileName = "COVORO Report-" + startDate + " To " + endDate;
+            String zipFileName = fileName + ".zip";
+
+            // Sets the final downloaded filename
+            headers.setContentDispositionFormData("attachment", zipFileName);
+
+            String excelFileName = fileName + ".xlsx";
+
+            StreamingResponseBody responseBody = outputStream -> {
+                try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+
+                    // 1. Create a new entry for the Excel file inside the ZIP
+                    ZipEntry zipEntry = new ZipEntry(excelFileName);
+                    zos.putNextEntry(zipEntry);
+
+                    // 2. Call the service to write Excel data directly to the ZipOutputStream
+                    ListToExcelStream(leadList, start, end, zos);
+                    LOGGER.log(Level.INFO, "Received Excel Template, proceeding to convert it into Zip file");
+
+                    // 3. Close the current ZIP entry
+                    zos.closeEntry();
+
+                    LOGGER.log(Level.INFO, "Successfully converted Excel Template into a ZIP file");
+
+                } catch (IOException e) {
+                    log.error("Error streaming ZIP content.");
+                    LOGGER.log(Level.SEVERE, "Service :: Report :: ReportService :: excelToZipConverter() ", e);
+                    throw new ExcelException(ErrorCode.ERROR_IN_FILE_DOWNLOAD);
+                }
+            };
+            return ResponseEntity.ok().headers(headers).body(responseBody);
         }
-
-        HttpHeaders headers = new HttpHeaders();
-
-        // Sets the content type to ZIP
-        headers.setContentType(MediaType.parseMediaType("application/zip"));
-
-        // Sets the final downloaded filename
-        headers.setContentDispositionFormData("attachment", "ReportTemplate.zip");
-
-        // TODO: Rename filename
-        String excelFileName = "COVORO Report " + start + " To" + ".xlsx";
-
-        StreamingResponseBody responseBody = outputStream -> {
-            try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-
-                // 1. Create a new entry for the Excel file inside the ZIP
-                ZipEntry zipEntry = new ZipEntry(excelFileName);
-                zos.putNextEntry(zipEntry);
-
-                // 2. Call the service to write Excel data directly to the ZipOutputStream
-                ListToExcelStream(leadList, start, end, zos);
-                LOGGER.log(Level.INFO, "Received Excel Template, proceeding to convert it into Zip file");
-
-                // 3. Close the current ZIP entry
-                zos.closeEntry();
-
-                LOGGER.log(Level.INFO, "Successfully converted Excel Template into a ZIP file");
-
-            } catch (IOException e) {
-                log.error("Error streaming ZIP content.");
-                LOGGER.log(Level.SEVERE, "Service :: Report :: ReportService :: excelToZipConverter() ", e);
-                throw new ExcelException(ErrorCode.ERROR_IN_FILE_DOWNLOAD);
-            }
-        };
-        return ResponseEntity.ok().headers(headers).body(responseBody);
     }
 
 
@@ -280,12 +291,22 @@ public class ReportService {
             row.createCell(cellNum++).setCellValue(converted);
             row.getCell(cellNum - 1).setCellStyle(data_style);
             // Column 6:
-            float process_percent = (float) contacted / count * 100;
+            float process_percent = 0;
+            if(count == 0) {
+                process_percent = 0;
+            } else {
+                process_percent = (float) contacted / count * 100;
+            }
             String process = String.format("%.2f", process_percent) + " %";
             row.createCell(cellNum++).setCellValue(process);
             row.getCell(cellNum - 1).setCellStyle(data_style);
             // Column 7:
-            float convert_percent = (float) converted / count * 100;
+            float convert_percent = 0;
+            if(count == 0) {
+                convert_percent = 0;
+            } else {
+                convert_percent = (float) converted / count * 100;
+            }
             String convert = String.format("%.2f", convert_percent) + " %";
             row.createCell(cellNum++).setCellValue(convert);
             row.getCell(cellNum - 1).setCellStyle(data_style);
@@ -329,9 +350,19 @@ public class ReportService {
 
         for (Lead lead : leads) {
 
-            Set<String> products = lead.getInterestedModules();
+            Set<Product> products = lead.getInterestedProducts();
 
-            for (String product : products) {
+            // Convert Set<Product> → comma-separated string
+            String productNames = "";
+            if (products != null && !products.isEmpty()) {
+                productNames = products.stream()
+                        .map(Product::getProductName)
+                        .reduce((p1, p2) -> p1 + ", " + p2)
+                        .orElse("").toString();
+            }
+
+
+//            for (Product product : products) {
                 Row row = sheet.createRow(rowNum++);
                 int cellNum = 0;
                 row.createCell(cellNum++).setCellValue(++index);
@@ -344,13 +375,13 @@ public class ReportService {
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getGstin());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
-                row.createCell(cellNum++).setCellValue(product);
+                row.createCell(cellNum++).setCellValue(productNames);
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getLeadStatus().toString());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getDescription());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
-            }
+//            }
         }
     }
 

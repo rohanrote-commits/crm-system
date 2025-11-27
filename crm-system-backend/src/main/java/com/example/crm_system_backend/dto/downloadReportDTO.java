@@ -1,15 +1,14 @@
-package com.example.crm_system_backend.entity;
+package com.example.crm_system_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
 import java.util.Date;
 
 @Data
-@Entity
-@Table(name = "download-history")
-public class downloadReport {
+public class downloadReportDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,13 +18,7 @@ public class downloadReport {
     private String userName;
     @NotBlank
     private String downloadedAt;
-//    @NotBlank
-//    private String dateOfDownload;
-//    @NotBlank
-//    private String timeOfDownload;
-//    @NotNull
-//    private String role;
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @NotBlank
     private String dateRange;
     private String status;
     private String email;
@@ -34,7 +27,7 @@ public class downloadReport {
         return "\nID: " + id +
                 "\nUser Email: " + userName +
                 "\nDownloaded At: " + downloadedAt +
-                "\ndateRange: " + dateRange +
+                "\nstartRange: " + dateRange +
                 "\nstatus: " + status;
     }
 }

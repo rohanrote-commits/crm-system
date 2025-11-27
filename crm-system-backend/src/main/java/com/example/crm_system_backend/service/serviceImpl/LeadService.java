@@ -103,9 +103,9 @@ public class LeadService implements ILeadService {
     }
 
     @Override
-    public Lead editLead(Long leadId,Lead lead) {
+    public void editLead(Long leadId,Lead lead) {
         log.info("Enter: LeadService.editLead");
-       return leadRepository.save(lead);
+       leadRepository.save(lead);
     }
 
     @Override

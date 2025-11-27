@@ -1,8 +1,6 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.entity.downloadReport;
-import com.example.crm_system_backend.helper.ReportExcelHelper;
-import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.service.Report.ReportService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +13,6 @@ import java.util.logging.Logger;
 @RestController
 @RequestMapping("/crm/report")
 public class DownloadReportController {
-
-    @Autowired
-    DownloadReportHistoryRepo historyRepo;
-
-    @Autowired
-    ReportExcelHelper helper;
 
     @Autowired
     ReportService reportService;
@@ -44,7 +36,7 @@ public class DownloadReportController {
         Long loggedInUserId = (Long) id;
         String loggedInUserEmail = (String) email;
 
-        Set<downloadReport> filteredHistory = reportService.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
-        return ResponseEntity.ok(filteredHistory);
+        Set<downloadReport> filteredHistoryRecords = reportService.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
+        return ResponseEntity.ok(filteredHistoryRecords);
     }
 }
