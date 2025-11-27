@@ -58,7 +58,7 @@ public class DownloadHandler {
 
         byte[] fileBytes = outputStream.toByteArray();
 
-        return fileBytes;
+    return fileBytes;
     }
 
     /**

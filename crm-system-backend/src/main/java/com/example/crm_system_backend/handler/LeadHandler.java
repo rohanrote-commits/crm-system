@@ -165,7 +165,6 @@ public class LeadHandler implements IHandler<LeadDto> {
         UploadHistory uploadHistory = new UploadHistory();
         uploadHistory.setFileName(file.getOriginalFilename());
         uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
-        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
         uploadHistory.setUploadedAt(LocalDateTime.now());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
 
