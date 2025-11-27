@@ -6,12 +6,12 @@
     <title>Dashboard | CRM Lead Management</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/dashboard-test.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/lead-model.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/report/getReport.css">
 
     <!-- jQuery must come first -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -94,28 +94,64 @@
                 </div>
             </div>
         </div>
+
         <!-- Reports Section -->
-        <div class="dashboard-section" id="reports" style="display:none;">
-            <!-- Header -->
+        <div class="dashboard-section" id="reports" style="display: none;">
+
             <div class="section-header">
-                <div class="lead-header">
+                <div class="report-header">
                     <h3>Reports</h3>
                     <div class="section-buttons">
-                        <button class="btn-section">Generate Report</button>
-                        <button class="btn-section">View Reports</button>
-                        <button class="btn-section">Download Report</button>
+                        <button id="showReportModal" class="btn-section">Download Report</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Body -->
             <div class="section-body">
-                <!-- You can place report content here -->
+                <div id="reportModal"
+                     style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+                    <div
+                            style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); width: 300px;">
+                            <span id="closeReportModal"
+                                  style="float: right; font-size: 20px; cursor: pointer;">&times;</span>
+
+                        <h5>Select a Date Range</h5>
+                        <hr>
+                        <form id="getReport" action="${pageContext.request.contextPath}/submit" method="get">
+                            <label for="startDateInput">Start Date:</label>
+                            <input type="date" name="startDate" id="startDateInput"
+                                   style="margin-bottom: 10px;"><br /><br/>
+
+                            <label for="endDateInput">End Date:</label>
+                            <input type="date" name="endDate" id="endDateInput"
+                                   style="margin-bottom: 15px;"><br /><br />
+
+                            <button type="submit" class="btn-blue">Get Report</button>
+                        </form>
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    <div class="report-table-container">
+                        <table id="report-table" class="table table-bordered table-hover" style="width:100%; margin: 20px auto;">
+                            <thead class="table-primary">
+                            <tr>
+                                <th>Sr No</th>
+                                <th>User Name</th>
+                                <th>Downloaded At</th>
+                                <th>Selected Date Range</th>
+                                <th>Download Status</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-
     </main>
 </div>
+
 
 <!-- Add / Edit Lead Modal -->
 <!-- <div id="add_edit_model"></div> -->
@@ -210,6 +246,7 @@
                             </div>
                         </div>
                     </div>
+                </form>
             </div>
                 <div class="modal-footer">
                     <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -532,6 +569,7 @@
 <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
 <script src = "${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 </body>
 </html>
