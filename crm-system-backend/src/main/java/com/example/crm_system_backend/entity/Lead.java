@@ -47,5 +47,15 @@ public class Lead {
     private Set<Product> interestedProducts = new HashSet<>();
     private Date createdAt;
     private Date updatedAt;
+
+    public Lead() {
+
+    }
+
+    // Constructor for Testing ONLY
+    public Lead(Long id, Date createdAt) {
+        this.id = id;
+        this.createdAt = createdAt;
+    }
 }
 

@@ -41,4 +41,9 @@ public class User {
     private long registeredBy;
     private LocalDateTime registeredOn;
 
+    public User() {}
+
+    public User(String email) {
+        this.email = email;
+    }
 }

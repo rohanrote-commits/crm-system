@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 @Component
 public class ReportExcelHelper {
 
@@ -25,9 +24,10 @@ public class ReportExcelHelper {
 
     public static final Logger LOGGER = Logger.getLogger(ReportExcelHelper.class.getName());
 
+
     /**
      * Contains head style for workbook
-     * @param workbook
+     * @param workbook for template creation
      * @return cell style for head cells for all sheets present in workbook
      */
     // Styles
@@ -54,7 +54,7 @@ public class ReportExcelHelper {
 
     /**
      * Contains header style for workbook
-     * @param workbook
+     * @param workbook for template creation
      * @return cell style for header cells for all sheets present in workbook
      */
     public CellStyle headerStyle(Workbook workbook) {
@@ -82,7 +82,7 @@ public class ReportExcelHelper {
 
     /**
      * Contains data style for workbook
-     * @param workbook
+     * @param workbook for template creation
      * @return cell style for data cells for all sheets present in workbook
      */
     public CellStyle dataStyle(Workbook workbook) {
@@ -100,15 +100,18 @@ public class ReportExcelHelper {
 
 
     /**
-     * @param start
-     * @param end
+     * @param start start date
+     * @param end end date
      * @return list of all leads registered in time period between start date and end date
      */
     public List<Lead> getLeadList(Date start, Date end) {
         List<Lead> leadList = new ArrayList<>();
         for(Lead lead : leadRepo.findAll()) {
             Date createdAt = lead.getCreatedAt();
-            if((createdAt.after(start) && createdAt.before(end))) {
+            if(createdAt == null) {
+                continue;
+            }
+            if(createdAt.compareTo(start) >= 0 && createdAt.compareTo(end) < 0) {
                 leadList.add(lead);
             }
         }
@@ -116,9 +119,10 @@ public class ReportExcelHelper {
         return leadList;
     }
 
+
     /**
      * Required to print name of user in Report Download History data-table on UI side
-     * @param email
+     * @param email email is unique property here
      * @return a String containing name of user
      */
     public String getName(String email) {
@@ -128,10 +132,8 @@ public class ReportExcelHelper {
                 String first_name = userRepo.findUserFirstNameByEmail(email);
                 String last_name = userRepo.findUserLastNameByEmail(email);
                 name = first_name + " " + last_name;
-
             }
         }
         return name;
     }
-
 }
