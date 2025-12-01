@@ -41,6 +41,16 @@ public class LeadExcelHelper {
     private final ObjectMapper objectMapper;
 
 
+    /**
+     * Processes the data from an uploaded Excel file, validates the records,
+     * and segregates them into valid and invalid lists based on certain rules.
+     * Updates the upload history accordingly and generates error details for invalid records.
+     *
+     * @param file the uploaded Excel file to be processed
+     * @param uploadHistory the record capturing metadata and status of the upload process
+     * @return a {@link CompletableFuture} containing a {@link LeadList} object,
+     *         which includes lists of valid and invalid leads extracted from the Excel file
+     */
     @Async("bulkUploadExecutor")
     public CompletableFuture<LeadList> processExcelData(MultipartFile file, UploadHistory uploadHistory)  {
         log.info("Enter: LeadExcelHelper.processExcelData");
@@ -120,6 +130,14 @@ public class LeadExcelHelper {
         return CompletableFuture.completedFuture(leadList);
     }
 
+    /**
+     * Safely retrieves the value of a given Excel cell as a string. This method handles
+     * different cell types (numeric, date, or string) and provides a consistent string output.
+     *
+     * @param cell the Excel {@link Cell} to retrieve the value from. It can be null.
+     * @return the string representation of the cell value. If the cell is null or empty,
+     *         an empty string ("") is returned.
+     */
     // Helper to read any cell as string safely
     private static String getCellValue(Cell cell) {
         if (cell == null) return "";
@@ -133,6 +151,15 @@ public class LeadExcelHelper {
     }
 
 
+    /**
+     * Checks if a given Excel row is empty. A row is considered empty if all cells
+     * in the row are either null or have a blank value.
+     *
+     * @param row the Excel {@link Row} to be checked for emptiness.
+     *            It may contain multiple cells for validation.
+     * @return {@code true} if the row is empty; {@code false} otherwise.
+     * @author Akshay Jadhav
+     */
     private static boolean isRowEmpty(Row row) {
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
@@ -143,24 +170,34 @@ public class LeadExcelHelper {
         return true;
     }
 
+    /**
+     * Checks if a given string is empty or null. A string is considered empty if it is null,
+     * has a length of 0, or contains only whitespace characters.
+     *
+     * @param value the string to check for emptiness. It can be null or non-null.
+     * @return {@code true} if the string is null, has zero length, or is composed only of whitespace;
+     *         {@code false} otherwise.
+     * @author Akshay Jadhav
+     */
     private static boolean isEmpty(String value) {
         return value == null || value.trim().isEmpty();
     }
 
-//    private static void markError(Cell cell, String message, CellStyle errorStyle) {
-//        if (cell == null) return;
-//        cell.setCellStyle(errorStyle);
-//        Sheet sheet = cell.getSheet();
-//        Drawing<?> drawing = sheet.createDrawingPatriarch();
-//        CreationHelper factory = sheet.getWorkbook().getCreationHelper();
-//        ClientAnchor anchor = factory.createClientAnchor();
-//        anchor.setCol1(cell.getColumnIndex());
-//        anchor.setRow1(cell.getRowIndex());
-//        Comment comment = drawing.createCellComment(anchor);
-//        comment.setString(factory.createRichTextString(message));
-//        cell.setCellComment(comment);
-//    }
 
+    /**
+     * Extracts and constructs a Lead object from an Excel Row and a set of products.
+     * The method populates the Lead object with details such as first name, last name,
+     * mobile number, email, GSTIN, business address, description, and the products
+     * the lead is interested in, based on the provided row data.
+     *
+     * @param row the Excel row containing the data for the lead. It is used to populate
+     *            the fields of the Lead object.
+     * @param productList the set of products available for selection. It is used to identify
+     *                    the products the lead is interested in.
+     * @return a populated {@link Lead} object based on the data extracted from the row
+     *         and product information.
+     * @author Akshay Jadhav
+     */
     private Lead extractLead(Row row , Set<Product> productList ) {
         Lead lead = new Lead();
         //extract instreated products for particular  lead
@@ -176,6 +213,19 @@ public class LeadExcelHelper {
         return lead;
     }
 
+    /**
+     * Extracts a set of interested products from a given Excel row based on specific column values.
+     * It checks predetermined columns of the row for a "Yes" response, maps them to product modules,
+     * and returns the matching products from the provided product list.
+     *
+     * @param row the Excel {@link Row} containing multiple cells, where specific columns
+     *            indicate interest in products.
+     * @param productList a set of {@link Product} objects representing available products
+     *                    that can be matched based on column data.
+     * @return a {@link Set} of {@link Product} objects that are determined to be of interest
+     *         based on the row data.
+     * @author Akshay Jadhav
+     */
     private Set<Product> extractInterestedProducts(Row row, Set<Product> productList ) {
         Set<Product> interestedProducts = new HashSet<>();
         for (int c = 6; c <= 12; c++) {
@@ -193,6 +243,17 @@ public class LeadExcelHelper {
     }
 
 
+    /**
+     * Validates the header row of the uploaded Excel file against a predefined template.
+     * Ensures that the column order and names match between the uploaded file and the template.
+     * This method reads both the uploaded file and the template file, comparing their headers row by row.
+     * If the headers mismatch or an error occurs during processing, the method returns false or throws an exception.
+     *
+     * @param file the Excel {@link MultipartFile} to validate. This file should contain a sheet with headers to compare.
+     * @return {@code true} if the uploaded file's header matches the template; {@code false} otherwise.
+     * @throws ExcelException if an error occurs during file reading or validation.
+     * @author Akshay Jadhav
+     */
     private boolean validateExcelHeader(MultipartFile file) {
         ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
 
@@ -241,6 +302,19 @@ public class LeadExcelHelper {
         }
     }
 
+    /**
+     * Validates a given row and its corresponding lead object, identifying any errors
+     * based on predefined validation rules. If errors are found, they are recorded
+     * in a map keyed by field name. Additionally, it applies a specific cell style
+     * to cells with errors (if marking logic is uncommented).
+     *
+     * @param row the Excel {@link Row} being validated. Represents the data in the current row of the Excel sheet.
+     * @param lead the {@link Lead} object constructed from the row data. Contains the information to be validated.
+     * @param errorStyle the {@link CellStyle} applied to Excel cells to visually indicate errors.
+     * @return a map of error messages where the key represents the invalid field name
+     *         and the value is the corresponding error message. Returns an empty map if no errors are found.
+     * @author Akshay Jadhav
+     */
     private Map<String, String> validateRowWithErrors(Row row, Lead lead, CellStyle errorStyle) {
         Map<String, String> errorMap = new HashMap<>();
 
@@ -305,100 +379,19 @@ public class LeadExcelHelper {
         return errorMap;
     }
 
-
-//    private void mergeLead(Map<String, Lead> leadMap, Lead lead) {
-//        String emailKey = lead.getEmail().trim().toLowerCase();
-//
-//        if (leadMap.containsKey(emailKey)) {
-//            Lead existingLead = leadMap.get(emailKey);
-//
-//            // Merge interested modules (avoid duplicates)
-//            existingLead.getInterestedProducts().addAll(lead.getInterestedProducts());
-//
-//            // Optional: If other fields are blank in the first record, fill them from new one
-//            if (isEmpty(existingLead.getFirstName()) && !isEmpty(lead.getFirstName()))
-//                existingLead.setFirstName(lead.getFirstName());
-//
-//            if (isEmpty(existingLead.getLastName()) && !isEmpty(lead.getLastName()))
-//                existingLead.setLastName(lead.getLastName());
-//
-//            if (isEmpty(existingLead.getMobileNumber()) && !isEmpty(lead.getMobileNumber()))
-//                existingLead.setMobileNumber(lead.getMobileNumber());
-//
-//            if (isEmpty(existingLead.getBusinessAddress()) && !isEmpty(lead.getBusinessAddress()))
-//                existingLead.setBusinessAddress(lead.getBusinessAddress());
-//
-//            if (isEmpty(existingLead.getDescription()) && !isEmpty(lead.getDescription()))
-//                existingLead.setDescription(lead.getDescription());
-//
-//        } else {
-//            leadMap.put(emailKey, lead);
-//        }
-//    }
-
-//    public void writeErrorFile(List<Row> errorRows,UploadHistory uploadHistory) {
-//        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
-//
-//        try (
-//                FileInputStream fis = new FileInputStream(templateFile);
-//                Workbook errorWorkbook = new XSSFWorkbook(fis)
-//        ) {
-//            Sheet templateSheet = errorWorkbook.getSheetAt(1);
-//
-//            int startRow = 2; // after header
-//            for (Row sourceRow : errorRows) {
-//                Row targetRow = templateSheet.createRow(startRow++);
-//
-//                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
-//                    Cell sourceCell = sourceRow.getCell(i);
-//                    if (sourceCell == null) continue;
-//
-//                    Cell targetCell = targetRow.createCell(i);
-//
-//                    // Copy cell value
-//                    switch (sourceCell.getCellType()) {
-//                        case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
-//                        case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
-//                        default -> targetCell.setCellValue(getCellValue(sourceCell));
-//                    }
-//
-//                    // If source has error style, apply it
-//                    if (sourceCell.getCellStyle().getFillForegroundColor() == IndexedColors.RED.getIndex()) {
-//                        CellStyle style = errorWorkbook.createCellStyle();
-//                        style.cloneStyleFrom(sourceCell.getCellStyle());
-//                        targetCell.setCellStyle(style);
-//
-//                        // Copy comments if any
-//                        if (sourceCell.getCellComment() != null) {
-//                            CreationHelper factory = errorWorkbook.getCreationHelper();
-//                            Drawing<?> drawing = templateSheet.createDrawingPatriarch();
-//                            ClientAnchor anchor = factory.createClientAnchor();
-//                            anchor.setCol1(i);
-//                            anchor.setRow1(targetRow.getRowNum());
-//
-//                            Comment comment = drawing.createCellComment(anchor);
-//                            comment.setString(factory.createRichTextString(
-//                                    sourceCell.getCellComment().getString().getString()));
-//                            targetCell.setCellComment(comment);
-//                        }
-//                    }
-//                }
-//            }
-//            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-//            String errorFilePath = "Lead_Error_File_" + timestamp + ".xlsx";
-//            try (FileOutputStream out = new FileOutputStream(errorFilePath)) {
-//                uploadHistory.setErrorFileName(errorFilePath);
-//                errorWorkbook.write(out);
-//            }
-//
-//            log.info("Error file generated with {} invalid rows", errorRows.size());
-//
-//        } catch (IOException e) {
-//            log.error("Error writing error file: {}", e.getMessage());
-//            throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
-//        }
-//    }
-
+    /**
+     * Generates an Excel file containing error details from a list of invalid lead records.
+     * The generated Excel highlights the errors in red and includes comments for each error
+     * associated with specific rows in the file. The structure and format of the output follow
+     * a predefined template.
+     *
+     * @param invalidLeads a list of {@link InvalidLeadError} objects containing invalid leads,
+     *                     their associated data, and error messages for validation failures.
+     * @return a byte array representing the content of the generated Excel file.
+     * @throws Exception if an error occurs during file processing, such as reading the template
+     *                   or writing the output file.
+     * @author Akshay Jadhav
+     */
     public byte[] generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
         log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
         //File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
@@ -453,6 +446,15 @@ public class LeadExcelHelper {
         }
     }
 
+    /**
+     * Writes data of a Lead instance into a specified Excel row.
+     * Populates the row with the Lead's personal and business details,
+     * and denotes product interest with "Yes" or "No" for each product column.
+     *
+     * @param row the Excel Row object where Lead data will be written
+     * @param lead the Lead object containing data to be written into the row
+     * @author Akshay Jadhav
+     */
     private void writeLeadRow(Row row, Lead lead) {
         row.createCell(1).setCellValue(lead.getFirstName());
         row.createCell(2).setCellValue(lead.getLastName());
@@ -476,6 +478,19 @@ public class LeadExcelHelper {
         row.createCell(14).setCellValue(lead.getDescription());
     }
 
+    /**
+     * Adds error comments to specific cells in a given Excel sheet row based on the provided error details.
+     * The method adds comments for predefined fields such as first name, last name, mobile number, email, GSTIN,
+     * and optionally for all product module columns if there are errors for "interestedModules".
+     * It customizes the comments with the provided cell style.
+     *
+     * @param sheet the {@link Sheet} object representing the Excel sheet where comments are to be added.
+     * @param drawing the {@link Drawing} object used for adding cell comments in the sheet.
+     * @param rowIndex the index of the row in the sheet where comments need to be added.
+     * @param errors a map containing error messages for different fields. The keys correspond to the field names.
+     * @param style the {@link CellStyle} to be applied to cells for which comments are added.
+     * @author Akshay Jadhav
+     */
     private void writeComments(Sheet sheet, Drawing<?> drawing, int rowIndex, Map<String, String> errors, CellStyle style) {
 
         addComment(sheet, drawing, rowIndex, 1, errors.get("firstName"), style);
@@ -495,6 +510,18 @@ public class LeadExcelHelper {
     }
 
 
+    /**
+     * Adds a cell comment to a specified cell in an Excel sheet and applies a given {@link CellStyle}.
+     * The comment contains the specified text and is anchored to the cell.
+     *
+     * @param sheet  the {@link Sheet} where the comment is to be added. Must not be null.
+     * @param drawing the {@link Drawing} object used to create cell comments. Must not be null.
+     * @param row    the row index of the cell where the comment is to be added. Must be non-negative.
+     * @param col    the column index of the cell where the comment is to be added. Must be non-negative.
+     * @param text   the text content of the comment. If null, no comment is added.
+     * @param style  the {@link CellStyle} to be applied to the cell. Must not be null.
+     * @author Akshay Jadhav
+     */
     private void addComment(Sheet sheet, Drawing<?> drawing, int row, int col, String text,CellStyle style) {
         if (text == null) return;
         CreationHelper factory = sheet.getWorkbook().getCreationHelper();

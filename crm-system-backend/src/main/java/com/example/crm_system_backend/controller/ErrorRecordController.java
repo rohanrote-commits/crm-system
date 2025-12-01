@@ -26,6 +26,12 @@ public class ErrorRecordController {
     private ErrorRecordHandler errorRecordHandler;
 
 
+    /**
+     * Retrieves a list of lead error records associated with a specific upload history ID.
+     * @author Akshay Jadhav
+     * @param uploadHistoryId the ID of the upload history for which lead error records are to be retrieved
+     * @return a ResponseEntity containing a list of InvalidLeadError objects and an HTTP status of OK
+     */
     @GetMapping("/records/{uploadHistoryId}")
     public ResponseEntity< List<InvalidLeadError>> findErrorRecordByUploadHistoryId(@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.findErrorRecordByUploadHistoryId");
@@ -50,6 +56,15 @@ public class ErrorRecordController {
     }
 
 
+    /**
+     * Updates a lead error record associated with a given row number and upload history ID.
+     *
+     * @author Akshay
+     * @param rowNumber the row number of the error record to be updated
+     * @param uploadHistoryId the ID of the upload history containing the error record
+     * @param errorRecord the LeadDto object containing the updated error record information
+     * @return a ResponseEntity containing the updated LeadDto object and an HTTP status of OK
+     */
     @PutMapping("/lead/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<LeadDto> updateErrorRecord(@PathVariable int rowNumber,@PathVariable String uploadHistoryId ,@RequestBody LeadDto errorRecord){
         log.info("Enter: ErrorRecordController.updateErrorRecord");
@@ -59,9 +74,14 @@ public class ErrorRecordController {
     }
 
     /**
-     * Updates an error record for a specific user associated with a given row number and upload history ID.
-     * The method also updates the record with the "registered by" user ID retrieved from the HTTP request attributes.
+     * Updates a user error record associated with a given row number and upload history ID.
      *
+     * @author Akshay
+     * @param rowNumber the row number of the error record to be updated
+     * @param uploadHistoryId the ID of the upload history containing the error record
+     * @param errorRecord the UserDTO object containing the updated error record information
+     * @param request the HttpServletRequest object used to retrieve additional metadata, such as the registeredBy ID
+     * @return a ResponseEntity containing the updated UserDTO object and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @PutMapping("/user/{rowNumber}/{uploadHistoryId}")
@@ -74,6 +94,14 @@ public class ErrorRecordController {
         return new  ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
+    /**
+     * Deletes an error record by the specified row number and upload history ID.
+     *
+     * @author Akshay
+     * @param rowNumber the row number of the error record to be deleted
+     * @param uploadHistoryId the ID of the upload history containing the error record to be deleted
+     * @return a ResponseEntity with an HTTP status of OK upon successful deletion
+     */
     @DeleteMapping("/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<?> deleteErrorRecordByEmail(@PathVariable int rowNumber,@PathVariable String uploadHistoryId){
         log.info("Enter: ErrorRecordController.deleteErrorRecordByEmail");

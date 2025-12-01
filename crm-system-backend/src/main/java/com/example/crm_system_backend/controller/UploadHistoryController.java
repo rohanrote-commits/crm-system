@@ -30,10 +30,13 @@ public class UploadHistoryController {
 
 
     /**
-     * Retrieves the upload history associated with a specific user based on their email.
+     * Retrieves the lead upload history for a specific user based on their email.
      *
-     * @param email the email address of the user whose upload history is to be retrieved
-     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
+     * @param email the email address of the user whose lead upload history is to be retrieved
+     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
+     *         the lead upload history associated with the user
+     *
+     * @author Akshay Jadhav
      */
     @GetMapping("/lead/{email}")
     public ResponseEntity<List<UploadHistoryDto>> getLeadUploadHistoryByUser(@PathVariable String email){
@@ -56,11 +59,11 @@ public class UploadHistoryController {
     }
 
     /**
-     * Retrieves the error file specified by the uploadHistoryId from the server.
+     * Retrieves the lead error file associated with the given upload history ID.
      *
-     * @param uploadHistoryId the name of the file to be retrieved
-     * @return a ResponseEntity containing the file as a byte array along with the appropriate
-     * HTTP headers and content type for a file download
+     * @param uploadHistoryId the unique identifier of the upload history for which the error file is to be retrieved
+     * @return a ResponseEntity containing the error file as a byte array along with HTTP headers
+     *         and content type for downloading the file
      */
     @GetMapping("/lead/error/{uploadHistoryId}")
     public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String uploadHistoryId){

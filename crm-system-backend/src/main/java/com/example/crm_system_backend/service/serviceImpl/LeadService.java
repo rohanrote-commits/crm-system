@@ -37,6 +37,13 @@ public class LeadService implements ILeadService {
 
 
 
+    /**
+     * Saves or updates a lead based on the provided LeadDto. If a lead with the specified email exists,
+     * it updates the existing lead; otherwise, it creates a new lead.
+     *
+     * @param leadDto the lead data transfer object containing lead information to be saved
+     * @return the saved or updated Lead entity
+     */
     @Override
     public Lead save(LeadDto leadDto) {
 
@@ -90,46 +97,96 @@ public class LeadService implements ILeadService {
         return leadRepository.save(lead);
     }
 
+    /**
+     * Retrieves a list of leads associated with the specified user.
+     *
+     * @param user the user whose leads are to be fetched
+     * @return an Optional containing a list of leads associated with the given user,
+     *         or an empty Optional if no leads are found
+     * @author Akshay Jadhav
+     */
     @Override
     public Optional<List<Lead>> getLeadsByUser(User user) {
         log.info("Enter: LeadService.getLeadsByUser");
         return leadRepository.getLeadsByUser(user);
     }
 
+    /**
+     * Retrieves all leads from the repository.
+     *
+     * @return a list of all leads available in the repository
+     */
     @Override
     public List<Lead> getAllLeads() {
         log.info("Enter: LeadService.getAllLeads");
        return leadRepository.findAll();
     }
 
+    /**
+     * Updates an existing lead associated with the specified ID by saving the provided Lead object.
+     *
+     * @param leadId The unique identifier of the lead to be edited.
+     * @param lead   The Lead object containing updated information.
+     */
     @Override
     public void editLead(Long leadId,Lead lead) {
         log.info("Enter: LeadService.editLead");
        leadRepository.save(lead);
     }
 
+    /**
+     * Deletes a lead with the given ID from the system.
+     *
+     * @param leadId the ID of the lead to be deleted
+     */
     @Override
     public void deleteLead(Long leadId) {
         log.info("Enter: LeadService.deleteLead");
         leadRepository.deleteById(Math.toIntExact(leadId));
     }
 
+    /**
+     * Uploads a bulk list of leads to the database.
+     *
+     * @param leads the list of Lead objects to be uploaded
+     * @return a list of Lead objects that have been successfully saved
+     */
     @Override
     public List<Lead> bulkUpload(List<Lead> leads) {
         log.info("Enter: LeadService.bulkUpload");
       return   leadRepository.saveAll(leads);
     }
 
+    /**
+     * Retrieves a lead by its unique identifier.
+     *
+     * @param leadId the unique identifier of the lead to retrieve
+     * @return an Optional containing the Lead if found, or an empty Optional if no lead exists with the given identifier
+     * @author Akshay Jadhav
+     */
     public Optional<Lead> getLeadById(Long leadId) {
         log.info("Enter: LeadService.getLeadById");
         return leadRepository.getLeadsById(leadId);
     }
 
+    /**
+     * Retrieves a Lead entity based on the provided email address.
+     *
+     * @param email The email address associated with the Lead to be retrieved.
+     * @return An Optional containing the Lead if found, otherwise an empty Optional.
+     * @author Akshay Jadhav
+     */
     public Optional<Lead> getLeadByEmail(String email) {
         log.info("Enter: LeadService.getLeadByEmail");
         return leadRepository.getLeadsByEmail(email);
     }
 
+    /**
+     * Finds and retrieves a list of Lead entities associated with the given list of User entities.
+     *
+     * @param allUsers the list of User entities for whom the associated leads are to be retrieved
+     * @return a list of Lead entities associated with the provided list of User entities
+     */
     public List<Lead> findByUserIn(List<User> allUsers) {
         log.info("Enter: LeadService.findByUserIn");
         return  leadRepository.findByUserIn(allUsers);
