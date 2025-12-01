@@ -54,9 +54,5 @@ public class ProductService implements IProductService {
         return product;
     }
 
-    @Override
-    public boolean isProductExist(String product) {
-        log.info("Enter: ProductService.isProductExist()");
-        return productRepo.existsByModuleName(product);
-    }
+
 }

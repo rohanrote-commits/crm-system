@@ -23,7 +23,7 @@ $(document).ready(function () {
   });
 
     $("#back").click(function () {
-    window.location.href = "/Frontend/html/user-dashboard.jsp";
+    window.location.href = "/Frontend/html/user-dashboard";
   });
   //delete profile
   $("#delete-profile").click(function () {

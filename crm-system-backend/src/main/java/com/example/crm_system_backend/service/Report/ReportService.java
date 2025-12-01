@@ -1,7 +1,6 @@
 package com.example.crm_system_backend.service.Report;
 
 import com.example.crm_system_backend.constants.ErrorCode;
-import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
@@ -37,7 +36,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService{
+public class ReportService {
 
     @Autowired
     ReportExcelHelper helper;
@@ -112,7 +111,7 @@ public class ReportService{
             }
 
             // Personalized Report
-            for (User user : users) {
+            for(User user : users) {
 
                 String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);

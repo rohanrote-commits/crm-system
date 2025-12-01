@@ -3,6 +3,7 @@ package com.example.crm_system_backend.service.serviceImpl;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.exception.ExcelException;
+import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.repository.IUploadHistoryRepository;
 import com.example.crm_system_backend.service.IUploadHistoryService;
 import lombok.AllArgsConstructor;
@@ -25,8 +26,13 @@ public class UploadHistoryService implements IUploadHistoryService {
 
     @Override
     public UploadHistory save(UploadHistory uploadHistory) {
-        log.info("Enter: ErrorRecordHandler.save");
-      return iUploadHistoryRepository.save(uploadHistory);
+        try {
+            log.info("Enter: ErrorRecordHandler.save");
+            return iUploadHistoryRepository.save(uploadHistory);
+        }
+        catch (IllegalArgumentException e){
+            throw new UploadHistoryException(ErrorCode.NULL_ARGUMENT_RECEIVED);
+        }
     }
 
     @Override
