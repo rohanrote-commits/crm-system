@@ -14,8 +14,8 @@ $(document).ready(function () {
       }
     });
   });
+
  $("#downloadTemplate").on("click", function () {
-  const token = sessionStorage.getItem("Authorization");
   const templateName = "Lead_Teamplate";
   $.ajax({
     url: "http://localhost:8080/crm/files/lead-template",

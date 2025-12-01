@@ -50,7 +50,7 @@ public class ErrorRecordController {
     }
 
 
-    @PutMapping("/{rowNumber}/{uploadHistoryId}")
+    @PutMapping("/lead/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<LeadDto> updateErrorRecord(@PathVariable int rowNumber,@PathVariable String uploadHistoryId ,@RequestBody LeadDto errorRecord){
         log.info("Enter: ErrorRecordController.updateErrorRecord");
        LeadDto leadDto = errorRecordHandler.updateErrorRecord(rowNumber,uploadHistoryId,errorRecord);

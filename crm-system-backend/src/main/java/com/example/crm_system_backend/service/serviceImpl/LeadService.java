@@ -76,7 +76,7 @@ public class LeadService implements ILeadService {
 
         // Modules → Products
         Set<Product> productSet = leadDto.getInterestedModules().stream()
-                .map(module -> productRepo.getProductByModuleName(module)
+                .map(module -> productRepo.getProductByProductName(module)
                         .orElseThrow(() -> {
                             log.error("Exception: LeadService.save -> product not found");
                             return new ProductException(ErrorCode.PRODUCT_NOT_FOUND);

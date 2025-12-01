@@ -90,7 +90,7 @@ public class LeadHandler implements IHandler<LeadDto> {
                             LeadDto leadDto = new LeadDto();
                             //Converting Product -> productName
                             Set<String> products = lead.getInterestedProducts().stream().map(
-                                    Product::getModuleName
+                                    Product::getProductName
                             ).collect(Collectors.toSet());
                             modelMapper.map(lead, leadDto);
                             leadDto.setInterestedModules(products);
@@ -120,7 +120,7 @@ public class LeadHandler implements IHandler<LeadDto> {
                   LeadDto leadDto = new LeadDto();
                   //Converting Product -> productName
                   Set<String> products = lead.getInterestedProducts().stream().map(
-                          Product::getModuleName
+                          Product::getProductName
                   ).collect(Collectors.toSet());
                   modelMapper.map(lead, leadDto);
                   leadDto.setInterestedModules(products);
@@ -231,7 +231,7 @@ public class LeadHandler implements IHandler<LeadDto> {
             LeadDto leadDto = new LeadDto();
             //Converting Product -> productName
            Set<String> products = lead.getInterestedProducts().stream().map(
-                   Product::getModuleName
+                   Product::getProductName
             ).collect(Collectors.toSet());
             modelMapper.map(lead, leadDto);
             leadDto.setInterestedModules(products);

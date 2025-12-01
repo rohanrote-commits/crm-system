@@ -6,6 +6,7 @@ import lombok.Data;
 @Entity
 @Table(name = "product")
 @Data
+
 public class Product {
 
     @Id
@@ -13,9 +14,9 @@ public class Product {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String moduleName; // Example: GSTR, Accounting, Billing
+    private String productName; // Example: GSTR, Accounting, Billing
 
-    public Object getProductName() {
-        return moduleName;
+    public String getProductName() {
+        return productName;
     }
 }

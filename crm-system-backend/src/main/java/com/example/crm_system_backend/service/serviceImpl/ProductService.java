@@ -44,7 +44,7 @@ public class ProductService implements IProductService {
     public Product getProductByName(String name) {
 
         log.info("Enter: ProductService.getProductByName()");
-        Product product = productRepo.getProductByModuleName(name.trim()).orElseThrow(
+        Product product = productRepo.getProductByProductName(name.trim()).orElseThrow(
                 ()->{
                     log.error("Exception: ProductService.getProductByName()-> Product not found with name: {}",name);
                     return new ProductException(ErrorCode.PRODUCT_NOT_FOUND);

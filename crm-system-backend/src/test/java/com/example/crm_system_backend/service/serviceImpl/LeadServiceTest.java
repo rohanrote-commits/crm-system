@@ -73,7 +73,7 @@ class LeadServiceTest {
         mockUser.setEmail("akshay@gmail.com");
 
         Product mockProduct = new Product();
-        mockProduct.setModuleName("CRM");
+        mockProduct.setProductName("CRM");
 
         Lead mappedLead = new Lead();
 
@@ -83,7 +83,7 @@ class LeadServiceTest {
         Mockito.when(leadRepository.getLeadsByEmail("john@example.com"))
                 .thenReturn(Optional.empty());
 
-        Mockito.when(productRepo.getProductByModuleName("CRM"))
+        Mockito.when(productRepo.getProductByProductName("CRM"))
                 .thenReturn(Optional.of(mockProduct));
 
         Mockito.when(modelMapper.map(dto, Lead.class))
@@ -131,13 +131,13 @@ class LeadServiceTest {
         Mockito.when(modelMapper.map(dto, Lead.class))
                 .thenReturn(new Lead());
 
-        Mockito.when(productRepo.getProductByModuleName("CRM"))
+        Mockito.when(productRepo.getProductByProductName("CRM"))
                 .thenReturn(Optional.empty());
 
         Assertions.assertThrows(ProductException.class, () -> leadService.save(dto));
 
         Mockito.verify(userRepo).getUserByEmail(dto.getUser());
-        Mockito.verify(productRepo).getProductByModuleName("CRM");
+        Mockito.verify(productRepo).getProductByProductName("CRM");
 //        Mockito.verifyNoInteractions(leadRepository);
     }
 

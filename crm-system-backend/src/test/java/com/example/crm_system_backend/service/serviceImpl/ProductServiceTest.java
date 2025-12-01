@@ -32,11 +32,11 @@ class ProductServiceTest {
         // Arrange
         Product product1 = new Product();
         product1.setId(1L);
-        product1.setModuleName("Product A");
+        product1.setProductName("Product A");
 
         Product product2 = new Product();
         product2.setId(2L);
-        product2.setModuleName("Product B");
+        product2.setProductName("Product B");
 
         when(productRepo.findAll()).thenReturn(List.of(product1, product2));
 
@@ -71,7 +71,7 @@ class ProductServiceTest {
         Long productId = 1L;
         Product product = new Product();
         product.setId(productId);
-        product.setModuleName("Test Product");
+        product.setProductName("Test Product");
 
         when(productRepo.getProductById(productId)).thenReturn(Optional.of(product));
 
@@ -79,7 +79,7 @@ class ProductServiceTest {
 
         assertNotNull(result);
         assertEquals(productId, result.getId());
-        assertEquals("Test Product", result.getModuleName());
+        assertEquals("Test Product", result.getProductName());
         verify(productRepo, times(1)).getProductById(productId);
     }
 
@@ -103,28 +103,28 @@ class ProductServiceTest {
         String productName = "Product A";
         Product product = new Product();
         product.setId(1L);
-        product.setModuleName(productName);
+        product.setProductName(productName);
 
-        when(productRepo.getProductByModuleName(productName)).thenReturn(Optional.of(product));
+        when(productRepo.getProductByProductName(productName)).thenReturn(Optional.of(product));
 
         Product result = productService.getProductByName(productName);
 
         assertNotNull(result);
-        assertEquals(productName, result.getModuleName());
-        verify(productRepo, times(1)).getProductByModuleName(productName);
+        assertEquals(productName, result.getProductName());
+        verify(productRepo, times(1)).getProductByProductName(productName);
     }
 
     @Test
     void getProductByName_NotFound() {
 
         String productName = "Nonexistent Product";
-        when(productRepo.getProductByModuleName(productName)).thenReturn(Optional.empty());
+        when(productRepo.getProductByProductName(productName)).thenReturn(Optional.empty());
 
         ProductException exception = assertThrows(ProductException.class,
             () -> productService.getProductByName(productName));
 
         assertEquals("PRODUCT NOT EXIST", exception.getMessage());
-        verify(productRepo, times(1)).getProductByModuleName(productName);
+        verify(productRepo, times(1)).getProductByProductName(productName);
     }
 
 }

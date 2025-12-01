@@ -28,7 +28,7 @@ jQuery(function() {
 
       $("#upload-table").DataTable({
         ajax: {
-          url: LEAD_API.LEAD_UPLOAD_HISTORY,
+          url: LEAD_API.LEAD_UPLOAD_HISTORY(payload.email),
           type: "GET",
           headers: {
             Authorization: "Bearer " + token,
@@ -164,7 +164,7 @@ jQuery(function() {
           const uploadHistoryId = $(this).data("id");
           const fileName = "Lead_Error"
           $.ajax({
-            url: LEAD_API.ERROR_FILE_BY_HISTORY_ID,
+            url: LEAD_API.ERROR_FILE_BY_HISTORY_ID(uploadHistoryId),
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,

@@ -19,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -183,7 +184,7 @@ public class LeadExcelHelper {
                 if (pc == null) continue;
                 String moduleName = pc.getModuleName();
                 productList.stream()
-                        .filter(product -> product.getModuleName().equalsIgnoreCase(moduleName))
+                        .filter(product -> product.getProductName().equalsIgnoreCase(moduleName))
                         .findFirst()
                         .ifPresent(interestedProducts::add);
             }
@@ -193,11 +194,12 @@ public class LeadExcelHelper {
 
 
     private boolean validateExcelHeader(MultipartFile file) {
-        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+        ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
 
         try (
                 Workbook uploadedWorkbook = new XSSFWorkbook(file.getInputStream());
-                Workbook templateWorkbook = new XSSFWorkbook(templateFile.getAbsolutePath())
+                InputStream is = resource.getInputStream();
+                Workbook templateWorkbook = new XSSFWorkbook(is)
         ) {
             Sheet uploadedSheet = uploadedWorkbook.getSheetAt(1);
             Sheet templateSheet = templateWorkbook.getSheetAt(1);
@@ -399,9 +401,10 @@ public class LeadExcelHelper {
 
     public byte[] generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
         log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
-        File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+        //File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
+        ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
         try (
-                FileInputStream fis = new FileInputStream(templateFile);
+                FileInputStream fis = new FileInputStream(resource.getFile());
                 Workbook workbook = new XSSFWorkbook(fis)
         ) {
             Sheet sheet = workbook.getSheetAt(1);
@@ -460,7 +463,7 @@ public class LeadExcelHelper {
         // Convert Set<Product> → Set<String> module names
         Set<String> selectedModules = lead.getInterestedProducts()
                 .stream()
-                .map(Product::getModuleName)
+                .map(Product::getProductName)
                 .collect(Collectors.toSet());
 
         // Write Yes/No columns for products
