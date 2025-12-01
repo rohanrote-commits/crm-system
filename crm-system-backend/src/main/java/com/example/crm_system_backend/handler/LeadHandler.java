@@ -246,9 +246,9 @@ public class LeadHandler implements IHandler<LeadDto> {
         return  "";
     }
 
-    public LeadStatus updateLeadStatus(String email,int status) {
+    public LeadStatus updateLeadStatus(Long id,int status) {
         log.info("Enter: LeadHandler.updateLeadStatus");
-        Lead lead =  leadService.getLeadByEmail(email).orElseThrow(
+        Lead lead =  leadService.getLeadById(id).orElseThrow(
                 ()-> {
                     log.error("Exception: LeadHandler.updateLeadStatus -> Lead not found");
                     return new  LeadException(ErrorCode.LEAD_NOT_FOUND);
