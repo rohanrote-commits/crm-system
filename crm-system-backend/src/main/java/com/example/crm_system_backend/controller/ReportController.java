@@ -4,7 +4,7 @@ import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
-import com.example.crm_system_backend.service.Report.ReportService;
+import com.example.crm_system_backend.service.serviceImpl.ReportService;
 import com.example.crm_system_backend.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,7 +33,7 @@ public class ReportController {
     ReportExcelHelper helper;
 
     @Autowired
-    private ReportService reportService;
+    ReportService reportService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -54,7 +54,7 @@ public class ReportController {
 
         String token = authorizationHeader.replace("Bearer ", "");
 
-        Set<Lead> leadList = reportService.getLeads(start, end);
+        Set<Lead> leadList = helper.getLeads(start, end);
         if(leadList.isEmpty()) {
             LOGGER.log(Level.WARNING, "No leads are registered in this time period.");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

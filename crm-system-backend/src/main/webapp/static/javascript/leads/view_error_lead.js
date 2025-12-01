@@ -141,7 +141,7 @@ jQuery(function () {
      
  let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url: `http://localhost:8080/crm/error/records/${id}`,
+        url:LEAD_API.ERROR_LEADS_BY_UPLOAD_HISTORY_ID,
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,

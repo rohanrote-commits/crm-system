@@ -1,12 +1,14 @@
 package com.example.crm_system_backend.controller;
 
 import com.example.crm_system_backend.entity.downloadReport;
-import com.example.crm_system_backend.service.Report.ReportService;
+import com.example.crm_system_backend.helper.ReportExcelHelper;
+import com.example.crm_system_backend.service.serviceImpl.ReportService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -15,7 +17,7 @@ import java.util.logging.Logger;
 public class DownloadReportController {
 
     @Autowired
-    ReportService reportService;
+    ReportExcelHelper helper;
 
     public static final Logger LOGGER = Logger.getLogger(DownloadReportController.class.getName());
 
@@ -36,7 +38,8 @@ public class DownloadReportController {
         Long loggedInUserId = (Long) id;
         String loggedInUserEmail = (String) email;
 
-        Set<downloadReport> filteredHistoryRecords = reportService.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
+        Set<downloadReport> filteredHistoryRecords = helper.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
+        LOGGER.log(Level.INFO, "Generated filtered download history of logged in user");
         return ResponseEntity.ok(filteredHistoryRecords);
     }
 }

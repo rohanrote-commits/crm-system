@@ -33,7 +33,7 @@ $(document).ready(function () {
     }
 
     const payload = parseJwt(token);
-    const userRole = payload?.role?.trim();
+    // const userRole = payload?.role?.trim();
     console.log(payload);
 
     loadLeads(payload,token);
@@ -76,7 +76,7 @@ $(document).ready(function () {
     handleInitialDashboardLoad(token, payload);
 
 
-    // ----- 2. Sidebar navigation Handler -----
+    // ----- Sidebar navigation Handler -----
     $(".sidebar-btn").click(function () {
         const target = $(this).data("target");
 
@@ -419,12 +419,7 @@ $(document).ready(function () {
                     // Destructuring is now safe only if result is not null
                     const { blob, resp } = result;
 
-                    // Use backend-provided filename
-                    // const disposition = resp.headers.get("Content-Disposition");
                     let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
-                    // if (disposition && disposition.includes("filename=")) {
-                    //     filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
-                    // }
 
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
@@ -585,7 +580,7 @@ function loadLeads(payload, token) {
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
+                        <button class="btn btn-sm btn-danger delete-lead" data-id="${row.id}">
                             <i class="bi bi-trash"></i>
                         </button>
                         <button class="btn btn-sm btn-secondary view-lead-info" data-lead="${leadData}">
@@ -668,7 +663,7 @@ function initializeReportDataTable(initialData = []) {
             { data: "status", title: "Download Status" }
         ],
         order: [[2, "desc"]],
-        drawCallback: function (settings) {
+        "drawCallback": function (settings) {
             let api = this.api();
             let startIndex = api.context[0]._iDisplayStart;
 

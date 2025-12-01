@@ -1,7 +1,6 @@
-package com.example.crm_system_backend.service.Report;
+package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.constants.ErrorCode;
-import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
@@ -12,6 +11,7 @@ import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.service.IReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -37,7 +37,7 @@ import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
-public class ReportService{
+public class ReportService implements IReportService {
 
     @Autowired
     ReportExcelHelper helper;
@@ -64,9 +64,9 @@ public class ReportService{
     public void ListToExcelStream(Set<Lead> leads, Date start, Date end, OutputStream outputStream) throws IOException {
 
         // Create new workbook and sheet
-        try (Workbook workbook = new XSSFWorkbook()) {;
+        try (Workbook workbook = new XSSFWorkbook()) {
 
-            LOGGER.log(Level.INFO, "Excel Workbook Created");
+            LOGGER.log(Level.FINEST, "Service :: ServiceImpl :: ReportService :: ListToExcelStream :: Excel Workbook Created");
 
             CellStyle head_style = helper.headStyle(workbook);       // Create style for Head
             CellStyle header_style = helper.headerStyle(workbook);   // Create style for headers
@@ -100,16 +100,19 @@ public class ReportService{
                 SummaryReport(head_style, header_style, data_style,
                         summaryReport_sheet, summaryReport_headers,
                         users, start, end);
-                LOGGER.log(Level.INFO, "Summary report generated successfully !!");
+
+                for (int i = 0; i < summaryReport_headers.length; i++) {
+                    summaryReport_sheet.autoSizeColumn(i, true);
+                }
 
             } else {
-                LOGGER.log(Level.WARNING, "Service :: Report :: ReportService :: ListToExcelStream()");
+                LOGGER.log(Level.WARNING, "Service :: ServiceImpl :: ReportService :: ListToExcelStream :: Could not generate Summary Report, no leads have registered.");
                 throw new LeadException(ErrorCode.LEAD_NOT_FOUND);
             }
 
-            for (int i = 0; i < summaryReport_headers.length; i++) {
-                summaryReport_sheet.autoSizeColumn(i, true);
-            }
+//            for (int i = 0; i < summaryReport_headers.length; i++) {
+//                summaryReport_sheet.autoSizeColumn(i, true);
+//            }
 
             // Personalized Report
             for (User user : users) {
@@ -126,6 +129,8 @@ public class ReportService{
                     perUserReport_sheet.autoSizeColumn(i, true);
                 }
             }
+            LOGGER.log(Level.INFO, "Per user reports generated successfully !!");
+
 
             // Write Workbook to response stream
             workbook.write(outputStream);
@@ -134,7 +139,7 @@ public class ReportService{
 
 
     /**
-     * Recieved Excel Template from ListToExcelStream, and converts it into Zip file
+     * Received Excel Template from ListToExcelStream, and converts it into Zip file
      * @param leadList required to pass as a parameter to ListToExcelStream()
      * @param start start date
      * @param end end date
@@ -145,7 +150,7 @@ public class ReportService{
         LOGGER.log(Level.INFO, "Converting Excel Template into a ZIP file");
 
         if (leadList.isEmpty()) {
-            LOGGER.log(Level.WARNING, "Excel to zip converter :: No leads registered in this time period.");
+            LOGGER.log(Level.WARNING, "Service :: ServiceImpl :: ReportService :: No leads have registered in this time period.");
             return ResponseEntity.noContent().build();
         } else {
 
@@ -176,7 +181,7 @@ public class ReportService{
 
                     // 2. Call the service to write Excel data directly to the ZipOutputStream
                     ListToExcelStream(leadList, start, end, zos);
-                    LOGGER.log(Level.INFO, "Received Excel Template, proceeding to convert it into Zip file");
+                    LOGGER.log(Level.FINE, "Received Excel Template, proceeding to convert it into Zip file");
 
                     // 3. Close the current ZIP entry
                     zos.closeEntry();
@@ -185,7 +190,7 @@ public class ReportService{
 
                 } catch (IOException e) {
                     log.error("Error streaming ZIP content.");
-                    LOGGER.log(Level.SEVERE, "Service :: Report :: ReportService :: excelToZipConverter() ", e);
+                    LOGGER.log(Level.SEVERE, "Service :: ServiceImpl :: ReportService :: excelToZipConverter : ", e);
                     throw new ExcelException(ErrorCode.ERROR_IN_FILE_DOWNLOAD);
                 }
             };
@@ -312,6 +317,8 @@ public class ReportService{
             row.getCell(cellNum - 1).setCellStyle(data_style);
 
         }
+        LOGGER.log(Level.INFO, "Summary report generated successfully !!");
+
     }
 
 
@@ -352,7 +359,7 @@ public class ReportService{
 
             Set<Product> products = lead.getInterestedProducts();
 
-            // Convert Set<Product> → comma-separated string
+            // Convert Set<Product> to comma-separated string
             String productNames = "";
             if (products != null && !products.isEmpty()) {
                 productNames = products.stream()
@@ -385,134 +392,6 @@ public class ReportService{
         }
     }
 
-
-    /**
-     * Required to get the set of leads according to the role of the user (Master Admin, Admin and Basic)
-     * @param start leads registered from start date = start
-     * @param end leads registered till end date = end
-     * @return Set of leads to be written in Report Template in all sheets
-     */
-    public Set<Lead> getLeads(Date start, Date end) {
-
-        LOGGER.log(Level.INFO, "Getting appropriate leads list ");
-
-        List<Lead> leadList = helper.getLeadList(start, end);
-        Set<Lead> finalLeads = new HashSet<>(leadList);
-        Set<Lead> leadsToAdd = new HashSet<>();
-
-        for (Lead lead : finalLeads) {
-            if (lead.getUser().getRole().equals(MASTER_ADMIN) || lead.getUser().getRole().equals(ADMIN)) {
-                Long id = lead.getUser().getId();
-                List<User> userList = new ArrayList<>();
-
-                for (User user : userRepo.findAll()) {
-                    if (user.getRegisteredBy() == id) {
-                        userList.add(user);
-                    }
-                }
-
-                for (Lead lead1 : leadRepo.findAll()) {
-                    for (User user : userList) {
-                        if (lead1.getUser().getId().equals(user.getId())) {
-                            leadsToAdd.add(lead1);
-                        }
-                    }
-                }
-            }
-        }
-
-        finalLeads.addAll(leadsToAdd);
-
-        LOGGER.log(Level.INFO, "Received leads list ");
-        return finalLeads;
-    }
-
-
-    /**
-     * Filters the downloaded Report's records according to logged-in user's role
-     * @param id logged-in user id
-     * @param role logged-in user role
-     * @param email logged-in user email
-     * @return filtered Set of downloaded report's record according to user's role
-     */
-    public Set<downloadReport> getFilteredDownloadHistory(Long id, String role, String email) {
-
-        Set<User> users = new HashSet<>();
-        Set<Long> adminIds = new HashSet<>();
-        Set<String> emailList = new HashSet<>();
-        Set<downloadReport> filteredRecords = new HashSet<>();
-        Set<downloadReport> finalFilteredRecords = new HashSet<>();
-
-        if(role.equalsIgnoreCase("MASTER_ADMIN")) {
-            for(User user : userRepo.findAll()) {
-                if(user.getId().equals(id)) {
-                    users.add(user);
-                }
-                if(user.getRegisteredBy() == id) {
-                    users.add(user);
-                }
-            }
-
-            for(User user : users) {
-                if(user.getRole().equals(ADMIN)) {
-                    adminIds.add(user.getId());
-                }
-            }
-
-            for(Long adminId : adminIds) {
-                for(User user : userRepo.findAll()) {
-                    if(user.getRegisteredBy() == adminId) {
-                        users.add(user);
-                    }
-                }
-            }
-
-            for(User user : users) {
-                emailList.add(user.getEmail());
-            }
-
-            for(downloadReport record : historyRepo.findAll()) {
-                for(String one_email : emailList) {
-                    if(record.getEmail().equals(one_email)) {
-                        filteredRecords.add(record);
-                    }
-                }
-            }
-            finalFilteredRecords.addAll(filteredRecords);
-
-        } else if(role.equalsIgnoreCase("ADMIN")) {
-            for(User user : userRepo.findAll()) {
-                if(user.getId().equals(id)) {
-                    users.add(user);
-                }
-                if(user.getRegisteredBy() == id) {
-                    users.add(user);
-                }
-            }
-
-            for(User user : users) {
-                emailList.add(user.getEmail());
-            }
-
-            for(downloadReport record : historyRepo.findAll()) {
-                for(String one_email : emailList) {
-                    if(record.getEmail().equals(one_email)) {
-                        filteredRecords.add(record);
-                    }
-                }
-            }
-            finalFilteredRecords.addAll(filteredRecords);
-
-        }  else if(role.equalsIgnoreCase("USER")) {
-            for(downloadReport record : historyRepo.findAll()) {
-                if(record.getEmail().equals(email)) {
-                    filteredRecords.add(record);
-                }
-            }
-            finalFilteredRecords.addAll(filteredRecords);
-        }
-        return finalFilteredRecords;
-    }
 }
 
 
