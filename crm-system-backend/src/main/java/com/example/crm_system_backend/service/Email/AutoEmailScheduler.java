@@ -20,9 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.Date;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,7 +74,7 @@ public class AutoEmailScheduler {
 
         LOGGER.log(Level.INFO, "Sending monthly report Email");
 
-        YearMonth previousMonth = YearMonth.now(ZoneId.systemDefault()).minusMonths(1);
+         YearMonth previousMonth = YearMonth.now(ZoneId.systemDefault()).minusMonths(1);
 
         // Calculate Start and End Dates for the previous month
         LocalDate localStartDate = previousMonth.atDay(1);
