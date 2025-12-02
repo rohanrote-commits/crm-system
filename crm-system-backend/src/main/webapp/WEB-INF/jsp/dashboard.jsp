@@ -525,6 +525,7 @@
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Custom JS -->
 <script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/leads/constants/message_constants.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/dashboard.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/add_lead.js"></script>

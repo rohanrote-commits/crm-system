@@ -48,9 +48,9 @@ $(document).ready(function() {
     e.preventDefault();
 
     const formData = new FormData(this);
-
+      formData.append("userId", payload.sub);
     $.ajax({
-      url: `http://localhost:8080/crm/lead/import/${payload.sub}`, 
+      url: LEAD_API.BULK_IMPORT,
       type: 'POST',
       headers: { Authorization: "Bearer " + token },
       data: formData,
@@ -59,9 +59,10 @@ $(document).ready(function() {
       success: function(response) {
         showPopup("Success","Leads imported successfully!", "success");
         //showAlert('Leads imported successfully!',"success");
-        $('#importLeadsModal').modal('hide');
         $('#importLeadsForm')[0].reset();
         $('#leadTable').DataTable().ajax.reload();
+        $("#upload-table").DataTable().ajax.reload();
+          $('#uploadLeadsModal').modal('hide');
       },
       error: function(err) {
          showPopup("Error","Error while importing the leads", "error");

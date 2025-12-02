@@ -15,7 +15,7 @@ const LEAD_API = {
 
     DELETE: (id) => `${API_BASE_URL}/${id}`,    // DELETE
 
-    BULK_IMPORT: (userId) => `${API_BASE_URL}/bulk?userId=${userId}`, // POST (multipart)
+    BULK_IMPORT:  `${API_BASE_URL}/bulk`, // POST (multipart)
     UPDATE_STATUS: (id) => `${API_BASE_URL}/${id}/status`  ,// PUT
 
     LEAD_UPLOAD_HISTORY: (email)=> `http://localhost:8080/crm/history/lead/${email}`,
@@ -23,6 +23,12 @@ const LEAD_API = {
     ERROR_FILE_BY_HISTORY_ID: (uploadHistoryId)=> `http://localhost:8080/crm/history/lead/error/${uploadHistoryId} `,
 
     ERROR_LEADS_BY_UPLOAD_HISTORY_ID: (uploadHistoryId)=>  `http://localhost:8080/crm/error/records/${uploadHistoryId}` ,
+
+    UPDATE_ERROR_LEADS: (rowNumber,uploadHistoryId)=> `http://localhost:8080/crm/error/lead/${rowNumber}/${uploadHistoryId}`,
+};
+
+const LEAD_ERROR_API = {
+    DELETE_ERROR_LEADS: (selectedRowNumber,uploadHistoryId)=> `http://localhost:8080/crm/error/${selectedRowNumber}/${uploadHistoryId}`
 };
 
 

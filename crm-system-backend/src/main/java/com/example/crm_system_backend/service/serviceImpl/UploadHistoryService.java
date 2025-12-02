@@ -24,6 +24,18 @@ public class UploadHistoryService implements IUploadHistoryService {
 
 
 
+    /**
+     * Saves an UploadHistory entity into the database.
+     * If the provided UploadHistory object is null, the method throws
+     * an UploadHistoryException with the appropriate error code.
+     *
+     * @param uploadHistory the UploadHistory object to be saved
+     * @return the saved UploadHistory object
+     * @throws UploadHistoryException if the provided UploadHistory object is null
+     * @throws IllegalArgumentException if the input is invalid for repository operations
+     *
+     * Author: Akshay Jadhav
+     */
     @Override
     public UploadHistory save(UploadHistory uploadHistory) {
         try {
@@ -35,6 +47,17 @@ public class UploadHistoryService implements IUploadHistoryService {
         }
     }
 
+    /**
+     * Retrieves an UploadHistory entity based on the given identifier.
+     * If no matching record is found, an exception is thrown indicating
+     * that the file history could not be found for the provided identifier.
+     *
+     * @param id the unique identifier of the UploadHistory entity
+     * @return the UploadHistory entity corresponding to the given identifier
+     * @throws ExcelException if no UploadHistory entry is found for the specified identifier
+     *
+     * Author: Akshay Jadhav
+     */
     @Override
     public UploadHistory findById(String id) {
         log.info("Enter: ErrorRecordHandler.findById");
@@ -47,6 +70,18 @@ public class UploadHistoryService implements IUploadHistoryService {
         return uploadHistory;
     }
 
+    /**
+     * Updates an existing UploadHistory entity in the database. The method
+     * retrieves the existing entity using its ID, maps the updated fields
+     * from the new entity to the existing one, and saves the updated entity.
+     * If the entity with the provided ID is not found, the method throws an exception.
+     *
+     * @param uploadHistory the UploadHistory object containing updated information
+     * @return the updated UploadHistory object after saving to the database
+     * @throws ExcelException if the UploadHistory entity with the given ID is not found
+     *
+     * Author: Akshay Jadhav
+     */
     @Override
     public UploadHistory update(UploadHistory uploadHistory) {
         log.info("Enter: ErrorRecordHandler.update");
@@ -57,6 +92,12 @@ public class UploadHistoryService implements IUploadHistoryService {
         return iUploadHistoryRepository.save(savedUploadHistory);
     }
 
+    /**
+     * Deletes an UploadHistory entity identified by the provided ID.
+     * If the ID is not found in the database, the method fails silently.
+     *
+     * @param id the unique identifier of the UploadHistory entity to be deleted
+     */
     @Override
     public void deleteById(String id) {
         log.info("Enter: ErrorRecordHandler.deleteById");
@@ -64,6 +105,16 @@ public class UploadHistoryService implements IUploadHistoryService {
         log.info("Exit: ErrorRecordHandler.deleteById");
     }
 
+    /**
+     * Retrieves a list of UploadHistory entities associated with a specific user based on their email.
+     * If no records are found, it throws an ExcelException with the appropriate error code.
+     *
+     * @param email the email address of the user whose upload history is being retrieved
+     * @return a list of UploadHistory entities associated with the specified user
+     * @throws ExcelException if no upload history is found for the provided email
+     *
+     * Author: Akshay Jadhav
+     */
     @Override
     public List<UploadHistory> findByUser(String email) {
         log.info("Enter: ErrorRecordHandler.findByUser");

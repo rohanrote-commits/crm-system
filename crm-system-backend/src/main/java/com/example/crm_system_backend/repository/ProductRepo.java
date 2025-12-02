@@ -11,9 +11,9 @@ public interface ProductRepo extends JpaRepository<Product, Integer> {
 
     Optional<Product> getProductById(Long id);
 
-    Optional<Product> getProductByModuleName(String name);
+    Optional<Product> getProductByProductName(String name);
 
-    Product findProductByModuleName(String name);
+    Product findProductByProductName(String name);
 
-    boolean existsByModuleName(String moduleName);
+    boolean existsByProductName(String moduleName);
 }

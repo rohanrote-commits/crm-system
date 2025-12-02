@@ -1,7 +1,5 @@
 
 $(document).ready(function () {
-    $("#header").load("/Frontend/html/components/header.html");
-    $("#profile-model").load("/Frontend/html/models/profile_model.html");
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -20,13 +18,13 @@ $(document).ready(function () {
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
         showAlert("Unauthorized. Please login.","danger");
+        showPopup("Error","Unauthorized. Please login.", "error");
         window.location.href = "/crm/login";
         return;
     }
 
     const payload = parseJwt(token);
     const userRole = payload?.role?.trim();
-    console.log(payload);
 
     loadLeads(payload,token);
 
@@ -109,42 +107,11 @@ $(document).on("click", function () {
 
 
     $("#importLead").click(function (event) {
-          window.location.href = "/crm/leads/upload";
+        sessionStorage.setItem("Authorization", token);
+        window.location.href = "/crm/leads/upload";
     });
 
 
-    // //delete profile
-    // $("#delete-profile").click(function () {
-    //
-    //     if (!token) {
-    //         alert("User not logged in!");
-    //         return;
-    //     }
-    //
-    //     if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
-    //         return;
-    //     }
-    //
-    //     $.ajax({
-    //         url: `http://localhost:8080/crm/user/delete-user`,
-    //         type: "DELETE",
-    //         headers: {
-    //             "Authorization": "Bearer " + token
-    //         },
-    //         success: function (response) {
-    //             showAlert(response,"success");
-    //
-    //             // remove token after success
-    //             localStorage.removeItem("Authorization");
-    //
-    //             // redirect to login page
-    //             window.location.href = "/Frontend/html/login.jsp";
-    //         },
-    //         error: function (xhr) {
-    //             showAlert("Failed to delete user: " + xhr.responseText,"danger");
-    //         }
-    //     });
-    // });
 
    //logout
     $("#logout").click(function () {
@@ -426,7 +393,8 @@ function loadLeads(payload, token) {
             data: "leadStatus",
             title: "Status",
             orderable: false,
-            render: function (data) {
+            render: function (data, type, row) {
+
                 let badgeClass = "";
                 switch (data) {
                     case "ADDED": badgeClass = "bg-primary"; break;
@@ -435,7 +403,15 @@ function loadLeads(payload, token) {
                     case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
                     default: badgeClass = "bg-secondary";
                 }
-                return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED" ? "NOT CONVERTED" : data}</span>`;
+
+                let label = data === "NOT_CONVERTED" ? "NOT CONVERTED" : data;
+
+                return `
+            <span class="badge ${badgeClass}">${label}</span>
+            <br>
+            <button class="btn btn-sm btn-link auto-change-status-btn" data-id="${row.id}" data-status="${data}">
+                Change
+            </button>`;
             }
         },
 
@@ -478,7 +454,49 @@ function loadLeads(payload, token) {
     });
   }
 
-    // Function to show bootstrap alert dynamically
+$('#lead-table').on('click', '.auto-change-status-btn', function () {
+    let leadId = $(this).data('id');
+    let currentStatus = $(this).data('status');
+
+    const leadStatusIntegerMap = {
+        "ADDED": 0,
+        "CONTACTED": 1,
+        "CONVERTED": 2,
+        "NOT_CONVERTED": 3
+    };
+
+    const nextStatusMap = {
+        "ADDED": "CONTACTED",
+        "CONTACTED": "CONVERTED",
+        "CONVERTED": "NOT_CONVERTED",
+        "NOT_CONVERTED": "ADDED"
+    };
+    let nextStatus = nextStatusMap[currentStatus];
+    let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
+
+    $.ajax({
+        url: LEAD_API.UPDATE_STATUS(leadId),
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ status: statusCode }),
+        headers: { "Authorization": "Bearer " + token },
+        success: function (response) {
+            Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
+            $('#lead-table').DataTable().ajax.reload();
+        },
+        error: function (error) {
+            console.log(error);
+            if (error.status===401){
+                showPopup("Error","Session expired. Login again.", "error");
+                window.location.href = "/crm/login";
+            }
+            Swal.fire('Error', 'Failed to update status', 'error');
+        }
+    });
+});
+
+
+// Function to show bootstrap alert dynamically
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`
