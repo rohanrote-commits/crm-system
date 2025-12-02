@@ -25,6 +25,10 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,9 +48,6 @@ public class ReportService implements IReportService {
 
     @Autowired
     ILeadRepository leadRepo;
-
-    @Autowired
-    IUserRepo userRepo;
 
     @Autowired
     DownloadReportHistoryRepo historyRepo;
@@ -198,6 +199,42 @@ public class ReportService implements IReportService {
         }
     }
 
+
+    /**
+     * Accepts the data from frontend, makes necessary changes, saves the data in download_history database
+     * @param start start date
+     * @param end end date
+     * @param email accessed from token to apply role based filter later (email is unique property)
+     */
+    public void saveInDb(Date start, Date end, String email) {
+
+        // Save in DB
+        downloadReport data = new downloadReport();
+
+        String name = helper.getName(email);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDate startLocal = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endLocal = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        String formattedStart = formatter.format(startLocal);
+        String formattedEnd = formatter.format(endLocal);
+
+        String dateRange = formattedStart + " To " + formattedEnd;
+
+        data.setDateRange(dateRange);
+        data.setEmail(email);
+        data.setUserName(name);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        data.setDownloadedAt(now.format(formatter2));
+        data.setStatus("Success");
+
+        historyRepo.save(data);
+        LOGGER.log(Level.INFO, "Made necessary changes and saved the data in database");
+
+    }
 
 
     /**

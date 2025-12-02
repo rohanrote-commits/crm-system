@@ -132,7 +132,6 @@ public class ReportExcelHelper {
     }
 
 
-
     /**
      * Required to get the set of leads according to the role of the user (Master Admin, Admin and Basic)
      * @param start leads registered from start date = start
@@ -179,7 +178,6 @@ public class ReportExcelHelper {
         return finalLeads;
 
     }
-
 
 
     /**
@@ -274,7 +272,6 @@ public class ReportExcelHelper {
             throw new ReportException(ErrorCode.EMPTY_LEAD_LIST);
         }
     }
-
 
 
     /**

@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Entity(name = "user")
+@Entity(name = "\"user\"")
 public class User {
 
     @Id
@@ -43,7 +43,9 @@ public class User {
 
     public User() {}
 
-    public User(String email) {
+    public User(String email, String firstName, String lastName) {
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 }

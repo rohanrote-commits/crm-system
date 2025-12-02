@@ -1,6 +1,7 @@
 
 
 const API_BASE_URL = "http://localhost:8080/crm/leads";
+const REPORT_BASE_URL = "http://localhost:8080/crm/report";
 
 const LEAD_API = {
 
@@ -31,5 +32,11 @@ const LEAD_ERROR_API = {
     DELETE_ERROR_LEADS: (selectedRowNumber,uploadHistoryId)=> `http://localhost:8080/crm/error/${selectedRowNumber}/${uploadHistoryId}`
 };
 
+const REPORT_API = {
+
+    GET_TEMPLATE: (startDate, endDate) => `${REPORT_BASE_URL}/getTemplate?start=${startDate}&end=${endDate}`,
+    GET_REPORT_HISTORY: `${REPORT_BASE_URL}/getDownloadedRecordHistory`,
+
+};
 
 
