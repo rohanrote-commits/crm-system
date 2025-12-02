@@ -6,6 +6,12 @@ import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.handler.AuthHandler;
 import com.example.crm_system_backend.handler.UserHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +25,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/crm/user")
+@Tag(name = "User Management", description = "APIs for managing users in the CRM system")
 public class UserController {
     @Autowired
     private UserHandler userHandler;
@@ -34,6 +41,20 @@ public class UserController {
      * @param request the HTTP request object containing details of the request, including the `userId` of the user performing the operation
      * @return a ResponseEntity containing the registered user's data and a status of {@code HttpStatus.CREATED}
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates a new user account in the system. Required roles: ADMIN or MASTER_ADMIN.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "User successfully registered",
+                            content = @Content(schema = @Schema(implementation = UserDTO.class))
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - invalid input")
+            }
+    )
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @PostMapping("/register")
     public ResponseEntity<UserDTO> user(@RequestBody UserDTO userDTO, HttpServletRequest request) {
@@ -51,6 +72,19 @@ public class UserController {
      * @param request the HTTP servlet request containing the user ID as a request attribute
      * @return a ResponseEntity containing the user details and an HTTP status of OK
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Get user by ID",
+            description = "Retrieves user details based on the ID in the request attributes",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "User details retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = User.class))
+                    ),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
     @GetMapping("/get-user")
     public ResponseEntity<User> getUserById(Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -67,6 +101,14 @@ public class UserController {
      * @return a ResponseEntity object with the created user details in the response body
      * and an HTTP status of {@code HttpStatus.CREATED}
      */
+    @Operation(
+            summary = "Sign up master admin",
+            description = "Register a new master admin user in the system",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Master admin created successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data")
+            }
+    )
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@RequestBody UserDTO request) {
 
@@ -76,6 +118,14 @@ public class UserController {
     /**
      *
      */
+    @Operation(
+            summary = "User sign in",
+            description = "Authenticate user and generate access token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully authenticated"),
+                    @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            }
+    )
     @PostMapping("/sign-in")
     public ResponseEntity<String> signIn(@RequestBody UserDTO request) {
         return new ResponseEntity<>(authHandler.loginRequest(request), HttpStatus.OK);
@@ -88,6 +138,18 @@ public class UserController {
      * @param request the HTTP servlet request containing attributes like the `userId` of the requester
      * @return a ResponseEntity containing a list of UserDTOs representing user details and an HTTP status of OK
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Get all users",
+            description = "Retrieve list of all users accessible to the requester",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of users retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = UserDTO.class))
+                    )
+            }
+    )
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getAllUsers(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -106,6 +168,14 @@ public class UserController {
      *                          to initiate the password reset process (e.g., email)
      * @return a ResponseEntity containing the response from the UserHandler and an HTTP status of OK
      */
+    @Operation(
+            summary = "Forgot password",
+            description = "Initiates password reset process for user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Password reset initiated"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
     @PostMapping("/forget")
     public ResponseEntity<?> forgetPassword(@RequestBody UserDTO forgetPasswordDTO) {
         return new ResponseEntity<>(userHandler.forgetPassword(forgetPasswordDTO), HttpStatus.OK);
@@ -120,6 +190,15 @@ public class UserController {
      * @param request the HTTP servlet request containing the `userId` attribute of the user being updated
      * @return a ResponseEntity containing the updated user details and an HTTP status of OK
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Update user",
+            description = "Update existing user details",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User updated successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data")
+            }
+    )
     @PostMapping("/update")
     public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -136,6 +215,15 @@ public class UserController {
      * @return a ResponseEntity containing the updated sub-user details and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Update sub-user",
+            description = "Update sub-user details. Required roles: ADMIN or MASTER_ADMIN",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sub-user updated successfully"),
+                    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
+            }
+    )
     @PutMapping("/update-sub_user")
     ResponseEntity<?> updateSubUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -149,6 +237,15 @@ public class UserController {
      *
      * @param request the HTTP servlet request containing the `userId` attribute of the
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Delete user",
+            description = "Delete user account and log them out",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
     @DeleteMapping("/delete-user")
     ResponseEntity<?> deleteUser(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -167,6 +264,16 @@ public class UserController {
      * @return a ResponseEntity with a message of successful deletion and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Delete sub-user",
+            description = "Delete sub-user account. Required roles: ADMIN or MASTER_ADMIN",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sub-user deleted successfully"),
+                    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
+            }
+            
+    )
     @DeleteMapping("/delete-sub_user")
     ResponseEntity<?> deleteSubUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -185,6 +292,15 @@ public class UserController {
      * @return a ResponseEntity containing a success message and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "Bulk upload users",
+            description = "Upload multiple users via file. Required roles: ADMIN or MASTER_ADMIN",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Users uploaded successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid file format")
+            }
+    )
     @PostMapping("/upload-user-file")
     ResponseEntity<?> bulkUploadUserFile(@RequestParam MultipartFile file, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -200,6 +316,14 @@ public class UserController {
      * @param request the HTTP servlet request containing attributes such as the user's email
      * @return a ResponseEntity containing a success message and an HTTP status of OK
      */
+    @SecurityRequirement(name = "JWT")
+    @Operation(
+            summary = "User logout",
+            description = "Invalidate user session",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully logged out")
+            }
+    )
     @GetMapping("/logout")
     ResponseEntity<?> logout(HttpServletRequest request) {
         String email = (String) request.getAttribute("email");

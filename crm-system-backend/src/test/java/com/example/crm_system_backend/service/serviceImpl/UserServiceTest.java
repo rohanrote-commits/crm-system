@@ -37,9 +37,6 @@ class UserServiceTest {
     }
 
 
-    // ==================================================
-    // registerUser()
-    // ==================================================
     @Test
     void testRegisterUser_Success() {
         User user = new User();
@@ -54,10 +51,6 @@ class UserServiceTest {
         verify(userRepo, times(1)).save(any(User.class));
     }
 
-
-    // ==================================================
-    // deleteUser()
-    // ==================================================
     @Test
     void testDeleteUser_Success() {
         User user = new User();
@@ -84,9 +77,6 @@ class UserServiceTest {
     }
 
 
-    // ==================================================
-    // getAllUsers()
-    // ==================================================
     @Test
     void testGetAllUsers_ShouldReturnEmptyList() {
         List<User> users = userService.getAllUsers();
@@ -95,10 +85,6 @@ class UserServiceTest {
         assertEquals(0, users.size());
     }
 
-
-    // ==================================================
-    // getAllUsersByAdmin()
-    // ==================================================
     @Test
     void testGetAllUsersByAdmin_Success() {
         User u1 = new User();
@@ -114,9 +100,6 @@ class UserServiceTest {
     }
 
 
-    // ==================================================
-    // getAllUserByMasterAdmin() including recursion
-    // ==================================================
     @Test
     void testGetAllUserByMasterAdmin_RecursiveSuccess() {
         // Master admin (ID=1) has two users
@@ -146,10 +129,6 @@ class UserServiceTest {
         verify(userRepo, times(1)).findUsersByRegisteredBy(100L);
     }
 
-
-    // ==================================================
-    // getUser()
-    // ==================================================
     @Test
     void testGetUser_UserNotFound() {
         UserDTO dto = new UserDTO();
@@ -200,10 +179,6 @@ class UserServiceTest {
         verify(userRepo).findUserByEmail("test@mail.com");
     }
 
-
-    // ==================================================
-    // checkUserByEmail()
-    // ==================================================
     @Test
     void testCheckUserByEmail_Exists() {
         when(userRepo.existsByEmail("a@a.com")).thenReturn(true);
@@ -219,10 +194,6 @@ class UserServiceTest {
         assertFalse(userService.checkUserByEmail("a@a.com"));
     }
 
-
-    // ==================================================
-    // checkUserByMobileNumber()
-    // ==================================================
     @Test
     void testCheckUserByMobileNumber_Exists() {
         when(userRepo.existsByMobileNumber("999")).thenReturn(true);
@@ -238,10 +209,6 @@ class UserServiceTest {
         assertFalse(userService.checkUserByMobileNumber("999"));
     }
 
-
-    // ==================================================
-    // getUserById()
-    // ==================================================
     @Test
     void testGetUserById_Found() {
         User user = new User();
@@ -264,10 +231,6 @@ class UserServiceTest {
         assertFalse(result.isPresent());
     }
 
-
-    // ==================================================
-    // getUserByEmail()
-    // ==================================================
     @Test
     void testGetUserByEmail_Found() {
         User user = new User();
@@ -292,9 +255,6 @@ class UserServiceTest {
     }
 
 
-    // ==================================================
-    // getAllUsersRegisterById()
-    // ==================================================
     @Test
     void testGetAllUsersRegisterById_Found() {
         User u1 = new User();

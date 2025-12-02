@@ -4,6 +4,11 @@ import com.example.crm_system_backend.annotations.RoleRequired;
 import com.example.crm_system_backend.dto.UploadHistoryDto;
 import com.example.crm_system_backend.handler.DownloadHandler;
 import com.example.crm_system_backend.handler.UploadedHistoryHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -19,6 +24,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/crm/history")
 @AllArgsConstructor
+@Tag(name = "Upload History", description = "APIs for managing upload history")
+@SecurityRequirement(name = "Bearer Authentication")
 public class UploadHistoryController {
 
 
@@ -35,8 +42,11 @@ public class UploadHistoryController {
      * @param email the email address of the user whose upload history is to be retrieved
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
      */
+    @Operation(summary = "Get lead upload history by user email", description = "Retrieves the upload history associated with a specific user based on their email")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved upload history")
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token")
     @GetMapping("/lead/{email}")
-    public ResponseEntity<List<UploadHistoryDto>> getLeadUploadHistoryByUser(@PathVariable String email){
+    public ResponseEntity<List<UploadHistoryDto>> getLeadUploadHistoryByUser(@Parameter(description = "Email of the user") @PathVariable String email) {
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findLeadUploadHistoryByEmail(email);
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
@@ -48,9 +58,13 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
      *         the upload history associated with the user
      */
+    @Operation(summary = "Get user upload history", description = "Retrieves the upload history for a specific user based on their email")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved upload history")
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token")
+    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @GetMapping("/user/{email}")
-    public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@PathVariable String email){
+    public ResponseEntity<List<UploadHistoryDto>> getUserUploadHistoryByUser(@Parameter(description = "Email of the user") @PathVariable String email) {
         List<UploadHistoryDto> listOfUploadHistory =   uploadedHistoryHandler.findUserUploadHistoryByEmail(email);
         return new ResponseEntity<>(listOfUploadHistory, HttpStatus.OK);
     }
@@ -62,8 +76,11 @@ public class UploadHistoryController {
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
+    @Operation(summary = "Download lead error file", description = "Retrieves the error file specified by the uploadHistoryId from the server")
+    @ApiResponse(responseCode = "200", description = "Successfully downloaded the file")
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token")
     @GetMapping("/lead/error/{uploadHistoryId}")
-    public ResponseEntity<byte []> getLeadErrorFile(@PathVariable String uploadHistoryId){
+    public ResponseEntity<byte[]> getLeadErrorFile(@Parameter(description = "ID of the upload history") @PathVariable String uploadHistoryId) {
         byte [] file = downloadHandler.downloadErrorFile(uploadHistoryId);
 
         return ResponseEntity.ok()
@@ -75,13 +92,17 @@ public class UploadHistoryController {
     /**
      * Retrieves the error file specified by the filename from the server.
      *
-     * @param filename the name of the file to be retrieved
+     * @param uploadHistoryId the name of the file to be retrieved
      * @return a ResponseEntity containing the file as a byte array along with the appropriate
      * HTTP headers and content type for a file download
      */
+    @Operation(summary = "Download user error file", description = "Retrieves the error file specified by the uploadHistoryId from the server")
+    @ApiResponse(responseCode = "200", description = "Successfully downloaded the file")
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token")
+    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient role permissions")
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
     @GetMapping("/user/error/{uploadHistoryId}")
-    public ResponseEntity<byte []> getUserErrorFile(@PathVariable String uploadHistoryId){
+    public ResponseEntity<byte[]> getUserErrorFile(@Parameter(description = "ID of the upload history") @PathVariable String uploadHistoryId) {
         byte [] file = downloadHandler.downloadUserErrorFile(uploadHistoryId);
 
         return ResponseEntity.ok()

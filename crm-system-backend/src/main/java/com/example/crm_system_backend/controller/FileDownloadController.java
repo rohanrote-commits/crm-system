@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/crm/files")
 public class FileDownloadController {
     private static final Logger log = LoggerFactory.getLogger(FileDownloadController.class);
-    @Autowired
-    private DownloadHandler downloadHandler;
+    private final DownloadHandler downloadHandler;
+
+    public FileDownloadController(DownloadHandler downloadHandler) {
+        this.downloadHandler = downloadHandler;
+    }
 
 
     /**
