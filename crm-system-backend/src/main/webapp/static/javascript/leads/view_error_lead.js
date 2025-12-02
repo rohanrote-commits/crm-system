@@ -37,111 +37,12 @@ jQuery(function () {
   let uploadHistoryId = id;
   let rowNumber;
 
-//   let errorTable = $("#lead-table").DataTable({
-//     ajax: {
-//         url: `http://localhost:8080/crm/error/records/${id}`,
-//         type: "GET",
-//         headers: {
-//             Authorization: "Bearer " + token,
-//         },
-
-//         dataSrc: function (response) {
-//             console.log("Leads fetched:", response);
-
-//             docId = response.id;
-//             uploadHistoryId = response.uploadHistoryId;
-
-//             return response.errorsList || [];
-//         },
-
-//         error: function (xhr) {
-//           errorTable.clear().draw();
-//             if (xhr.status === 401) {
-//                 showAlert("Session expired. Login again.", "warning");
-//                 sessionStorage.clear();
-//                 window.location.href = "/Frontend/html/login.jsp";
-//                 return;
-//             }
-//             if(xhr.status===400){
-//               showAlert("No Invalid Leads for the Record","info")
-//             }
-//             else{
-//             showAlert("No Invalid Leads Found.", "danger");
-//             }
-//         }
-//     },
-
-//     columns: [
-//         {
-//             data: null,
-//             title: "Sr.No.",
-//             orderable: false,
-//             render: function (data, type, row, meta) {
-//                 return meta.row + meta.settings._iDisplayStart + 1;
-//             }
-//         },
-
-//         { data: "firstName", title: "First Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
-//         { data: "lastName", title: "Last Name", render: validateText(/^[A-Za-z ]{1,50}$/) },
-//         { data: "email", title: "Email", render: validateText(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/) },
-//         { data: "mobileNumber", title: "Mobile", render: validateText(/^[789]\d{9}$/) },
-//         { data: "gstin", title: "GSTIN", render: validateText(/^[A-Z0-9]{15}$/) },
-//         { data: "description", title: "Description", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
-//         { data: "businessAddress", title: "Address", render: validateText(/^[A-Za-z0-9\s,.\-/#]{1,100}$/) },
-
-//         {
-//             data: "interestedModules",
-//             title: "Interested Modules",
-//             orderable: false,
-//             render: function (data) {
-//                 return data && data.length ? data.join(", ") : "-";
-//             }
-//         },
-
-//         {
-//             data: null,
-//             title: "Action",
-//             orderable: false,
-//             render: function (row) {
-//                 return `
-//                     <div class="d-flex justify-content-center gap-2">
-//                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}" title="Edit error record">
-//                             <i class="bi bi-pencil"></i>
-//                         </button>
-//                         <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}" title="Delete error record">
-//                             <i class="bi bi-trash"></i>
-//                         </button>
-//                     </div>`;
-//             }
-//         }
-//     ],
-//     pageLength: 10,
-//     lengthMenu: [10, 25, 50, 100],
-//     destroy: true,
-//     responsive: true,
-//     searching: true,
-//     paging: true,
-//     ordering: true,
-//     info: true,
-//     language: {
-//         emptyTable: "No error records found",
-//     }
-// });
-
-// function validateText(regex) {
-//     return function (data) {
-//         if (!regex.test(data)) {
-//             return `<span class="text-danger fw-bold">${data}</span>`;
-//         }
-//         return data;
-//     };
-// }
 
        //Edit Lead
      
  let errorTable = $("#lead-table").DataTable({
     ajax: {
-        url:LEAD_API.ERROR_LEADS_BY_UPLOAD_HISTORY_ID,
+        url:LEAD_API.ERROR_LEADS_BY_UPLOAD_HISTORY_ID(uploadHistoryId),
         type: "GET",
         headers: {
             Authorization: "Bearer " + token,
@@ -152,7 +53,6 @@ jQuery(function () {
             return response.map(item => ({
                 rowNumber: item.rowNumber,
                 errors: item.errors,
-
                 firstName: item.lead.firstName,
                 lastName: item.lead.lastName,
                 email: item.lead.email,
@@ -161,7 +61,7 @@ jQuery(function () {
                 description: item.lead.description,
                 businessAddress: item.lead.businessAddress,
 
-                interestedModules: item.lead.interestedProducts?.map(p => p.moduleName) || []
+                interestedModules: item.lead.interestedProducts?.map(p => p.productName) || []
             }));
         },
         error: function (xhr) {
@@ -174,11 +74,15 @@ jQuery(function () {
                 return;
             }
             if(xhr.status===400){
-               showPopup("Error","No Invalid Leads Found for this File.", "error");
+               showPopup("Error","No Invalid Leads Found for this File.", "error",() => {
+                   window.history.back();
+               });
               showAlert("No Invalid Leads for the Record","info")
             }
             else{
-              showPopup("Error","No Invalid Leads Found.", "error");
+              showPopup("Error","No Invalid Leads Found.", "error",() => {
+                  window.history.back();
+              });
               showAlert("No Invalid Leads Found.", "danger");
             }
         }
@@ -327,41 +231,41 @@ jQuery(function () {
          //Validation methods
   $.validator.addMethod(
     "namePattern",
-    (value) => /^[A-Za-z ]{1,50}$/.test(value),
-    "Only alphabets and spaces allowed (1–50 chars)"
+    (value) => REGX_CONSTANT.NAME.test(value),
+    ERROR_MESSAGE_CONSTANTS.INVALID_NAME
   );
 
   $.validator.addMethod(
     "emailPattern",
-    (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
-    "Enter a valid email"
+    (value) => REGX_CONSTANT.EMAIL.test(value),
+    ERROR_MESSAGE_CONSTANTS.INVALID_EMAIL
   );
 
   $.validator.addMethod(
     "mobilePattern",
-    (value) => /^[789]\d{9}$/.test(value),
-    "Mobile must start with 7/8/9 and be 10 digits"
+    (value) => REGX_CONSTANT.MOBILE.test(value),
+    ERROR_MESSAGE_CONSTANTS.INVALID_MOBILE_NUMBER
   );
 
   $.validator.addMethod(
     "gstinPattern",
-    (value) => /^[A-Z0-9]{15}$/.test(value),
-    "Enter valid GSTIN"
+    (value) => REGX_CONSTANT.EMAIL.test(value),
+    ERROR_MESSAGE_CONSTANTS.INVALID_GSTIN
   );
   $.validator.addMethod(
     "addressPattern",
     function (value, element) {
-      return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+      return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
     },
-    "Address can include letters, numbers & special chars (max 100 chars)"
+    ERROR_MESSAGE_CONSTANTS.INVALID_ADDRESS
   );
 
   $.validator.addMethod(
     "descriptionPattern",
     function (value, element) {
-      return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
+      return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
     },
-    "Description can include letters, numbers & special chars (max 100 chars)"
+    ERROR_MESSAGE_CONSTANTS.INVALID_DESCRIPTION
   );
 
   // Add Lead or edit lead call
@@ -406,7 +310,7 @@ jQuery(function () {
       };
       console.log(rowNumber ,uploadHistoryId)
       //Edit Lead
-      const url =  `http://localhost:8080/crm/error/${rowNumber}/${uploadHistoryId}`;
+      const url = LEAD_API.UPDATE_ERROR_LEADS(rowNumber,uploadHistoryId) ;
       $.ajax({
         url,
         type: "PUT",
@@ -437,7 +341,7 @@ jQuery(function () {
           e.preventDefault();
           const fileName = "Lead_Error"
           $.ajax({
-            url: `http://localhost:8080/crm/history/lead/error/${uploadHistoryId}`,
+            url: LEAD_API.ERROR_LEADS_BY_UPLOAD_HISTORY_ID(uploadHistoryId),
             type: "GET",
             headers: {
               Authorization: "Bearer " + token,
@@ -492,7 +396,7 @@ jQuery(function () {
     }
 
     $.ajax({
-        url: `http://localhost:8080/crm/error/${selectedRowNumber}/${uploadHistoryId}`,
+        url: LEAD_ERROR_API.DELETE_ERROR_LEADS(selectedRowNumber,uploadHistoryId),
         type: "DELETE",
         headers: { "Authorization": "Bearer " + token },
         success: function () {
@@ -519,12 +423,12 @@ jQuery(function () {
       e.preventDefault();
 
       const formData = new FormData(this);
-
+        formData.append("userId", payload.sub);
       $.ajax({
-        url: `http://localhost:8080/crm/lead/import/${payload.sub}`, 
+          url: LEAD_API.BULK_IMPORT,
         type: 'POST',
         headers: { Authorization: "Bearer " + token },
-        data: formData,
+          data: formData,
         contentType: false,
         processData: false,
         success: function(response) {
@@ -536,7 +440,8 @@ jQuery(function () {
         },
         error: function(err) {
           showPopup("Error","Error While importing Lead", "error");
-          showAlert('Error importing leads: ' + err.responseText,"danger");
+          //showAlert('Error importing leads: ' + err.responseText,"danger");
+            $('#uploadLeadsModal').modal('hide');
         }
       });
     });
@@ -559,12 +464,14 @@ jQuery(function () {
       }, 5000);
     }
 
-    function showPopup(title, message, iconType) {
+    function showPopup(title, message, iconType,callback = null) {
     Swal.fire({
         title: title,
         text: message,
         icon: iconType, // success, error, warning, info
         confirmButtonText: 'OK'
+    }).then(() => {
+        if (callback) callback();  // run custom logic
     });
 }
 

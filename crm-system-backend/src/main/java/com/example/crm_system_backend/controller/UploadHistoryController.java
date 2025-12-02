@@ -31,16 +31,20 @@ public class UploadHistoryController {
 
 
     private final UploadedHistoryHandler uploadedHistoryHandler;
+
     private  final  ModelMapper modelMapper;
     private final DownloadHandler downloadHandler;
     private static final Logger log = LoggerFactory.getLogger(UploadHistoryController.class);
 
 
     /**
-     * Retrieves the upload history associated with a specific user based on their email.
+     * Retrieves the lead upload history for a specific user based on their email.
      *
-     * @param email the email address of the user whose upload history is to be retrieved
-     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing the upload history of the user
+     * @param email the email address of the user whose lead upload history is to be retrieved
+     * @return a ResponseEntity containing a list of UploadHistoryDto objects representing
+     *         the lead upload history associated with the user
+     *
+     * @author Akshay Jadhav
      */
     @Operation(summary = "Get lead upload history by user email", description = "Retrieves the upload history associated with a specific user based on their email")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved upload history")
@@ -70,11 +74,11 @@ public class UploadHistoryController {
     }
 
     /**
-     * Retrieves the error file specified by the uploadHistoryId from the server.
+     * Retrieves the lead error file associated with the given upload history ID.
      *
-     * @param uploadHistoryId the name of the file to be retrieved
-     * @return a ResponseEntity containing the file as a byte array along with the appropriate
-     * HTTP headers and content type for a file download
+     * @param uploadHistoryId the unique identifier of the upload history for which the error file is to be retrieved
+     * @return a ResponseEntity containing the error file as a byte array along with HTTP headers
+     *         and content type for downloading the file
      */
     @Operation(summary = "Download lead error file", description = "Retrieves the error file specified by the uploadHistoryId from the server")
     @ApiResponse(responseCode = "200", description = "Successfully downloaded the file")
@@ -88,6 +92,8 @@ public class UploadHistoryController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(file);
     }
+
+
 
     /**
      * Retrieves the error file specified by the filename from the server.
@@ -110,5 +116,6 @@ public class UploadHistoryController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(file);
     }
+
 
 }

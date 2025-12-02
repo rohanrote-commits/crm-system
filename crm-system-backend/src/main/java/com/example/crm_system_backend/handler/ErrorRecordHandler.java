@@ -14,11 +14,13 @@ import com.example.crm_system_backend.exception.ErrorRecordException;
 import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -45,6 +47,18 @@ public class ErrorRecordHandler {
 
 
 
+    /**
+     * Retrieves a list of invalid lead error records based on the given upload history ID.
+     * This method fetches the associated upload history, extracts the error records in JSON format,
+     * and converts them into a list of {@code InvalidLeadError} objects.
+     *
+     * @param uploadHistoryId the unique identifier of the upload history containing error records
+     * @return a list of {@code InvalidLeadError} objects representing the invalid lead errors
+     *         associated with the provided upload history
+     * @throws UploadHistoryException if the upload history does not contain error records
+     * @throws ErrorRecordException if an error occurs while processing the error records
+     * @author Akshay Jadhav
+     */
     public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
@@ -98,6 +112,20 @@ public class ErrorRecordHandler {
     }
 
 
+    /**
+     * Updates an existing error record for a lead in the system. This method removes
+     * the specified error record from the upload history, updates the upload statistics,
+     * and saves the corrected lead details as a valid lead. If no error records remain,
+     * it updates the upload status to success.
+     *
+     * @param rowNumber the row number of the invalid lead record to be corrected
+     * @param uploadHistoryId the identifier of the upload history containing the error records
+     * @param leadDto the updated details of the lead to replace the invalid record
+     * @return the updated {@code LeadDto} object containing the corrected lead details
+     * @throws UploadHistoryException if the upload history does not exist or contains no error records
+     * @throws ErrorRecordException if the specified error record is not found or an issue occurs during processing
+     * @author Akshay Jadhav
+     */
     @Transactional
     public LeadDto updateErrorRecord(int rowNumber, String uploadHistoryId, LeadDto leadDto) {
         log.info("Enter: ErrorRecordHandler.updateErrorRecord");
@@ -219,6 +247,18 @@ public class ErrorRecordHandler {
     }
 
 
+    /**
+     * Deletes a specific invalid lead error record identified by the row number
+     * from the error records associated with the given upload history ID.
+     * The method updates the error record list in the database, adjusts the
+     * upload statistics, and updates the upload status if no error records remain.
+     *
+     * @param rowNumber the row number of the invalid lead record to be deleted
+     * @param uploadHistoryId the unique identifier of the upload history containing the error records
+     * @throws UploadHistoryException if the upload history does not exist or contains no error records
+     * @throws ErrorRecordException if the specified error record is not found or there is an issue during processing
+     * @author Akshay Jadhav
+     */
     public void deleteErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
         log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
 
@@ -263,6 +303,18 @@ public class ErrorRecordHandler {
         log.info("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
     }
 
+    /**
+     * Deletes a specific invalid user error record identified by the row number
+     * from the error records associated with the given upload history ID.
+     * This method updates the error record list in the database, adjusts the
+     * upload statistics, and changes the upload status if no error records remain.
+     *
+     * @param rowNumber the row number of the invalid user record to be deleted
+     * @param uploadHistoryId the unique identifier of the upload history containing the user error records
+     * @throws UploadHistoryException if the upload history does not exist or contains no error records
+     * @throws ErrorRecordException if the specified error record is not found or there is an issue during processing
+     * @author Akshay Jadhav
+     */
     public void deleteUserErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
         log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
 
@@ -309,6 +361,17 @@ public class ErrorRecordHandler {
         log.info("Exit : ErrorRecordHandler.deleteErrorRecordByEmail");
     }
 
+    /**
+     * Checks whether the provided {@code UploadHistory} contains no error records.
+     * This method evaluates if the error record JSON string in the {@code UploadHistory}
+     * object is empty, null, or represents an empty list ([]). If the string is invalid
+     * or unparseable, it is treated as non-empty.
+     *
+     * @param history the {@code UploadHistory} object containing error record information
+     * @return {@code true} if there are no error records; {@code false} otherwise
+     * @throws RuntimeException if an unexpected error occurs while parsing the error records
+     * @author Akshay Jadhav
+     */
     private boolean hasNoErrors(UploadHistory history) {
         log.info("Enter: ErrorRecordHandler.hasNoErrors");
         try {

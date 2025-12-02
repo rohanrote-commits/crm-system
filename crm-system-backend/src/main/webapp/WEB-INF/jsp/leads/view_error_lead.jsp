@@ -280,6 +280,7 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/view_error_lead.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/users/delete_profile.js"></script>
 </html>

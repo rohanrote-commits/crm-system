@@ -5,6 +5,8 @@ import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
+
+import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.crm_system_backend.dto.UserDTO;
 
 import java.util.List;
 
@@ -76,6 +80,12 @@ public class ErrorRecordController {
      * Updates an error record for a specific user associated with a given row number and upload history ID.
      * The method also updates the record with the "registered by" user ID retrieved from the HTTP request attributes.
      *
+     * @author Akshay
+     * @param rowNumber the row number of the error record to be updated
+     * @param uploadHistoryId the ID of the upload history containing the error record
+     * @param errorRecord the UserDTO object containing the updated error record information
+     * @param request the HttpServletRequest object used to retrieve additional metadata, such as the registeredBy ID
+     * @return a ResponseEntity containing the updated UserDTO object and an HTTP status of OK
      */
     @Operation(summary = "Update user error record",
             description = "Updates a user error record for the specified row number and upload history ID")

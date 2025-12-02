@@ -46,13 +46,14 @@ public class FileDownloadController {
 
     /**
      * Downloads the lead template file and returns it as a response entity
-     * to allow the client to download it. The file is delivered as a byte array
-     * with appropriate response headers, including the file name "lead-template.xlsx"
-     * and the Content-Type set as "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".
+     * to facilitate downloading by the client. The file is returned as a byte
+     * array with appropriate response headers to indicate it as an Excel file.
      *
-     * @return a {@code ResponseEntity<byte[]>} containing the lead template file in binary format
-     *         along with appropriate HTTP headers for file download.
-     * @throws FileDownloadException if an error occurs while downloading the lead template file.
+     * @return a {@code ResponseEntity<byte[]>} containing the lead template file,
+     *         with the file name set as "lead-template.xlsx" and the Content-Type
+     *         set as "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".
+     * @throws FileDownloadException if an error occurs during the file download process.
+     * @author akshay Jadhav
      */
     @GetMapping("/lead-template")
     public ResponseEntity<byte[]> downloadLeadTemplate() throws FileDownloadException {
