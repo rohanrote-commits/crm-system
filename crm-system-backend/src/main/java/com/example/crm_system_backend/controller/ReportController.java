@@ -1,6 +1,5 @@
 package com.example.crm_system_backend.controller;
 
-import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
@@ -13,12 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,23 +47,6 @@ public class ReportController {
      * @param end end date
      * @return zip file with Excel template in it
      */
-//    @GetMapping("/getTemplate")
-//    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-//                                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
-//                                                             ) {
-//
-//        Set<Lead> leadList = reportService.getLeads(start, end);
-//        if(leadList.isEmpty()) {
-//            LOGGER.log(Level.WARNING, "No leads are registered in this time period.");
-//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//        }
-//        LOGGER.log(Level.INFO, "Successfully generated Zip file");
-//
-//        return reportService.excelToZipConverter(leadList, start, end);
-//    }
-
-
-
     @PostMapping("/getTemplate")
     public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
                                                              @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
@@ -81,15 +61,11 @@ public class ReportController {
         }
         LOGGER.log(Level.INFO, "Successfully generated Zip file");
 
-
         // Save in DB
-
         downloadReport data = new downloadReport();
 
         // Access Token
         String email = jwtUtil.getEmail(token);
-        String role = jwtUtil.getRole(token);
-
         String name = helper.getName(email);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
