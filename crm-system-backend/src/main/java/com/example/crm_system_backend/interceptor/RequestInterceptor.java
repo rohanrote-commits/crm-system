@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-
 @Slf4j
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
@@ -47,6 +46,7 @@ public class RequestInterceptor implements HandlerInterceptor {
 
         if (uri.startsWith("/crm/")) {
             log.info("Request URI: {}", uri);
+
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 return true;
             }
@@ -58,7 +58,6 @@ public class RequestInterceptor implements HandlerInterceptor {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return false;
             }
-
             token = token.substring(7).trim();
 
             String email;

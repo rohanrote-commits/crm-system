@@ -115,16 +115,16 @@ $(document).on("click", function () {
 
     // //delete profile
     // $("#delete-profile").click(function () {
-
+    //
     //     if (!token) {
     //         alert("User not logged in!");
     //         return;
     //     }
-
+    //
     //     if (!confirm("Are you sure you want to delete your profile? This action is irreversible.")) {
     //         return;
     //     }
-
+    //
     //     $.ajax({
     //         url: `http://localhost:8080/crm/user/delete-user`,
     //         type: "DELETE",
@@ -133,10 +133,10 @@ $(document).on("click", function () {
     //         },
     //         success: function (response) {
     //             showAlert(response,"success");
-
+    //
     //             // remove token after success
     //             localStorage.removeItem("Authorization");
-
+    //
     //             // redirect to login page
     //             window.location.href = "/Frontend/html/login.jsp";
     //         },
@@ -146,7 +146,7 @@ $(document).on("click", function () {
     //     });
     // });
 
-//logout
+   //logout
     $("#logout").click(function () {
         if (!token) {
             window.location.href = "/crm/login";
@@ -176,19 +176,18 @@ $(document).on("click", function () {
 
 
 //delete lead
-let deleteEmail = null;
+let leadId = null;
 $(document).on("click", ".delete-lead", function () {
-    deleteEmail = $(this).data("email");
+    leadId = $(this).data("id");
     $("#deleteConfirmModal").modal("show");
 });
+
 // confirm delete
 $("#confirmDeleteBtn").click(function () {
-    if (!deleteEmail) return;
-
+    if (!leadId) return;
     $.ajax({
-        url: "http://localhost:8080/crm/lead/",
+        url: LEAD_API.DELETE(leadId),
         type: "DELETE",
-        data: { email: deleteEmail },
         headers: { "Authorization": "Bearer " + token },
         success: function () {
             showAlert("Lead deleted successfully.", "success");
@@ -198,7 +197,6 @@ $("#confirmDeleteBtn").click(function () {
             showAlert("Error deleting lead.", "warning");
         }
     });
-
     $("#deleteConfirmModal").modal("hide");
 });
 
@@ -390,35 +388,32 @@ function loadUsers(token){
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
-
     $("#lead-table").DataTable({
-    ajax: {
-        url: `http://localhost:8080/crm/lead/by/${payload.sub}`,
-        type: "GET",
-        headers: {
-            "Authorization": "Bearer " + token
-        },
-        dataSrc: function (response) {
-            console.log("Leads fetched:", response);
-            return response;   // must return array
-        },
-        error: function (xhr) {
-            if (xhr.status === 401) {
-                showPopup("Error","Session expired. Login again.", "error");
-                sessionStorage.clear();
-                window.location.href = "/crm/login";
-            } else {
-                if (xhr.status === 23) {
-                  showPopup("Error","Session expired. Login again.", "error");
-                    sessionStorage.clear();
+        ajax: {
+            url: LEAD_API.GET_BY_USER ,
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            data: {
+                userId: payload.sub
+            },
+            dataSrc: function (response) {
+                console.log("Leads fetched:", response);
+                return response || [];
+            },
+            error: function (xhr) {
+                if (xhr.status === 401 || xhr.status === 403 ) {
+                    showPopup("Error", "Session expired. Login again.", "error");
                     window.location.href = "/crm/login";
+                } else {
+                    showPopup("Error", "Error loading leads.", "error");
                 }
-                showPopup("Error","Error loading leads.", "error");
             }
-        }
-    },
+        },
 
     columns: [
+        // {data : "id",title: "id" , visible: false},
         { data: "firstName", title: "First Name" },
         { data: "lastName", title: "Last Name" },
         { data: "email", title: "Email" },
@@ -462,7 +457,7 @@ function loadLeads(payload, token) {
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger delete-lead" data-email="${row.email}">
+                        <button class="btn btn-sm btn-danger delete-lead" data-id="${row.id}">
                             <i class="bi bi-trash"></i>
                         </button>
                         <button class="btn btn-sm btn-secondary view-lead-info" data-lead="${leadData}">
@@ -480,9 +475,8 @@ function loadLeads(payload, token) {
     paging: true,
     ordering: true,
     info: true
-});
-
-}
+    });
+  }
 
     // Function to show bootstrap alert dynamically
     function showAlert(message, type) {

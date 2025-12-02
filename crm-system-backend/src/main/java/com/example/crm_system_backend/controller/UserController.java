@@ -247,7 +247,7 @@ public class UserController {
             }
     )
     @DeleteMapping("/delete-user")
-    ResponseEntity<?> deleteUser(HttpServletRequest request) {
+    ResponseEntity<?> deleteUser( HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         userHandler.delete(userId);
         return new ResponseEntity<>("Deleted and Logged out Successfully ", HttpStatus.OK);

@@ -33,6 +33,4 @@ public interface ILeadRepository extends JpaRepository<Lead,Integer> {
     List<String> getLeadStatusByUserId(@Param("userid") Long userid);
 
     List<Lead> findByUserIn(Collection<User> users);
-
-
 }

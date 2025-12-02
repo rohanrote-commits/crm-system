@@ -185,8 +185,7 @@ $.validator.addMethod(
       //Add Lead
       const method = isEdit ? "PUT" : "POST";
       const url = isEdit
-        ? `http://localhost:8080/crm/lead/${leadData.email}`
-        : `http://localhost:8080/crm/lead/`;
+        ?LEAD_API.UPDATE(leadId) : LEAD_API.CREATE ;
 
       $.ajax({
         url,
@@ -195,7 +194,7 @@ $.validator.addMethod(
         headers: { Authorization: "Bearer " + token },
         data: JSON.stringify(leadData),
         success: function () {
-           showPopup("Error", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
+           showPopup("Success", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
           showAlert(
             isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
           );
@@ -204,7 +203,6 @@ $.validator.addMethod(
         },
         error: function (err) {
           showPopup("Error","Something went wrong. Please try again", "error");
-         // showAlert("Something went wrong. Please try again.","warning");
         },
       });
       isEdit = false;

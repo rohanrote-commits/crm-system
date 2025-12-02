@@ -1,6 +1,5 @@
 package com.example.crm_system_backend.config;
 
-
 import com.example.crm_system_backend.interceptor.RequestInterceptor;
 import com.example.crm_system_backend.interceptor.RoleInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestInterceptor)
-                .addPathPatterns("/crm/user/**", "/crm/lead/**","/crm/error/**","/crm/history/**")
+                .addPathPatterns("/crm/user/**", "/crm/leads/**", "/crm/report/**", "/crm/error/**","/crm/history/**")
                 .excludePathPatterns("/crm/user/sign-in", "/crm/user/sign-up", "/crm/user/forget");
 
         registry.addInterceptor(roleInterceptor)

@@ -8,5 +8,4 @@ public interface IProductService {
     Set<Product> getProducts();
      Product getProductById(Long id);
     Product getProductByName(String name);
-    boolean isProductExist(String product);
 }

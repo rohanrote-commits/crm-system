@@ -7,8 +7,11 @@ import java.util.List;
 public interface IUploadHistoryService {
 
     UploadHistory save(UploadHistory uploadHistory);
+
     UploadHistory findById(String id);
+
     UploadHistory update(UploadHistory uploadHistory);
+
     void deleteById(String id);
     List<UploadHistory> findByUser(String email);
 

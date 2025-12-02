@@ -18,7 +18,6 @@ public class JwtUtil {
 
     /**
      * Generates and returns the signing key used for creating or validating JWTs.
-     *
      * @return the signing key derived from the secret key using
      */
     private Key getSigningKey() {
