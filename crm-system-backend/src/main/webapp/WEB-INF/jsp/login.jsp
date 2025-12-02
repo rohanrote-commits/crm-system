@@ -66,6 +66,7 @@
 </div>
 
 <script src="/Frontend/javascript/login.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

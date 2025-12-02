@@ -11,7 +11,7 @@ class LeadControllerTest {
 
     @Test
     void getAllLeads() {
-        // TODO document why this method is empty
+
 
     }
 

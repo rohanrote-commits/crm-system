@@ -12,9 +12,52 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a Lead entity which stores information about a potential customer or client.
+ * This includes personal details, business information, lead status, associated user, and interested products.
+ * The entity is mapped to the "leads" table in the database.
+ *
+ * The class uses annotations for validation, persistence, and relationship mappings.
+ * It provides fields for storing information such as name, email, mobile number,
+ * description, business address, and timestamps for creation and updates.
+ *
+ * Fields:
+ * - id: The unique identifier for the lead.
+ * - firstName: The first name of the lead.
+ * - lastName: The last name of the lead.
+ * - email: The email address of the lead, must be valid.
+ * - mobileNumber: The contact number of the lead, cannot be null.
+ * - gstin: The GST identification number of the lead, must not be empty.
+ * - description: Additional details or notes about the lead, maximum length is 1000 characters.
+ * - businessAddress: The business address associated with the lead.
+ * - user: The user to whom the lead is assigned (Many-to-One relationship).
+ * - leadStatus: The current status of the lead as an enumeration.
+ * - interestedProducts: A set of products the lead is interested in (Many-to-Many relationship).
+ * - createdAt: The date and time when the lead entity was created.
+ * - updatedAt: The date and time when the lead entity was last updated.
+ *
+ * Table Information:
+ * - Table name: "leads".
+ * - Unique constraint: The email field must be unique.
+ *
+ * Relationships:
+ * - Many-to-One with User: Links the lead to a specific user who manages it.
+ * - Many-to-Many with Product: Represents the products that the lead expresses interest in.
+ *
+ * Annotations:
+ * - Validation: Includes constraints like @Email, @NotNull, and @NotEmpty.
+ * - JPA mappings: Includes @Entity, @Id, @GeneratedValue, @JoinColumn, @Enumerated, etc.
+ * - Lombok's @Data: Automatically generates getters, setters, equals, hashCode, and toString methods.
+ *
+ * Note: The creation and update timestamps are not automatically managed and need to be set manually.
+ *
+ * Author: Akshay Jadhav
+ */
 @Data
 @Entity
-@Table(name = "leads")
+@Table(name = "leads",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"email"})
+)
 public class Lead {
 
     @Id

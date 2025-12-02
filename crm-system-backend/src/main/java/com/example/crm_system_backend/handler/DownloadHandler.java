@@ -66,6 +66,7 @@ public class DownloadHandler {
      *
      * @return a byte array containing the data of the lead template Excel file
      * @throws FileDownloadException if an error occurs during file retrieval or reading
+     * @author Akshay Jadhav
      */
     public byte[] downloadLeadTemplate() throws FileDownloadException {
         ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
@@ -123,6 +124,18 @@ public class DownloadHandler {
     }
 
 
+    /**
+     * Downloads the error file associated with the specified upload history ID.
+     * The method retrieves the error records for the upload history, processes the error details,
+     * and generates a corresponding Excel file as a byte array.
+     *
+     * @param uploadHistoryId the unique identifier of the upload history whose error file is to be downloaded
+     * @return a byte array containing the generated error file
+     * @throws UploadHistoryException if the upload history does not contain error records
+     * @throws ExcelException if there is an error in processing or generating the Excel file
+     *
+     * Author: Akshay Jadhav
+     */
     public byte[] downloadErrorFile(String uploadHistoryId){
         log.info("Enter: DownloadErrorFile.dowloadErrorFile");
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);

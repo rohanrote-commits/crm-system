@@ -191,9 +191,8 @@ public class UserExcelHelper {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
                     errorMap.put("firstName", "Invalid First Name");
                     hasError = true;
-                }
                     user.setFirstName(firstName);
-
+                }
                 if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
                     markError(row.getCell(2), "Invalid Last Name", errorStyle);
                     errorMap.put("lastName", "Invalid Last Name");
@@ -340,8 +339,7 @@ public class UserExcelHelper {
             }
            userList.setValidUserList(users);
 
-        }
-        catch (IOException e) {
+        }catch (IOException e) {
             uploadHistory.setUploadStatus(UploadStatus.FAILED);
             log.error("Exit: UserExcelHelper.processExcelData IOException: {}",e.getMessage());
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
@@ -361,6 +359,7 @@ public class UserExcelHelper {
         log.info("Exit:UserExcelHelper.processExcelData");
         return CompletableFuture.completedFuture(userList);
     }
+
 
     /**
      * Creates and returns the content of the given Excel workbook as a byte array.
@@ -445,6 +444,7 @@ public class UserExcelHelper {
             throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
         }
     }
+
 
     /**
      * Generates an error file in Excel format to record invalid rows encountered

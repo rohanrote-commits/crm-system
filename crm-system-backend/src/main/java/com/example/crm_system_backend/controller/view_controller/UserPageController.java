@@ -7,23 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/crm/users")
 public class UserPageController {
-//    @GetMapping("/login")
-//    public String login(){
-//        return "users/login";
-//    }
 
     @GetMapping("/bulk-upload")
     public String bulkUpload(){
         return "users/bulk-upload";
     }
-//    @GetMapping("users/reset-password")
-//    public String resetPassword(){
-//        return "users/reset-password";
-//    }
-//    @GetMapping("users/sign-up")
-//    public String signUp(){
-//        return "users/signup";
-//    }
+
     @GetMapping("/dashboard")
     public String dashboard(){
         return "dashboard";

@@ -1,239 +1,208 @@
-$(document).ready(function (params) {
-  function parseJwt(token) {
-    try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      return null;
+$(document).ready(function () {
+
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split(".")[1];
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split("")
+                    .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join("")
+            );
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
     }
-  }
 
-  // Get token from sessionStorage
-  const token = sessionStorage.getItem("Authorization");
-  if (!token) {
-    alert("⚠ Unauthorized. Please login.");
-    window.location.href = "/crm/login";
-    return;
-  }
+    // ========== AUTH ==========
+    const token = sessionStorage.getItem("Authorization");
+    if (!token) {
+        showPopup("Unauthorized", "Please login.", "warning");
+        window.location.href = "/crm/login";
+        return;
+    }
 
-  const payload = parseJwt(token);
-  const userRole = payload?.role?.trim();
+    const payload = parseJwt(token);
+    let isEdit = false;
 
-  var isEdit = false;
-
-  //Add Lead
-  $("#addSingleLeadBtn").click(function () {
-    isEdit = false;
-    $("#leadModalLabel").text("Add Lead");
-    $("#saveLeadBtn").text("Add");
-    $("#leadForm")[0].reset();
-    $("#leadId").val("");
-    $("#leadModal").modal("show");
-  });
-
-  //Edit Lead
-  $("#confirmUpdateBtn").click(function () {
-
-    const rowData = $(this).data("row");
-
-    isEdit = true;
-
-    $("#leadModalLabel").text("Edit Lead");
-    $("#saveLeadBtn").text("Update Lead");
-
-    // Fill form
-    $("#leadId").val(rowData.id);
-    $("#firstName").val(rowData.firstName);
-    $("#lastName").val(rowData.lastName);
-    $("#email").val(rowData.email);
-    $("#mobileNumber").val(rowData.mobileNumber);
-    $("#gstin").val(rowData.gstin);
-    $("#leadStatus").val(rowData.leadStatus);
-    $("#businessAddress").val(rowData.businessAddress);
-    $("#description").val(rowData.description);
-
-    // Clear old module selection
-    $("input[name='interestedModules']").prop("checked", false);
-
-    // Set new selected modules
-    rowData.interestedModules.forEach(mod => {
-        $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+    $("#addSingleLeadBtn").click(function () {
+        isEdit = false;
+        $("#leadModalLabel").text("Add Lead");
+        $("#saveLeadBtn").text("Add");
+        $("#leadForm")[0].reset();
+        $("#leadId").val("");
+        $("#email").prop("readOnly", false);
+        $("#gstin").prop("readOnly", false);
+        $("#leadModal").modal("show");
     });
 
-    if (isEdit) {
+    $(document).on("click", ".edit-lead", function () {
+
+        const table = $("#lead-table").DataTable();
+        const rowData = table.row($(this).closest("tr")).data();
+
+        isEdit = true;
+
+        $("#leadModalLabel").text("Edit Lead");
+        $("#saveLeadBtn").text("Update Lead");
+
+        $("#leadId").val(rowData.id);
+        $("#firstName").val(rowData.firstName);
+        $("#lastName").val(rowData.lastName);
+        $("#email").val(rowData.email);
+        $("#mobileNumber").val(rowData.mobileNumber);
+        $("#gstin").val(rowData.gstin);
+        $("#leadStatus").val(rowData.leadStatus);
+        $("#businessAddress").val(rowData.businessAddress);
+        $("#description").val(rowData.description);
+
+        $("input[name='interestedModules']").prop("checked", false);
+        rowData.interestedModules.forEach(mod => {
+            $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
+        });
+
         $("#email").prop("readOnly", true);
         $("#gstin").prop("readOnly", true);
-    }
 
-    $("#updateConfirmModal").modal("hide");
-    $("#leadModal").modal("show");
-});
-
-  
-
-  // Open Update Modal
-$(document).on("click", ".edit-lead", function () {
-
-    const table = $("#lead-table").DataTable();
-    const rowData = table.row($(this).closest("tr")).data();
-
-    $("#confirmUpdateBtn").data("row", rowData); 
-    $("#updateConfirmModal").modal("show");
-});
-
-
-    $("#addLeadBtn").click(function () {
-        $("#leadDropdown").slideToggle(200);
+        $("#leadModal").modal("show");
     });
 
-    // Clicking outside closes dropdown
-    $(document).click(function (e) {
-        if (!$(e.target).closest(".section-buttons").length) {
-            $("#leadDropdown").slideUp(200);
+    $("#saveLeadBtn").click(function () {
+
+        if ($("#leadForm").valid()) {
+
+            if (isEdit) {
+                $("#updateConfirmModal").modal("show");
+            }
         }
     });
 
+    $("#confirmUpdateBtn").click(function () {
+        $("#updateConfirmModal").modal("hide");
+        $("#leadForm").attr("data-confirmed", "1");
+        $("#leadForm").submit(); // UPDATE
+    });
+
+    // ========== VALIDATION ==========
+    $.validator.addMethod("namePattern", value => REGX_CONSTANT.NAME.test(value),
+       ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
+
+    $.validator.addMethod("emailPattern", value => REGX_CONSTANT.EMAIL.test(value),
+       REGX_CONSTANT.EMAIL);
+
+    $.validator.addMethod("mobilePattern", value =>REGX_CONSTANT.MOBILE.test(value),
+        REGX_CONSTANT.MOBILE );
+
+    $.validator.addMethod("gstinPattern", value => REGX_CONSTANT.GSTIN.test(value),
+     REGX_CONSTANT.GSTIN);
+
+    $.validator.addMethod("addressPattern", function (value, element) {
+        return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
+    }, REGX_CONSTANT.ADDRESS_DESC);
+
+    $.validator.addMethod("descriptionPattern", function (value, element) {
+        return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
+    },  REGX_CONSTANT.ADDRESS_DESC);
 
 
-  //Validation methods
-  $.validator.addMethod(
-    "namePattern",
-    (value) => /^[A-Za-z ]{1,50}$/.test(value),
-    "Only alphabets and spaces allowed (1–50 chars)"
-  );
-
-  $.validator.addMethod(
-    "emailPattern",
-    (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
-    "Enter a valid email"
-  );
-
-  $.validator.addMethod(
-    "mobilePattern",
-    (value) => /^[789]\d{9}$/.test(value),
-    "Mobile must start with 7/8/9 and be 10 digits"
-  );
-
-  $.validator.addMethod(
-    "gstinPattern",
-    (value) => /^[A-Z0-9]{15}$/.test(value),
-    "Enter valid GSTIN"
-  );
-
- $.validator.addMethod(
-  "addressPattern",
-  function (value, element) {
-    return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
-  },
-  "Address can include letters, numbers & special chars (max 100 chars)"
-);
-
-$.validator.addMethod(
-  "descriptionPattern",
-  function (value, element) {
-    return this.optional(element) || /^[A-Za-z0-9\s,.\-/#]{1,100}$/.test(value);
-  },
-  "Description can include letters, numbers & special chars (max 100 chars)"
-);
-
-  // Add Lead or edit lead call
-  $("#leadForm").validate({
-    rules: {
-      firstName: { required: true, namePattern: true },
-      lastName: { required: true, namePattern: true },
-      email: { required: true, emailPattern: true },
-      mobileNumber: { required: true, mobilePattern: true },
-      gstin: { required: true, gstinPattern: true },
-      businessAddress: { required:false , addressPattern: true },
-      description: {  required:false ,descriptionPattern: true },
-    },
-    messages: {
-      firstName: { required: "Please enter first name" },
-      lastName: { required: "Please enter last name" },
-      email: { required: "Please enter email" },
-      mobileNumber: { required: "Please enter mobile number" },
-      gstin: { required: "Please enter GSTIN" },
-    },
-    errorElement: "span",
-    errorClass: "text-danger",
-    submitHandler: function () {
-      const leadId = $("#leadId").val();
-      const leadData = {
-        firstName: $("#firstName").val(),
-        lastName: $("#lastName").val(),
-        email: $("#email").val(),
-        mobileNumber: $("#mobileNumber").val(),
-        gstin: $("#gstin").val(),
-        description: $("#description").val(),
-        businessAddress: $("#businessAddress").val(),
-        leadStatus: $("#leadStatus").val(),
-        user: payload?.email,
-        interestedModules: $(".form-check-input:checked")
-          .map(function () {
-            return $(this).val();
-          })
-          .get(),
-      };
-
-      //Add Lead
-      const method = isEdit ? "PUT" : "POST";
-      const url = isEdit
-        ? `http://localhost:8080/crm/lead/${leadData.email}`
-        : `http://localhost:8080/crm/lead/`;
-
-      $.ajax({
-        url,
-        type: method,
-        contentType: "application/json",
-        headers: { Authorization: "Bearer " + token },
-        data: JSON.stringify(leadData),
-        success: function () {
-           showPopup("Error", isEdit ? "Lead updated successfully!" : "Lead added successfully!", "success");
-          showAlert(
-            isEdit ? "Lead updated successfully!" : "Lead added successfully!","success"
-          );
-          $("#leadModal").modal("hide");
-            $("#lead-table").DataTable().ajax.reload();
+    $("#leadForm").validate({
+        rules: {
+            firstName: { required: true, namePattern: true },
+            lastName: { required: true, namePattern: true },
+            email: { required: true, emailPattern: true },
+            mobileNumber: { required: true, mobilePattern: true },
+            gstin: { required: true, gstinPattern: true },
+            businessAddress: { addressPattern: true },
+            description: { descriptionPattern: true }
         },
-        error: function (err) {
-          showPopup("Error","Something went wrong. Please try again", "error");
-         // showAlert("Something went wrong. Please try again.","warning");
-        },
-      });
-      isEdit = false;
-    },
-  });
+        errorElement: "span",
+        errorClass: "text-danger",
+
+        submitHandler: function (form) {
+
+            // Prevent running WITHOUT confirmation
+            if (isEdit && $("#leadForm").attr("data-confirmed") !== "1") {
+                return false;
+            }
+
+            $("#leadForm").attr("data-confirmed", "0");
+
+            const leadId = $("#leadId").val();
+
+            const leadData = {
+                firstName: $("#firstName").val(),
+                lastName: $("#lastName").val(),
+                email: $("#email").val(),
+                mobileNumber: $("#mobileNumber").val(),
+                gstin: $("#gstin").val(),
+                description: $("#description").val(),
+                businessAddress: $("#businessAddress").val(),
+                leadStatus: $("#leadStatus").val(),
+                user: payload?.email,   // FIXED KEY
+                interestedModules: $(".form-check-input:checked")
+                    .map(function () { return $(this).val(); })
+                    .get()
+            };
+
+            const method = isEdit ? "PUT" : "POST";
+            const url = isEdit ? LEAD_API.UPDATE(leadId) : LEAD_API.CREATE;
+
+            $.ajax({
+                url,
+                type: method,
+                contentType: "application/json",
+                headers: { Authorization: "Bearer " + token },
+                data: JSON.stringify(leadData),
+
+                success: function () {
+                    const msg = isEdit
+                        ? "Lead updated successfully!"
+                        : "Lead added successfully!";
+
+                    showPopup("Success", msg, "success");
+                    showAlert(msg, "success");
+                    $("#leadModal").modal("hide");
+                    $("#lead-table").DataTable().ajax.reload();
+                },
+
+                error: function (xhr) {
+                    if (xhr.status === 409) {
+                        showPopup("Duplicate", "Email already exists!", "error");
+                    } else {
+                        console.log(xhr);
+                        showPopup("Error", "Something went wrong. Please try again", "error");
+                    }
+                }
+            });
+
+            isEdit = false;
+        }
+    });
+
 });
 
-    // Function to show bootstrap alert dynamically
-    function showAlert(message, type) {
-      const alertContainer = $("#alert-container");
-      const alert = $(`
+function showAlert(message, type) {
+    const alertContainer = $("#alert-container");
+    const alert = $(`
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-          ${message}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-      `);
-      alertContainer.append(alert);
+    `);
+    alertContainer.append(alert);
 
-      // Auto remove after 5 seconds
-      setTimeout(() => {
+    setTimeout(() => {
         alert.alert('close');
-      }, 5000);
-    }
+    }, 5000);
+}
 
-     function showPopup(title, message, iconType) {
+function showPopup(title, message, iconType) {
     Swal.fire({
-        title: title,
+        title,
         text: message,
-        icon: iconType, // success, error, warning, info
+        icon: iconType,
         confirmButtonText: 'OK'
     });
 }

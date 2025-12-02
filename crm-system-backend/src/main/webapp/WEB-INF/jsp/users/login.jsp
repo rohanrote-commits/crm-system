@@ -11,7 +11,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/login.css">
 
-  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"> -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- jQuery + jQuery Validate CDN -->
   <script src="${pageContext.request.contextPath}/static/javascript/jquery.js"></script>
@@ -33,8 +33,6 @@
   </header>
 
 <div id="alert-container"></div>
-
-
 
   <div class="login-container">
 
@@ -65,7 +63,7 @@
         <button type="submit" class="btn-orange">Continue</button>
       </form>
 
-      <a class="forgot-link" href="/crm/reset-password">I forgot my password</a>
+      <a class="forgot-link" href="${pageContext.request.contextPath}/crm/reset-password">I forgot my password</a>
 
       <hr>
       <p>Dont have an account? Signup as Master Admin</p>
@@ -76,7 +74,7 @@
     </div>
   </div>
 
-  <script src="${pageContext.request.contextPath}/static/javascript/login.js?v=1"></script>
+  <script src="${pageContext.request.contextPath}/static/javascript/login.js?v=2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

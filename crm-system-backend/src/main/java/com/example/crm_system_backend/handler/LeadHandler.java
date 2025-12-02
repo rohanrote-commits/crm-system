@@ -53,6 +53,15 @@ public class LeadHandler implements IHandler<LeadDto> {
     private final ILeadService iLeadService;
 
 
+    /**
+     * Saves a lead into the system after performing necessary validations, such as
+     * checking if a lead with the same email already exists. If the lead exists, an exception
+     * is thrown. Otherwise, the lead is saved and mapped to a LeadDto object.
+     *
+     * @param leadDto the lead data to be saved, encapsulated in a {@link LeadDto} object
+     * @return the saved lead data represented as a {@link LeadDto} object
+     * @throws LeadException if a lead with the given email already exists
+     */
     @Override
     public LeadDto save(LeadDto leadDto) {
         log.info("Enter: LeadHandler.save");
@@ -67,10 +76,17 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
 
+    /**
+     * Retrieves a list of leads associated with a specific user and any sub-users registered by that user.
+     * If the user is not found, a {@link UserException} is thrown.
+     *
+     * @param userId the unique ID of the user whose leads are to be fetched
+     * @return a list of {@link LeadDto} objects representing the leads associated with the user
+     * @throws UserException if the user with the specified ID does not exist
+     * @author Akshay Jadhav
+     */
     public List<LeadDto> getLeadsByUser(Long userId) {
         log.info("Enter: LeadHandler.getLeadsByUser");
-//        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         User mainUser = userService.getUserById(userId)
                 .orElseThrow(() -> {
                     log.error("LeadHandler.getLeadsByUser: User not found");
@@ -90,7 +106,7 @@ public class LeadHandler implements IHandler<LeadDto> {
                             LeadDto leadDto = new LeadDto();
                             //Converting Product -> productName
                             Set<String> products = lead.getInterestedProducts().stream().map(
-                                    Product::getModuleName
+                                    Product::getProductName
                             ).collect(Collectors.toSet());
                             modelMapper.map(lead, leadDto);
                             leadDto.setInterestedModules(products);
@@ -102,6 +118,16 @@ public class LeadHandler implements IHandler<LeadDto> {
         return  leadDtoList;
     }
 
+    /**
+     * Retrieves a Lead entity based on the provided email address.
+     * If no lead is found with the given email, a {@link LeadException} is thrown
+     * with an appropriate error code.
+     *
+     * @param email the email address used to look up the lead
+     * @return the Lead entity associated with the specified email
+     * @throws LeadException if no lead is found with the provided email address
+     * @author Akshay Jadhav
+     */
     public Lead getLeadByEmail(String email){
         log.info("Enter: LeadHandler.getLeadByEmail");
         return leadService.getLeadByEmail(email).orElseThrow(
@@ -112,6 +138,15 @@ public class LeadHandler implements IHandler<LeadDto> {
         );
     }
 
+    /**
+     * Retrieves a list of all leads available in the system.
+     * Each lead is mapped to a {@link LeadDto} object, including data transformations
+     * such as converting products to their corresponding product names.
+     *
+     * @return a list of {@link LeadDto} objects, each representing a lead along
+     *         with its associated details and transformed interested modules (products).
+     * @author Akshay Jadhav
+     */
     @Override
     public List<LeadDto> getAll() {
         log.info("Enter: LeadHandler.getAll");
@@ -120,7 +155,7 @@ public class LeadHandler implements IHandler<LeadDto> {
                   LeadDto leadDto = new LeadDto();
                   //Converting Product -> productName
                   Set<String> products = lead.getInterestedProducts().stream().map(
-                          Product::getModuleName
+                          Product::getProductName
                   ).collect(Collectors.toSet());
                   modelMapper.map(lead, leadDto);
                   leadDto.setInterestedModules(products);
@@ -130,6 +165,17 @@ public class LeadHandler implements IHandler<LeadDto> {
         return leadList;
     }
 
+    /**
+     * Edits an existing lead by updating its properties with the provided data.
+     * Performs validation to ensure the lead exists, and updates fields such as
+     * interested modules and timestamps.
+     *
+     * @param leadId the ID of the lead to be updated
+     * @param leadDto the new data for updating the lead, encapsulated in a {@link LeadDto} object
+     * @return the updated lead information represented as a {@link LeadDto} object
+     * @throws LeadException if the lead with the specified ID does not exist
+     * @author Akshay Jadhav
+     */
     @Override
     public LeadDto edit(Long leadId, LeadDto leadDto) {
         log.info("Enter: LeadHandler.edit");
@@ -151,6 +197,13 @@ public class LeadHandler implements IHandler<LeadDto> {
         return  modelMapper.map(oldLead,LeadDto.class);
     }
 
+    /**
+     * Deletes a lead identified by the provided lead ID. This method delegates the operation
+     * to the {@code leadService} to perform the deletion from the database. Logs are captured
+     * before and after the deletion operation for tracking purposes.
+     *
+     * @param leadId the unique identifier of the lead to be deleted
+     */
     @Override
     public void delete(Long leadId) {
         log.info("Enter: LeadHandler.delete");
@@ -158,6 +211,18 @@ public class LeadHandler implements IHandler<LeadDto> {
         log.info("Exit: LeadHandler.delete");
     }
 
+    /**
+     * Handles the bulk upload of a file containing lead data. This method processes the file,
+     * validates its content, saves valid leads to the database, and updates the upload history status
+     * accordingly.
+     *
+     * @param file   the file to be uploaded and processed, encapsulated as a {@link MultipartFile} object
+     * @param userId the unique identifier of the user performing the bulk upload
+     * @throws UserException     if the user with the specified ID does not exist
+     * @throws LeadException     if an error occurs while processing the file
+     * @throws RuntimeException  if any other unexpected error occurs during the upload process
+     * @author Akshay Jadhav
+     */
     @Override
     public void bulkUpload(MultipartFile file, Long userId) {
         log.info("Enter: LeadHandler.bulkUpload");
@@ -216,6 +281,18 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
 
+    /**
+     * Retrieves a list of leads associated with the user identified by the provided email address.
+     * If the user is not found, a {@link UserException} with an error code {@code USER_NOT_FOUND} is thrown.
+     * Additionally, if no leads are associated with the user, a {@link LeadException} with an error code
+     * {@code LEAD_NOT_FOUND} is thrown.
+     *
+     * @param email the email address of the user whose leads are to be retrieved
+     * @return a list of {@link LeadDto} objects representing the leads associated with the user
+     * @throws UserException if no user is found with the provided email address
+     * @throws LeadException if no leads are associated with the user identified by the email
+     * @author Akshay Jadhav
+     */
     public List<LeadDto> getLeadsByUserEmail(String email) {
         log.info("Enter: LeadHandler.getLeadsByUserEmail");
         User user = userService.getUserByEmail(email).orElseThrow(
@@ -231,7 +308,7 @@ public class LeadHandler implements IHandler<LeadDto> {
             LeadDto leadDto = new LeadDto();
             //Converting Product -> productName
            Set<String> products = lead.getInterestedProducts().stream().map(
-                   Product::getModuleName
+                   Product::getProductName
             ).collect(Collectors.toSet());
             modelMapper.map(lead, leadDto);
             leadDto.setInterestedModules(products);
@@ -242,13 +319,38 @@ public class LeadHandler implements IHandler<LeadDto> {
     }
 
 
+    /**
+     * Converts a {@link Product} entity to its corresponding product name.
+     *
+     * This method is intended to extract and return the name of the product
+     * represented by the provided {@link Product} entity. The product name is
+     * expected to be a unique and non-null field within the {@link Product} entity.
+     *
+     * @param product the {@link Product} entity whose name is to be retrieved
+     * @return the name of the product as a {@link String}, or an empty string if
+     *         the product name cannot be retrieved or is null
+     * @author Akshay Jadhav
+     */
     private String ProductEntityToItsName(Product product) {
         return  "";
     }
 
-    public LeadStatus updateLeadStatus(String email,int status) {
+    /**
+     * Updates the status of a lead based on the provided lead ID and status value.
+     * If the lead with the given ID does not exist, an exception is thrown.
+     * The status is determined by mapping the provided integer value to a corresponding
+     * {@link LeadStatus} enumeration.
+     *
+     * @param id the unique identifier of the lead whose status is to be updated
+     * @param status an integer representing the new status of the lead,
+     *               which corresponds to the ordinal values of {@link LeadStatus}
+     * @return the updated status of the lead as a {@link LeadStatus} enumeration
+     * @throws LeadException if the lead with the specified ID is not found
+     * @author Akshay Jadhav
+     */
+    public LeadStatus updateLeadStatus(Long id,int status) {
         log.info("Enter: LeadHandler.updateLeadStatus");
-        Lead lead =  leadService.getLeadByEmail(email).orElseThrow(
+        Lead lead =  leadService.getLeadById(id).orElseThrow(
                 ()-> {
                     log.error("Exception: LeadHandler.updateLeadStatus -> Lead not found");
                     return new  LeadException(ErrorCode.LEAD_NOT_FOUND);

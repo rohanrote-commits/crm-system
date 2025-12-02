@@ -21,12 +21,21 @@ public class ProductService implements IProductService {
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
     private final ProductRepo productRepo;
 
+    /**
+     * Retrieves all products available in the repository.
+     *
+     * @return a Set containing all products retrieved from the product repository.
+     *         If no products are found, an empty Set is returned.
+     * @author Akshay Jadhav*/
     @Override
     public Set<Product> getProducts() {
         log.info("Enter: ProductService.getProducts()");
        return new HashSet<>(productRepo.findAll());
     }
 
+    /**
+     *
+     */
     @Override
     public Product getProductById(Long id) {
         log.info("Enter: ProductService.getProductById()");
@@ -40,11 +49,20 @@ public class ProductService implements IProductService {
         return product ;
     }
 
+    /**
+     * Fetches a Product entity based on its unique name.
+     * This method retrieves a product from the database by its name,
+     * and throws a ProductException if the product is not found.
+     *
+     * @param name The name of the product to retrieve. Should not be null or empty.
+     * @return The Product entity associated with the given name.
+     * @throws ProductException if a product with the provided name is not found.
+     */
     @Override
     public Product getProductByName(String name) {
 
         log.info("Enter: ProductService.getProductByName()");
-        Product product = productRepo.getProductByModuleName(name.trim()).orElseThrow(
+        Product product = productRepo.getProductByProductName(name.trim()).orElseThrow(
                 ()->{
                     log.error("Exception: ProductService.getProductByName()-> Product not found with name: {}",name);
                     return new ProductException(ErrorCode.PRODUCT_NOT_FOUND);
@@ -54,9 +72,5 @@ public class ProductService implements IProductService {
         return product;
     }
 
-    @Override
-    public boolean isProductExist(String product) {
-        log.info("Enter: ProductService.isProductExist()");
-        return productRepo.existsByModuleName(product);
-    }
+
 }

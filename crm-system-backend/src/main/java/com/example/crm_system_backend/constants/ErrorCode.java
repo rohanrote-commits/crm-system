@@ -25,7 +25,7 @@ public enum ErrorCode {
     PASSWORD_SHOULD_NOT_BE_SAME("PSNS", "Password Should Not Be Same", HttpStatus.NOT_ACCEPTABLE),
     ANOTHER_SESSION_ACTIVE_FOR_USER("ASAU", "Another Session Active For User, Login Again", HttpStatus.CONFLICT),
     USER_NOT_ALLOWED_TO_ACCESS("UNA", "User Not Allowed To Access", HttpStatus.UNAUTHORIZED),
-SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
+    SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
     FILE_PROCESSING_EXCEPTION("FPE", "File Processing Exception", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_NOT_FOUND_EXCEPTION("FNF", "File Not Found", HttpStatus.NOT_FOUND),
     FILE_HISTORY_NOT_FOUND("FHN", "File History Not Found", HttpStatus.NOT_FOUND),
@@ -46,6 +46,7 @@ SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
     PRODUCT_NOT_FOUND("PNF","PRODUCT NOT EXIST",HttpStatus.NOT_FOUND),
     INVALID_LEAD_NOT_FOUND("ILNF", "Invalid Lead Not Found" , HttpStatus.NOT_FOUND ),
 
+    NULL_ARGUMENT_RECEIVED("NA", "Null Argument", HttpStatus.BAD_REQUEST),
 
     FAILED_TO_SCHEDULE_EMAIL("FTSE", "Error in scheduling email", HttpStatus.CONFLICT),
     ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),;
