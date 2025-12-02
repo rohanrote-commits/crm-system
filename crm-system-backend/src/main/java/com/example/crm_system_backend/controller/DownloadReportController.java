@@ -23,9 +23,14 @@ public class DownloadReportController {
 
 
     /**
-     * Get History of all downloaded records according to their role
-     * @param request HttpServletRequest to access token attributes
-     * @return filtered download report history
+     * Retrieves the download history records filtered based on the role, user ID, and email
+     * of the logged-in user. This endpoint is accessible via HTTP GET request at the
+     * "/getDownloadedRecordHistory" endpoint.
+     *
+     * @param request the HTTP servlet request containing attributes such as role, userId,
+     *                and email of the logged-in user
+     * @return a ResponseEntity containing a set of filtered downloadReport objects
+     *         representing the user's download history
      */
     @GetMapping("/getDownloadedRecordHistory")
     public ResponseEntity<Set<downloadReport>> getAllHistory(HttpServletRequest request) {

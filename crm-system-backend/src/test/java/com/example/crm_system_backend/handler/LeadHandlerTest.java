@@ -114,7 +114,7 @@ class LeadHandlerTest {
 
         Lead l1 = new Lead();
         Product p1 = new Product();
-        p1.setModuleName("CRM");
+        p1.setProductName("CRM");
         l1.setInterestedProducts(Set.of(p1));
 
         when(userService.getUserById(userId)).thenReturn(Optional.of(main));
@@ -169,7 +169,7 @@ class LeadHandlerTest {
     void getAll_ShouldReturnAllLeadDtos() {
         Lead l1 = new Lead();
         Product p = new Product();
-        p.setModuleName("M");
+        p.setProductName("M");
         l1.setInterestedProducts(Set.of(p));
 
         when(leadService.getAllLeads()).thenReturn(List.of(l1));
@@ -192,7 +192,7 @@ class LeadHandlerTest {
         old.setId(leadId);
 
         Product p = new Product();
-        p.setModuleName("CRM");
+        p.setProductName("CRM");
 
         LeadDto returnedDto = new LeadDto();
         returnedDto.setEmail("mapped@x.com");
@@ -294,7 +294,7 @@ class LeadHandlerTest {
 
         Lead l = new Lead();
         Product p = new Product();
-        p.setModuleName("P1");
+        p.setProductName("P1");
         l.setInterestedProducts(Set.of(p));
 
         when(userService.getUserByEmail(email)).thenReturn(Optional.of(user));
