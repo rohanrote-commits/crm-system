@@ -16,6 +16,72 @@ $(document).ready(function() {
     }
   }
 
+    // $("#back").click(function () {
+    //     window.location.href = "/Frontend/html/user-dashboard";
+    // });
+    // //delete profile
+    // $("#delete-profile").click(function () {
+    //     if (!token) {
+    //         alert("User not logged in!");
+    //         return;
+    //     }
+    //
+    //     if (
+    //         !confirm(
+    //             "Are you sure you want to delete your profile? This action is irreversible."
+    //         )
+    //     ) {
+    //         return;
+    //     }
+    //
+    //     $.ajax({
+    //         url: `http://localhost:8080/crm/user/delete-user`,
+    //         type: "DELETE",
+    //         headers: {
+    //             Authorization: "Bearer " + token,
+    //         },
+    //         success: function (response) {
+    //             alert(response);
+    //
+    //             // remove token after success
+    //             localStorage.removeItem("Authorization");
+    //
+    //             // redirect to login page
+    //             window.location.href = "/Frontend/html/login.jsp";
+    //         },
+    //         error: function (xhr) {
+    //             alert("Failed to delete user: " + xhr.responseText);
+    //         },
+    //     });
+    // });
+    //
+    // //logout
+    // $("#logout").click(function () {
+    //     if (!token) {
+    //         window.location.href = "/Frontend/html/login.jsp";
+    //         return;
+    //     }
+    //     $.ajax({
+    //         url: `http://localhost:8080/crm/user/logout`,
+    //         type: "GET",
+    //         headers: {
+    //             "Authorization": "Bearer " + token
+    //         },
+    //         success: function (response) {
+    //             alert(response);
+    //
+    //             // remove token
+    //             localStorage.removeItem("Authorization");
+    //
+    //             // redirect to login
+    //             window.location.href = "/Frontend/html/login.jsp";
+    //         },
+    //         error: function (xhr) {
+    //             alert("Failed to logout: " + xhr.responseText);
+    //         }
+    //     });
+    // });
+
   // Get token from sessionStorage
   const token = sessionStorage.getItem("Authorization");
   if (!token) {
@@ -25,7 +91,7 @@ $(document).ready(function() {
   }
 
   const payload = parseJwt(token);
-  const userRole = payload?.role?.trim();
+  // const userRole = payload?.role?.trim();
   
     $(".profile-pic").click(function () {
     $("#profileDropdown").toggleClass("show");
@@ -38,10 +104,10 @@ $(document).ready(function() {
         }
     });
 
-  // Open Modal on Button Click
-  $('#uploadTemplateBtn').on('click', function() {
-    $('#uploadLeadsModal').modal('show');
-  });
+      // Open Modal on Button Click
+      $('#uploadTemplateBtn').on('click', function() {
+        $('#uploadLeadsModal').modal('show');
+      });
 
   // Handle Excel File Upload
   $('#uploadLeadsForm').on('submit', function(e) {
@@ -90,7 +156,7 @@ $(document).ready(function() {
       }, 5000);
     }
     
-     function showPopup(title, message, iconType) {
+    function showPopup(title, message, iconType) {
     Swal.fire({
         title: title,
         text: message,

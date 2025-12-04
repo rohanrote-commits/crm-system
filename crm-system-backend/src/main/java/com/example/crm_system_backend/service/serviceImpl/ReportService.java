@@ -10,7 +10,6 @@ import com.example.crm_system_backend.exception.LeadException;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
-import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.IReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -32,12 +31,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import static com.example.crm_system_backend.constants.ReportConstant.perUserReport_headers;
 import static com.example.crm_system_backend.constants.ReportConstant.summaryReport_headers;
-import static com.example.crm_system_backend.constants.Roles.ADMIN;
-import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 
 @Slf4j
 @Service
@@ -382,8 +380,9 @@ public class ReportService implements IReportService {
 
         // Row 2
         Row headerRow = sheet.createRow(2);
+        int headerCellNum = columnCount;
         for (String header : headers) {
-            Cell headerCell = headerRow.createCell(columnCount++);
+            Cell headerCell = headerRow.createCell(headerCellNum++);
             headerCell.setCellValue(header);
             headerCell.setCellStyle(header_style);
         }
@@ -393,7 +392,6 @@ public class ReportService implements IReportService {
         int rowNum = 3;
 
         for (Lead lead : leads) {
-
             Set<Product> products = lead.getInterestedProducts();
 
             // Convert Set<Product> to comma-separated string
@@ -401,12 +399,9 @@ public class ReportService implements IReportService {
             if (products != null && !products.isEmpty()) {
                 productNames = products.stream()
                         .map(Product::getProductName)
-                        .reduce((p1, p2) -> p1 + ", " + p2)
-                        .orElse("").toString();
+                        .collect(Collectors.joining(", "));
             }
 
-
-//            for (Product product : products) {
                 Row row = sheet.createRow(rowNum++);
                 int cellNum = 0;
                 row.createCell(cellNum++).setCellValue(++index);
@@ -425,10 +420,6 @@ public class ReportService implements IReportService {
                 row.getCell(cellNum - 1).setCellStyle(data_style);
                 row.createCell(cellNum++).setCellValue(lead.getDescription());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
-//            }
         }
     }
-
 }
-
-

@@ -17,7 +17,7 @@ $(document).ready(function () {
   }
 
   $("#back").click(function () {
-    window.location.href = "/crm/dashboard";
+    window.location.href = "/crm/users/dashboard";
   });
 
   // Get token from sessionStorage

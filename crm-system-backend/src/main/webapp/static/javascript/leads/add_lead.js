@@ -59,6 +59,7 @@ $(document).ready(function () {
         $("#description").val(rowData.description);
 
         $("input[name='interestedModules']").prop("checked", false);
+
         rowData.interestedModules.forEach(mod => {
             $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
         });
@@ -69,12 +70,20 @@ $(document).ready(function () {
         $("#leadModal").modal("show");
     });
 
+
+
     $("#saveLeadBtn").click(function () {
 
         if ($("#leadForm").valid()) {
 
+            // UPDATE FLOW
             if (isEdit) {
                 $("#updateConfirmModal").modal("show");
+            }
+            // ADD FLOW → directly submit
+            else {
+                $("#leadForm").attr("data-confirmed", "1");
+                $("#leadForm").submit();
             }
         }
     });
@@ -87,24 +96,24 @@ $(document).ready(function () {
 
     // ========== VALIDATION ==========
     $.validator.addMethod("namePattern", value => REGX_CONSTANT.NAME.test(value),
-       ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
+        ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
 
     $.validator.addMethod("emailPattern", value => REGX_CONSTANT.EMAIL.test(value),
-       REGX_CONSTANT.EMAIL);
+        ERROR_MESSAGE_CONSTANTS.INVALID_EMAIL);
 
     $.validator.addMethod("mobilePattern", value =>REGX_CONSTANT.MOBILE.test(value),
-        REGX_CONSTANT.MOBILE );
+        ERROR_MESSAGE_CONSTANTS.INVALID_MOBILE_NUMBER);
 
     $.validator.addMethod("gstinPattern", value => REGX_CONSTANT.GSTIN.test(value),
-     REGX_CONSTANT.GSTIN);
+        ERROR_MESSAGE_CONSTANTS.INVALID_GSTIN );
 
     $.validator.addMethod("addressPattern", function (value, element) {
         return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
-    }, REGX_CONSTANT.ADDRESS_DESC);
+    }, ERROR_MESSAGE_CONSTANTS.INVALID_ADDRESS);
 
     $.validator.addMethod("descriptionPattern", function (value, element) {
         return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
-    },  REGX_CONSTANT.ADDRESS_DESC);
+    },  ERROR_MESSAGE_CONSTANTS.INVALID_DESCRIPTION);
 
 
     $("#leadForm").validate({
@@ -122,12 +131,10 @@ $(document).ready(function () {
 
         submitHandler: function (form) {
 
-            // Prevent running WITHOUT confirmation
+            // Block unconfirmed update
             if (isEdit && $("#leadForm").attr("data-confirmed") !== "1") {
                 return false;
             }
-
-            $("#leadForm").attr("data-confirmed", "0");
 
             const leadId = $("#leadId").val();
 

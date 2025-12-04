@@ -1,11 +1,9 @@
 package com.example.crm_system_backend.controller;
 
-import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +31,6 @@ public class DownloadReportController {
      * Retrieves the download history records filtered based on the role, user ID, and email
      * of the logged-in user. This endpoint is accessible via HTTP GET request at the
      * "/getDownloadedRecordHistory" endpoint.
-     *
      * @param request the HTTP servlet request containing attributes such as role, userId,
      *                and email of the logged-in user
      * @return a ResponseEntity containing a set of filtered downloadReport objects

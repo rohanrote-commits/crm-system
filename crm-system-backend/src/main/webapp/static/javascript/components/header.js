@@ -46,31 +46,31 @@ const token = sessionStorage.getItem("Authorization");
     });
 
 //logout
-    $("#logout").click(function () {
-        if (!token) {
-            window.location.href = "/Frontend/html/login.jsp";
-            return;
-        }
-        $.ajax({
-            url: `http://localhost:8080/crm/user/logout`,
-            type: "GET",
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (response) {
-                showAlert(response,"success");
-
-                // remove token
-                localStorage.removeItem("Authorization");
-
-                // redirect to login
-                window.location.href = "/Frontend/html/login.jsp";
-            },
-            error: function (xhr) {
-                showAlert("Failed to logout: " + xhr.responseText,"warning");
-            }
-        });
-    });
+//     $("#logout").click(function () {
+//         if (!token) {
+//             window.location.href = "/Frontend/html/login.jsp";
+//             return;
+//         }
+//         $.ajax({
+//             url: `http://localhost:8080/crm/user/logout`,
+//             type: "GET",
+//             headers: {
+//                 "Authorization": "Bearer " + token
+//             },
+//             success: function (response) {
+//                 showAlert(response,"success");
+//
+//                 // remove token
+//                 localStorage.removeItem("Authorization");
+//
+//                 // redirect to login
+//                 window.location.href = "/Frontend/html/login.jsp";
+//             },
+//             error: function (xhr) {
+//                 showAlert("Failed to logout: " + xhr.responseText,"warning");
+//             }
+//         });
+//     });
     $("#view-profile").click(function () {
 
 

@@ -3,11 +3,10 @@ package com.example.crm_system_backend.entity;
 import com.example.crm_system_backend.constants.Roles;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
-@Entity(name = "\"user\"")
+@Entity(name = "user")
 public class User {
 
     @Id
@@ -47,5 +46,11 @@ public class User {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public User(Long id, Roles role, Long registeredBy) {
+        this.id = id;
+        this.role = role;
+        this.registeredBy = registeredBy;
     }
 }

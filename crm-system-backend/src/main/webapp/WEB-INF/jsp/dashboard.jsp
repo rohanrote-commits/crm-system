@@ -15,12 +15,10 @@
 
     <!-- jQuery must come first -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
 
     <!-- Then DataTables -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 </head>
@@ -36,9 +34,7 @@
           <button id="back" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
           <button id="delete-profile" class="drop-item">Delete Profile</button>
           <button id="logout" class="drop-item">Logout</button>
-
         </div>
-        
       </div>
        <img src="${pageContext.request.contextPath}/static/assests/profile.png" class="profile-pic" id="view-profile"></div>
   </header>
@@ -245,13 +241,12 @@
                             </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
+                    </div>
                 </form>
             </div>
-                <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -569,8 +564,8 @@
 <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
 <script src = "${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
+<%--<script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>--%>
 </body>
 </html>

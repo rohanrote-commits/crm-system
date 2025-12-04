@@ -2,13 +2,6 @@
 let reportDataTableInstance = null;
 
 $(document).ready(function () {
-
-    // ----- Initial Setup -----
-
-    $("#header").load("/Frontend/html/components/header.html");
-    $("#profile-model").load("/Frontend/html/models/profile_model.html")
-
-
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -26,55 +19,20 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-
+        showAlert("Unauthorized. Please login.","danger");
         showPopup("Error","Unauthorized. Please login.", "error");
         window.location.href = "/crm/login";
         return;
     }
 
     const payload = parseJwt(token);
-    const userRole = payload?.role?.trim();
+    // loadLeads(payload,token);
 
-    loadLeads(payload,token);
-
-
-    function handleInitialDashboardLoad(token, payload) {
-        // Check session marker for "fresh login" vs "refresh"
-        const isFirstLoadAfterLogin = !sessionStorage.getItem("hasVisitedDashboard");
-
-        let activeSection;
-
-        if (isFirstLoadAfterLogin) {
-            // Flow: Login -> Always Leads
-            activeSection = "leads";
-            localStorage.setItem("activeDashboardSection", "leads");
-        } else {
-            // Flow: Refresh -> Last viewed section
-            activeSection = localStorage.getItem("activeDashboardSection") || "leads";
-        }
-
-        // Apply active state
-        $(".sidebar-btn").removeClass("active");
-        $(`.sidebar-btn[data-target="${activeSection}"]`).addClass("active");
-        $(".dashboard-section").hide();
-        $("#" + activeSection).show();
-
-        // Load data for the active section
-        if (activeSection === "leads") {
-            loadLeads(payload, token);
-        } else if (activeSection === "reports") {
-            // Assuming this function is outside and accepts (payload, token)
-            initializeReportModule(payload, token);
-        }
-
-        // Mark the dashboard as visited for this session
-        sessionStorage.setItem("hasVisitedDashboard", "true");
-    }
-
-    // CALL THE NEW FLOW HANDLER IMMEDIATELY
+    // Call the flow handler immediately
     handleInitialDashboardLoad(token, payload);
 
-    // ----- Sidebar navigation Handler -----
+
+    // Sidebar navigation
     $(".sidebar-btn").click(function () {
         const target = $(this).data("target");
 
@@ -91,15 +49,12 @@ $(document).ready(function () {
         if(target === "leads"){
             loadLeads(payload,token);
         }
-
         if(target === "reports"){
-            initializeReportModule(payload, token);
+            // initializeReportModule(payload, token);
+            loadReportHistory(token);
         }
 
     });
-
-
-    // ----- Profile, Logout, Lead/User Deletion Handlers -----
 
     $("#profilePic").click(function () {
         $("#profileDropdown").toggleClass("show");
@@ -130,7 +85,7 @@ $(document).ready(function () {
                 showAlert(response.message || response, "info");
 
                 localStorage.removeItem("Authorization");
-                window.location.href = "/Frontend/html/login.html";
+                window.location.href = "/crm/login";
             },
             error: function (xhr) {
                 let errorMsg = "Failed to delete user";
@@ -140,11 +95,6 @@ $(document).ready(function () {
                 showAlert(errorMsg, "danger");
             },
         });
-
-    $("#importLead").click(function (event) {
-        sessionStorage.setItem("Authorization", token);
-        window.location.href = "/crm/leads/upload";
-
     });
 
     $("#clearUserBtn").click(function () {
@@ -159,18 +109,58 @@ $(document).ready(function () {
         $("#leadDropdown").toggleClass("show");
     });
 
-// Close dropdown when clicking outside
+    // Close dropdown when clicking outside
     $(document).on("click", function () {
         $("#leadDropdown").removeClass("show");
     });
 
+    $('#lead-table').on('click', '.auto-change-status-btn', function () {
+        let leadId = $(this).data('id');
+        let currentStatus = $(this).data('status');
 
-    $("#importLead").click(function (event) {
-        window.location.href = "leads/upload_lead.html";
+        const leadStatusIntegerMap = {
+            "ADDED": 0,
+            "CONTACTED": 1,
+            "CONVERTED": 2,
+            "NOT_CONVERTED": 3
+        };
+
+        const nextStatusMap = {
+            "ADDED": "CONTACTED",
+            "CONTACTED": "CONVERTED",
+            "CONVERTED": "NOT_CONVERTED",
+            "NOT_CONVERTED": "ADDED"
+        };
+        let nextStatus = nextStatusMap[currentStatus];
+        let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
+
+        $.ajax({
+            url: LEAD_API.UPDATE_STATUS(leadId),
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ status: statusCode }),
+            headers: { "Authorization": "Bearer " + token},
+            success: function (response) {
+                Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
+                $('#lead-table').DataTable().ajax.reload();
+            },
+            error: function (error) {
+                console.log(error);
+                if (error.status===401){
+                    showPopup("Error","Session expired. Login again.", "error");
+                    window.location.href = "/crm/login";
+                }
+                Swal.fire('Error', 'Failed to update status', 'error');
+            }
+        });
     });
 
+    $("#importLead").click(function (event) {
+        sessionStorage.setItem("Authorization", token);
+        window.location.href = "/crm/leads/upload";
+    });
 
-//logout
+    //logout
     $("#logout").click(function () {
         if (!token) {
             window.location.href = "/crm/login";
@@ -193,36 +183,35 @@ $(document).ready(function () {
             },
             error: function (xhr) {
                 showPopup("Error","Failed to Logout", "error");
-                showAlert("Failed to logout: " + xhr.responseText,"warning");
+                showAlert("Failed to  : " + xhr.responseText,"warning");
             }
         });
     });
 
-
-//delete lead
-let leadId = null;
-$(document).on("click", ".delete-lead", function () {
-    leadId = $(this).data("id");
-    $("#deleteConfirmModal").modal("show");
-});
-
-// confirm delete
-$("#confirmDeleteBtn").click(function () {
-    if (!leadId) return;
-    $.ajax({
-        url: LEAD_API.DELETE(leadId),
-        type: "DELETE",
-        headers: { "Authorization": "Bearer " + token },
-        success: function () {
-            showAlert("Lead deleted successfully.", "success");
-            $("#lead-table").DataTable().ajax.reload(null, false);
-        },
-        error: function () {
-            showAlert("Error deleting lead.", "warning");
-        }
+    //delete lead
+    let leadId = null;
+    $(document).on("click", ".delete-lead", function () {
+        leadId = $(this).data("id");
+        $("#deleteConfirmModal").modal("show");
     });
-    $("#deleteConfirmModal").modal("hide");
-});
+
+    // confirm delete
+    $("#confirmDeleteBtn").click(function () {
+        if (!leadId) return;
+        $.ajax({
+            url: LEAD_API.DELETE(leadId),
+            type: "DELETE",
+            headers: { "Authorization": "Bearer " + token },
+            success: function () {
+                showAlert("Lead deleted successfully.", "success");
+                $("#lead-table").DataTable().ajax.reload(null, false);
+            },
+            error: function () {
+                showAlert("Error deleting lead.", "warning");
+            }
+        });
+        $("#deleteConfirmModal").modal("hide");
+    });
 
     $('#user-table').on('click', '.delete-user', function() {
         const user = {
@@ -249,38 +238,38 @@ $("#confirmDeleteBtn").click(function () {
     });
 
 
-  // View profile
-  $("#view-profile").click(function () {
-    $.ajax({
-      url: `http://localhost:8080/crm/user/get-user`,
-      type: "GET",
-      headers: { Authorization: "Bearer " + token },
-      success: function (user) {
-        $("#profileName").val(user.firstName + " " + user.lastName);
-        $("#profileEmail").val(user.email);
-        $("#profileMobile").val(user.mobileNumber);
-        $("#profileAddress").val(user.address || "");
-        $("#profileCity").val(user.city || "");
-        $("#profileState").val(user.state || "");
-        $("#profileCountry").val(user.country || "");
-        $("#profilePin").val(user.pinCode || "");
-        $("#profileRole").val(user.role);
-        $("#profileDate").val(user.registeredOn);
+    // View profile
+    $("#view-profile").click(function () {
+        $.ajax({
+            url: `http://localhost:8080/crm/user/get-user`,
+            type: "GET",
+            headers: { Authorization: "Bearer " + token },
+            success: function (user) {
+                $("#profileName").val(user.firstName + " " + user.lastName);
+                $("#profileEmail").val(user.email);
+                $("#profileMobile").val(user.mobileNumber);
+                $("#profileAddress").val(user.address || "");
+                $("#profileCity").val(user.city || "");
+                $("#profileState").val(user.state || "");
+                $("#profileCountry").val(user.country || "");
+                $("#profilePin").val(user.pinCode || "");
+                $("#profileRole").val(user.role);
+                $("#profileDate").val(user.registeredOn);
 
-        $("#profileModal input, #profileModal textarea").prop("readonly", true);
-        $("#editProfileBtn").removeClass("d-none");
-        $("#saveProfileBtn").addClass("d-none");
-        $("#profileModal").modal("show");
-      },
-      error: function (xhr) {
-        let errorMsg = "Failed to load profile";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMsg = xhr.responseJSON.message;
-        }
-        showAlert(errorMsg, "danger");
-      },
+                $("#profileModal input, #profileModal textarea").prop("readonly", true);
+                $("#editProfileBtn").removeClass("d-none");
+                $("#saveProfileBtn").addClass("d-none");
+                $("#profileModal").modal("show");
+            },
+            error: function (xhr) {
+                let errorMsg = "Failed to load profile";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                showAlert(errorMsg, "danger");
+            },
+        });
     });
-  });
 
     // Edit profile
     $("#editProfileBtn").click(function () {
@@ -346,7 +335,23 @@ $("#confirmDeleteBtn").click(function () {
         });
     });
 
-    // --- Report Module ---
+    $(document).on("click", ".view-lead-info", function () {
+        const lead = JSON.parse($(this).attr("data-lead"));
+
+        $("#viewFirstName").text(lead.firstName || "-");
+        $("#viewLastName").text(lead.lastName || "-");
+        $("#viewEmail").text(lead.email || "-");
+        $("#viewMobile").text(lead.mobileNumber || "-");
+        $("#viewGstin").text(lead.gstin || "-");
+        $("#viewDescription").text(lead.description || "-");
+        $("#viewAddress").text(lead.businessAddress || "-");
+        $("#viewStatus").text(lead.leadStatus || "-");
+        $("#viewModules").text(lead.interestedModules || "-");
+
+        $("#viewLeadModal").modal("show");
+    });
+
+    // Report
 
     // --- Modal Handlers ---
     const reportModalElement = $("#reportModal");
@@ -394,9 +399,7 @@ $("#confirmDeleteBtn").click(function () {
             const startDate = $("#startDateInput").val();
             const endDate = $("#endDateInput").val();
 
-            const getTemplateUrl = REPORT_API.GET_TEMPLATE(startDate, endDate);
-
-            fetch(getTemplateUrl, {
+            fetch(REPORT_API.GET_TEMPLATE(startDate, endDate), {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -429,7 +432,7 @@ $("#confirmDeleteBtn").click(function () {
                     link.click();
                     document.body.removeChild(link);
 
-                    updateDownloadStatus(startDate, endDate, "SUCCESS");
+                    // updateDownloadStatus(startDate, endDate, "SUCCESS");
                     loadReportHistory(token);
                     reportModalElement.hide();
 
@@ -443,24 +446,9 @@ $("#confirmDeleteBtn").click(function () {
     });
 
     // --- Initial Load of Report History ---
-    loadReportHistory();
-    $(document).on("click", ".view-lead-info", function () {
-        const lead = JSON.parse($(this).attr("data-lead"));
+    loadReportHistory(token);
 
-        $("#viewFirstName").text(lead.firstName || "-");
-        $("#viewLastName").text(lead.lastName || "-");
-        $("#viewEmail").text(lead.email || "-");
-        $("#viewMobile").text(lead.mobileNumber || "-");
-        $("#viewGstin").text(lead.gstin || "-");
-        $("#viewDescription").text(lead.description || "-");
-        $("#viewAddress").text(lead.businessAddress || "-");
-        $("#viewStatus").text(lead.leadStatus || "-");
-        $("#viewModules").text(lead.interestedModules || "-");
-
-        $("#viewLeadModal").modal("show");
-    });
 });
-
 
 function loadUsers(token){
     $.ajax({
@@ -505,12 +493,11 @@ function loadUsers(token){
             });
         }
     })
-};
+}
 
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
-
     $("#lead-table").DataTable({
         ajax: {
             url: LEAD_API.GET_BY_USER ,
@@ -526,22 +513,17 @@ function loadLeads(payload, token) {
                 return response || [];
             },
             error: function (xhr) {
-                if (xhr.status === 401) {
-                    showPopup("Error","Session expired. Login again.", "error");
-                    sessionStorage.clear();
-                    window.location.href = "/Frontend/html/login.html";
+                if (xhr.status === 401 || xhr.status === 403 ) {
+                    showPopup("Error", "Session expired. Login again.", "error");
+                    window.location.href = "/crm/login";
                 } else {
-                    if (xhr.status === 23) {
-                        showPopup("Error","Session expired. Login again.", "error");
-                        sessionStorage.clear();
-                        window.location.href = "/Frontend/html/login.html";
-                    }
-                    showPopup("Error","Error loading leads.", "error");
+                    showPopup("Error", "Error loading leads.", "error");
                 }
             }
         },
 
         columns: [
+            // {data : "id",title: "id" , visible: false},
             { data: "firstName", title: "First Name" },
             { data: "lastName", title: "Last Name" },
             { data: "email", title: "Email" },
@@ -554,7 +536,8 @@ function loadLeads(payload, token) {
                 data: "leadStatus",
                 title: "Status",
                 orderable: false,
-                render: function (data) {
+                render: function (data, type, row) {
+
                     let badgeClass = "";
                     switch (data) {
                         case "ADDED": badgeClass = "bg-primary"; break;
@@ -563,7 +546,15 @@ function loadLeads(payload, token) {
                         case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
                         default: badgeClass = "bg-secondary";
                     }
-                    return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED" ? "NOT CONVERTED" : data}</span>`;
+
+                    let label = data === "NOT_CONVERTED" ? "NOT CONVERTED" : data;
+
+                    return `
+            <span class="badge ${badgeClass}">${label}</span>
+            <br>
+            <button class="btn btn-sm btn-link auto-change-status-btn" data-id="${row.id}" data-status="${data}">
+                Change
+            </button>`;
                 }
             },
 
@@ -604,7 +595,6 @@ function loadLeads(payload, token) {
         ordering: true,
         info: true
     });
-
 }
 
 // Function to show bootstrap alert dynamically
@@ -634,7 +624,40 @@ function showPopup(title, message, iconType) {
     });
 }
 
-// --- Report Module ---
+
+// Report
+function handleInitialDashboardLoad(token, payload) {
+    // Check session marker for "fresh login" vs "refresh"
+    const isFirstLoadAfterLogin = !sessionStorage.getItem("hasVisitedDashboard");
+
+    let activeSection;
+
+    if (isFirstLoadAfterLogin) {
+        // Flow: Login -> Always Leads
+        activeSection = "leads";
+        localStorage.setItem("activeDashboardSection", "leads");
+    } else {
+        // Flow: Refresh -> Last viewed section
+        activeSection = localStorage.getItem("activeDashboardSection") || "leads";
+    }
+
+    // Apply active state
+    $(".sidebar-btn").removeClass("active");
+    $(`.sidebar-btn[data-target="${activeSection}"]`).addClass("active");
+    $(".dashboard-section").hide();
+    $("#" + activeSection).show();
+
+    // Load data for the active section
+    if (activeSection === "leads") {
+        loadLeads(payload, token);
+    } else if (activeSection === "reports") {
+        // Assuming this function is outside and accepts (payload, token)
+        initializeReportModule(payload, token);
+    }
+
+    // Mark the dashboard as visited for this session
+    sessionStorage.setItem("hasVisitedDashboard", "true");
+}
 
 // --- Helper: start of End Date restriction ---
 function getNextDay(dateString) {
@@ -678,8 +701,6 @@ function initializeReportDataTable(initialData = []) {
 // --- Fetch Report History from Backend ---
 function loadReportHistory(token) {
 
-    // const ReportHistoryAllUrl = "http://localhost:8080/crm/report/getDownloadedRecordHistory";
-
     if (!token) {
         console.error("Token missing. Cannot fetch report history.");
         initializeReportDataTable([]);
@@ -711,22 +732,22 @@ function loadReportHistory(token) {
 }
 
 // --- Updates Download status of Report ---
-function updateDownloadStatus(startDate, endDate, status) {
-    if (!reportDataTableInstance) return;
+// function updateDownloadStatus(startDate, endDate, status) {
+//     if (!reportDataTableInstance) return;
+//
+//     // Find the row(s) matching startDate and endDate
+//     reportDataTableInstance.rows().every(function () {
+//         const data = this.data();
+//         if (new Date(data.startDate).getTime() === new Date(startDate).getTime() &&
+//             new Date(data.endDate).getTime() === new Date(endDate).getTime()) {
+//             data.status = status;  // update status field
+//             this.data(data);       // update row in DataTable
+//         }
+//     });
+//     reportDataTableInstance.draw(false); // redraw table without resetting pagination
+// }
 
-    // Find the row(s) matching startDate and endDate
-    reportDataTableInstance.rows().every(function () {
-        const data = this.data();
-        if (new Date(data.startDate).getTime() === new Date(startDate).getTime() &&
-            new Date(data.endDate).getTime() === new Date(endDate).getTime()) {
-            data.status = status;  // update status field
-            this.data(data);       // update row in DataTable
-        }
-    });
-    reportDataTableInstance.draw(false); // redraw table without resetting pagination
-}
-
-// --- Function: initializes report module ---
-function initializeReportModule(payload, token) {
-    loadReportHistory(token);
-}
+// // --- Function: initializes report module ---
+// function initializeReportModule(payload, token) {
+//     loadReportHistory(token);
+// }

@@ -39,67 +39,47 @@
 <div id="alert-container" class="mt-3"></div>
 
     <main class="dashboard-container">
-    <div class="dashboard-section p-4"
-        style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="m-0">Upload Users</h3>
-            <div>
-                <button class="btn btn-outline-primary me-2" id="downloadTemplate">
-                    <i class="bi bi-download"></i> Download Template
-                </button>
-                <button class="btn btn-warning" id="uploadTemplateBtn">
-                    <i class="bi bi-upload"></i> Upload Template
-                </button>
+        <div class="dashboard-section p-4"
+            style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="m-0">Upload Users</h3>
+                <div>
+                    <button class="btn btn-outline-primary me-2" id="downloadTemplate">
+                        <i class="bi bi-download"></i> Download Template
+                    </button>
+                    <button class="btn btn-warning" id="uploadTemplateBtn">
+                        <i class="bi bi-upload"></i> Upload Template
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted mb-0">Download the Excel template, fill in lead details, and upload it to bulk import
+                leads.</p>
+        </div>
+        <div class="dashboard-section mt-4 p-4" style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+            <h4 class="mb-3">Upload History</h4>
+            <hr />
+            <div class="upload-history-table-container">
+                <table id="upload-table" class="table table-bordered table-hover align-middle" style="width:100%;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="display:none">ID</th>
+                            <th>Sr.No.</th>
+                            <th>File Name</th>
+                            <th>Uploaded At</th>
+                            <th>Uploaded By</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody><!-- Rows will be dynamically populated --></tbody>
+                </table>
             </div>
         </div>
-        <p class="text-muted mb-0">Download the Excel template, fill in lead details, and upload it to bulk import
-            leads.</p>
-    </div>
-        <div class="dashboard-section mt-4 p-4" style="background-color: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-      <h4 class="mb-3">Upload History</h4>
-      <hr />
-      <div class="upload-history-table-container">
-        <table id="upload-table" class="table table-bordered table-hover align-middle" style="width:100%;">
-<thead class="table-light">
-  <tr>
-    <th style="display:none">ID</th>
-    <th>Sr.No.</th>
-    <th>File Name</th>
-    <th>Uploaded At</th>
-    <th>Uploaded By</th>
-    <th>Status</th>
-    <th>Action</th>
-  </tr>
-</thead>
-
-          <tbody>
-            <!-- Rows will be dynamically populated -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    
-<!-- <div class="form-container">
-    <h2>Bulk User Upload</h2>
-
-    <div class="form-group">
-        <button id="downloadTemplate" class="btn-submit">Download User Template</button>
-    </div>
-
-    <form id="bulkUploadForm" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="userFile">Upload Filled Template (Excel)</label>
-            <input type="file" id="userFile" name="userFile" accept=".xlsx,.xls" required>
-        </div>
-
-        <button type="submit" id="btn-submit" class="btn-submit">Upload Users</button>
-    </form>
-</div> -->
     </main>
+
     <script src="${pageContext.request.contextPath}/static/javascript/bulk-upload.js?v=1"></script>
     <script src="${pageContext.request.contextPath}/static/javascript/users/upload_file_history.js?v=1"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+</body>
 </html>

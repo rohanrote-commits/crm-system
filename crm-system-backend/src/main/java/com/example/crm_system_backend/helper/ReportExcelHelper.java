@@ -176,7 +176,6 @@ public class ReportExcelHelper {
 
         LOGGER.log(Level.FINE, "Successfully received a list of all leads registered from " + startDate + " to " + endDate);
         return finalLeads;
-
     }
 
 
@@ -255,7 +254,7 @@ public class ReportExcelHelper {
             }
             finalFilteredRecords.addAll(filteredRecords);
 
-        }  else if(role.equalsIgnoreCase("USER")) {
+        } else if(role.equalsIgnoreCase("USER")) {
             for(downloadReport record : historyRepo.findAll()) {
                 if(record.getEmail().equals(email)) {
                     filteredRecords.add(record);

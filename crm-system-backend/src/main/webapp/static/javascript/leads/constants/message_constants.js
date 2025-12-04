@@ -12,9 +12,9 @@ const ERROR_MESSAGE_CONSTANTS = {
 }
 
 const REGX_CONSTANT = {
-    NAME : "^[A-Za-z ]{1,50}$",
-    EMAIL: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
-    MOBILE : "^[789]\\d{9}$",
-    GSTIN : "^[A-Z0-9]{15}$",
-    ADDRESS_DESC: "^[A-Za-z0-9\\s,.\\-/#]{1,100}$",
-}
+    NAME: /^[A-Za-z ]{1,50}$/,
+    EMAIL: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+    MOBILE: /^[789]\d{9}$/,
+    GSTIN: /^[A-Z0-9]{15}$/,
+    ADDRESS_DESC: /^[A-Za-z0-9\s,.\-/#]{1,100}$/
+};
