@@ -6,6 +6,7 @@
     <title>Dashboard | CRM Lead Management</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom CSS -->
@@ -33,7 +34,8 @@
       <div class="profile-menu">
         <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
         <div class="dropdown" id="profileDropdown">
-          <button id="back" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
+          <button id="manage-users" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
+            <button id="back" class="drop-item">Back</button>
           <button id="delete-profile" class="drop-item">Delete Profile</button>
           <button id="logout" class="drop-item">Logout</button>
 
@@ -93,7 +95,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Reports Section -->
         <div class="dashboard-section" id="reports" style="display: none;">
 
@@ -106,6 +107,7 @@
                 </div>
             </div>
 
+            <!-- Body -->
             <div class="section-body">
                 <div id="reportModal"
                      style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
@@ -148,6 +150,7 @@
                 </div>
             </div>
         </div>
+
     </main>
 </div>
 
@@ -569,8 +572,6 @@
 <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
 <script src = "${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 </body>
 </html>

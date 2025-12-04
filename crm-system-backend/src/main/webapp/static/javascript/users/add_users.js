@@ -71,63 +71,55 @@ $(document).ready(function () {
         $("#userFirstName, #userLastName, #userEmail, #userRole, #userPassword, #userConfirmPassword").prop("readonly", false);
         $("#userPassword, #userConfirmPassword").prop("required", true).closest(".col-md-6").show();
 
-        // const roleSelect = $("#userRole");
-        // if (role === "MASTER_ADMIN") {
-        //     roleSelect.append(`<option value="ADMIN">ADMIN</option><option value="BASIC">BASIC</option>`);
-        // } else if (role === "ADMIN") {
-        //     roleSelect.append(`<option value="BASIC">BASIC</option>`);
-        // } else {
-        //     roleSelect.append(`<option disabled>No Permission</option>`).prop("disabled", true);
-        // }
 
         new bootstrap.Modal(document.getElementById('userModal')).show();
     });
 
     // Edit User functionality
     $("#user-table").on("click", ".edit-user", function () {
-        showUpdateConfirm().then((ok) => {
-            if (!ok) return;
 
-            const rowData = $("#user-table").DataTable().row($(this).parents("tr")).data();
+        // ❌ Removed showUpdateConfirm() from here
 
-            if (!rowData) {
-                showAlert("Failed to get user data", "danger");
-                return;
-            }
+        const rowData = $("#user-table").DataTable().row($(this).parents("tr")).data();
 
-            editUserId = rowData.id;
-            console.log("Editing user:", rowData);
+        if (!rowData) {
+            showAlert("Failed to get user data", "danger");
+            return;
+        }
 
-            $("#userModalLabel").text("Edit User");
-            $("#saveUserBtn").text("Update User");
+        editUserId = rowData.id;
+        console.log("Editing user:", rowData);
 
-            $("#userFirstName").val(rowData.firstName).prop("readonly", true);
-            $("#userLastName").val(rowData.lastName).prop("readonly", true);
-            $("#userEmail").val(rowData.email).prop("readonly", true);
-            $("#userMobileNumber").val(rowData.mobileNumber).prop("readonly", false);
-            $("#userAddress").val(rowData.address || "").prop("readonly", false);
+        $("#userModalLabel").text("Edit User");
+        $("#saveUserBtn").text("Update User");
 
-            if (rowData.address && rowData.address.trim() !== "") {
-                $("#addressFields").removeClass('d-none');
-                $("#userCity, #userState, #userCountry, #userPinCode")
-                    .prop('required', true).prop("readonly", false);
-            } else {
-                $("#addressFields").addClass('d-none');
-                $("#userCity, #userState, #userCountry, #userPinCode")
-                    .prop('required', false);
-            }
+        $("#userFirstName").val(rowData.firstName).prop("readonly", true);
+        $("#userLastName").val(rowData.lastName).prop("readonly", true);
+        $("#userEmail").val(rowData.email).prop("readonly", true);
+        $("#userMobileNumber").val(rowData.mobileNumber).prop("readonly", false);
+        $("#userAddress").val(rowData.address || "").prop("readonly", false);
 
-            $("#userCity").val(rowData.city || "");
-            $("#userPinCode").val(rowData.pinCode || "");
-            $("#userState").val(rowData.state || "");
-            $("#userCountry").val(rowData.country || "");
-            $("#userRole").val(rowData.role).prop("readonly", true);
+        if (rowData.address && rowData.address.trim() !== "") {
+            $("#addressFields").removeClass('d-none');
+            $("#userCity, #userState, #userCountry, #userPinCode")
+                .prop('required', true).prop("readonly", false);
+        } else {
+            $("#addressFields").addClass('d-none');
+            $("#userCity, #userState, #userCountry, #userPinCode")
+                .prop('required', false);
+        }
 
-            $("#userPassword, #userConfirmPassword").val("").prop("required", false).closest(".col-md-6").hide();
+        $("#userCity").val(rowData.city || "");
+        $("#userPinCode").val(rowData.pinCode || "");
+        $("#userState").val(rowData.state || "");
+        $("#userCountry").val(rowData.country || "");
+        $("#userRole").val(rowData.role).prop("readonly", true);
 
-            new bootstrap.Modal(document.getElementById('userModal')).show();
-        }); // <-- FIXED missing closing brace for .then()
-    }); // <-- FIXED closing for click()
+        $("#userPassword, #userConfirmPassword").val("").prop("required", false).closest(".col-md-6").hide();
+
+        new bootstrap.Modal(document.getElementById('userModal')).show();
+
+    });
 
     // Show/hide address fields dynamically
     $("#userAddress").on('input', function () {
@@ -216,40 +208,70 @@ $(document).ready(function () {
         unhighlight: function (element) {
             $(element).removeClass('error');
         },
+
         submitHandler: function () {
+
             let url, method, payload;
 
             if (editUserId) {
-                payload = {
-                    email: $("#userEmail").val(),
-                    mobileNumber: $("#userMobileNumber").val(),
-                    address: $("#userAddress").val(),
-                    city: $("#userCity").val(),
-                    state: $("#userState").val(),
-                    country: $("#userCountry").val(),
-                    pinCode: $("#userPinCode").val()
-                };
-                url = `http://localhost:8080/crm/user/update-sub_user`;
-                method = "PUT";
 
-            } else {
+                // ✅ Confirmation appears ONLY when updating
+                showUpdateConfirm().then((ok) => {
+                    if (!ok) return;
 
-                payload = {
-                    firstName: $("#userFirstName").val(),
-                    lastName: $("#userLastName").val(),
-                    email: $("#userEmail").val(),
-                    mobileNumber: $("#userMobileNumber").val(),
-                    password: $("#userPassword").val(),
-                    address: $("#userAddress").val(),
-                    city: $("#userCity").val(),
-                    state: $("#userState").val(),
-                    country: $("#userCountry").val(),
-                    pinCode: $("#userPinCode").val(),
-                    role: $("#userRole").val()
-                };
-                url = "http://localhost:8080/crm/user/register";
-                method = "POST";
+                    payload = {
+                        email: $("#userEmail").val(),
+                        mobileNumber: $("#userMobileNumber").val(),
+                        address: $("#userAddress").val(),
+                        city: $("#userCity").val(),
+                        state: $("#userState").val(),
+                        country: $("#userCountry").val(),
+                        pinCode: $("#userPinCode").val()
+                    };
+                    url = `http://localhost:8080/crm/user/update-sub_user`;
+                    method = "PUT";
+
+                    $.ajax({
+                        url: url,
+                        type: method,
+                        headers: { "Authorization": "Bearer " + token },
+                        contentType: "application/json",
+                        data: JSON.stringify(payload),
+                        success: () => {
+                            showAlert("User Updated Successfully", "info");
+                            location.reload();
+                        },
+                        error: xhr => {
+                            let message = "Failed to save user";
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                            } else if (xhr.status === 409) {
+                                message = "Email or Mobile already exists";
+                            }
+                            showAlert(message, "danger");
+                        }
+                    });
+                });
+
+                return; // prevent further execution
             }
+
+            // ADD USER (NO CONFIRMATION)
+            payload = {
+                firstName: $("#userFirstName").val(),
+                lastName: $("#userLastName").val(),
+                email: $("#userEmail").val(),
+                mobileNumber: $("#userMobileNumber").val(),
+                password: $("#userPassword").val(),
+                address: $("#userAddress").val(),
+                city: $("#userCity").val(),
+                state: $("#userState").val(),
+                country: $("#userCountry").val(),
+                pinCode: $("#userPinCode").val(),
+                role: $("#userRole").val()
+            };
+            url = "http://localhost:8080/crm/user/register";
+            method = "POST";
 
             $.ajax({
                 url: url,
@@ -258,7 +280,7 @@ $(document).ready(function () {
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: () => {
-                    showAlert(editUserId ? "User Updated Successfully" : "User Created Successfully", "info");
+                    showAlert("User Created Successfully", "info");
                     location.reload();
                 },
                 error: xhr => {
@@ -271,6 +293,7 @@ $(document).ready(function () {
                     showAlert(message, "danger");
                 }
             });
+
         }
     });
 });
