@@ -59,7 +59,6 @@ class LeadHandlerTest {
     @InjectMocks
     private LeadHandler leadHandler;
 
-    // ---------- save() ----------
     @Test
     void save_ShouldSaveAndReturnDto_WhenLeadNotExists() {
         // Arrange
@@ -99,7 +98,7 @@ class LeadHandlerTest {
         verifyNoMoreInteractions(leadService);
     }
 
-    // ---------- getLeadsByUser ----------
+
     @Test
     void getLeadsByUser_ShouldReturnDtos_WhenUsersFound() {
         // Arrange
@@ -142,7 +141,7 @@ class LeadHandlerTest {
         verify(userService).getUserById(userId);
     }
 
-    // ---------- getLeadByEmail ----------
+
     @Test
     void getLeadByEmail_ShouldReturnLead_WhenFound() {
         String email = "lead@x.com";
@@ -181,7 +180,7 @@ class LeadHandlerTest {
         verify(leadService).getAllLeads();
     }
 
-    // ---------- edit ----------
+
     @Test
     void edit_ShouldUpdateAndReturnDto_WhenLeadExists() {
         Long leadId = 10L;
@@ -220,7 +219,7 @@ class LeadHandlerTest {
         verify(leadService).getLeadById(id);
     }
 
-    // ---------- delete ----------
+
     @Test
     void delete_ShouldCallServiceDelete() {
         Long id = 3L;
@@ -285,7 +284,7 @@ class LeadHandlerTest {
         verify(leadService, never()).bulkUpload(anyList());
     }
 
-    // ---------- getLeadsByUserEmail ----------
+
     @Test
     void getLeadsByUserEmail_ShouldReturnDtos_WhenFound() {
         String email = "owner@x.com";
@@ -327,7 +326,7 @@ class LeadHandlerTest {
         Assertions.assertThrows(LeadException.class, () -> leadHandler.getLeadsByUserEmail(email));
     }
 
-    // ---------- updateLeadStatus ----------
+
     @Test
     void updateLeadStatus_ShouldUpdateAndReturnNewStatus() {
         String email = "l@x.com";

@@ -5,7 +5,6 @@ body {
     background-color: #f8f9fa;
 }
 
-/* Header */
 .top-bar {
     display: flex;
     justify-content: space-between;
