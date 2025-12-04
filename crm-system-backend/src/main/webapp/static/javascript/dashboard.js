@@ -1,15 +1,5 @@
 
-let reportDataTableInstance = null;
-const ReportTemplateBaseUrl = "http://localhost:8080/crm/report";
-
 $(document).ready(function () {
-
-    // ----- 1. Initial Setup -----
-
-    $("#header").load("/Frontend/html/components/header.html");
-    $("#profile-model").load("/Frontend/html/models/profile_model.html")
-
-
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -27,7 +17,7 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-       
+        showAlert("Unauthorized. Please login.","danger");
         showPopup("Error","Unauthorized. Please login.", "error");
         window.location.href = "/crm/login";
         return;
@@ -39,44 +29,8 @@ $(document).ready(function () {
     loadLeads(payload,token);
 
 
-    function handleInitialDashboardLoad(token, payload) {
-        // Check session marker for "fresh login" vs "refresh"
-        const isFirstLoadAfterLogin = !sessionStorage.getItem("hasVisitedDashboard");
 
-        let activeSection;
-
-        if (isFirstLoadAfterLogin) {
-            // Flow: Login -> Always Leads
-            activeSection = "leads";
-            localStorage.setItem("activeDashboardSection", "leads");
-        } else {
-            // Flow: Refresh -> Last viewed section
-            activeSection = localStorage.getItem("activeDashboardSection") || "leads";
-        }
-
-        // Apply active state
-        $(".sidebar-btn").removeClass("active");
-        $(`.sidebar-btn[data-target="${activeSection}"]`).addClass("active");
-        $(".dashboard-section").hide();
-        $("#" + activeSection).show();
-
-        // Load data for the active section
-        if (activeSection === "leads") {
-            loadLeads(payload, token);
-        } else if (activeSection === "reports") {
-            // Assuming this function is outside and accepts (payload, token)
-            initializeReportModule(payload, token);
-        }
-
-        // Mark the dashboard as visited for this session
-        sessionStorage.setItem("hasVisitedDashboard", "true");
-    }
-
-    // CALL THE NEW FLOW HANDLER IMMEDIATELY
-    handleInitialDashboardLoad(token, payload);
-
-
-    // ----- 2. Sidebar navigation Handler -----
+    // Sidebar navigation
     $(".sidebar-btn").click(function () {
         const target = $(this).data("target");
 
@@ -87,21 +41,11 @@ $(document).ready(function () {
         $("#" + target).show();
         console.log(target);
 
-        // Saving the state
-        localStorage.setItem("activeDashboardSection", target);
-
         if(target === "leads"){
             loadLeads(payload,token);
         }
 
-        if(target === "reports"){
-            initializeReportModule(payload, token);
-        }
-
     });
-
-
-    // ----- 3. Profile, Logout, Lead/User Deletion Handlers -----
 
     $("#profilePic").click(function () {
         $("#profileDropdown").toggleClass("show");
@@ -128,25 +72,20 @@ $(document).ready(function () {
             headers: {
                 Authorization: "Bearer " + token,
             },
- success: function (response) {
-        showAlert(response.message || response, "info");
+            success: function (response) {
+                showAlert(response.message || response, "info");
 
-        localStorage.removeItem("Authorization");
-        window.location.href = "/crm/login";
-      },
-      error: function (xhr) {
-        let errorMsg = "Failed to delete user";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMsg = xhr.responseJSON.message;
-        }
-        showAlert(errorMsg, "danger");
-      },
+                localStorage.removeItem("Authorization");
+                window.location.href = "/crm/login";
+            },
+            error: function (xhr) {
+                let errorMsg = "Failed to delete user";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                showAlert(errorMsg, "danger");
+            },
         });
-
-    $("#importLead").click(function (event) {
-        sessionStorage.setItem("Authorization", token);
-        window.location.href = "/crm/leads/upload";
-
     });
 
     $("#clearUserBtn").click(function () {
@@ -155,7 +94,7 @@ $(document).ready(function () {
     });
 
 
-    // Toggle dropdown on button click
+// Toggle dropdown on button click
     $("#addLeadBtn").on("click", function (e) {
         e.stopPropagation(); // prevent click from closing instantly
         $("#leadDropdown").toggleClass("show");
@@ -167,10 +106,17 @@ $(document).ready(function () {
     });
 
 
-//logout
+    $("#importLead").click(function (event) {
+        sessionStorage.setItem("Authorization", token);
+        window.location.href = "/crm/leads/upload";
+    });
+
+
+
+    //logout
     $("#logout").click(function () {
         if (!token) {
-            window.location.href = "/Frontend/html/login.html";
+            window.location.href = "/crm/login";
             return;
         }
         $.ajax({
@@ -186,7 +132,7 @@ $(document).ready(function () {
                 sessionStorage.removeItem("Authorization");
 
                 // redirect to login
-                window.location.href = "/Frontend/html/login.html";
+                window.location.href = "/crm/login";
             },
             error: function (xhr) {
                 showPopup("Error","Failed to Logout", "error");
@@ -197,31 +143,29 @@ $(document).ready(function () {
 
 
 //delete lead
-
-let leadId = null;
-$(document).on("click", ".delete-lead", function () {
-    leadId = $(this).data("id");
-    $("#deleteConfirmModal").modal("show");
-});
+    let leadId = null;
+    $(document).on("click", ".delete-lead", function () {
+        leadId = $(this).data("id");
+        $("#deleteConfirmModal").modal("show");
+    });
 
 // confirm delete
-$("#confirmDeleteBtn").click(function () {
-    if (!leadId) return;
-    $.ajax({
-        url: LEAD_API.DELETE(leadId),
-        type: "DELETE",
-        headers: { "Authorization": "Bearer " + token },
-        success: function () {
-            showAlert("Lead deleted successfully.", "success");
-            $("#lead-table").DataTable().ajax.reload(null, false);
-        },
-        error: function () {
-            showAlert("Error deleting lead.", "warning");
-        }
+    $("#confirmDeleteBtn").click(function () {
+        if (!leadId) return;
+        $.ajax({
+            url: LEAD_API.DELETE(leadId),
+            type: "DELETE",
+            headers: { "Authorization": "Bearer " + token },
+            success: function () {
+                showAlert("Lead deleted successfully.", "success");
+                $("#lead-table").DataTable().ajax.reload(null, false);
+            },
+            error: function () {
+                showAlert("Error deleting lead.", "warning");
+            }
+        });
+        $("#deleteConfirmModal").modal("hide");
     });
-    $("#deleteConfirmModal").modal("hide");
-});
-
 
     $('#user-table').on('click', '.delete-user', function() {
         const user = {
@@ -345,109 +289,6 @@ $("#confirmDeleteBtn").click(function () {
         });
     });
 
-    // --- Report Module ---
-
-    // --- Modal Handlers ---
-    const reportModalElement = $("#reportModal");
-    $("#showReportModal").click(() => reportModalElement.show());
-    $("#closeReportModal").click(() => reportModalElement.hide());
-    reportModalElement.click(function (e) {
-        if (e.target.id === "reportModal") $(this).hide();
-    });
-
-    // --- Date Picker Restrictions ---
-    const today = new Date().toISOString().split("T")[0];
-    $("#startDateInput").attr("max", today);
-    $("#endDateInput").attr("max", today);
-
-    $("#startDateInput").on("change", function () {
-        const startDateValue = $(this).val();
-        $("#endDateInput").attr("min", getNextDay(startDateValue));
-
-        const endDateValue = $("#endDateInput").val();
-        if (endDateValue && new Date(endDateValue) <= new Date(startDateValue)) {
-            $("#endDateInput").val("");
-        }
-    });
-
-    // --- Custom Validator ---
-    $.validator.addMethod("dateMaxToday", function (value, element) {
-        const inputDate = new Date(value);
-        inputDate.setHours(0, 0, 0, 0);
-        const maxDate = new Date();
-        maxDate.setHours(0, 0, 0, 0);
-        return this.optional(element) || inputDate <= maxDate;
-    }, "**Date cannot be in the future");
-
-    // --- Form Validation and Submission ---
-    $("#getReport").validate({
-        rules: {
-            startDate: { required: true, dateMaxToday: true },
-            endDate: { required: true, dateMaxToday: true }
-        },
-        messages: {
-            startDate: { required: "**Start date is missing", dateMaxToday: "**Start date cannot be in the future" },
-            endDate: { required: "**End date is missing", dateMaxToday: "**End date cannot be in the future" }
-        },
-        submitHandler: function () {
-            const startDate = $("#startDateInput").val();
-            const endDate = $("#endDateInput").val();
-
-            const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
-
-            fetch(getTemplateUrl, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` }
-            })
-                .then(resp => {
-                    if (!resp.ok) throw new Error(`HTTP Error! status: ${resp.status}`);
-                    const contentType = resp.headers.get("content-type");
-                    if(contentType && contentType.includes("application/zip")) {
-                        return resp.blob().then(blob => ({ blob, resp }));
-                    } else {
-                        showPopup("Warning","No leads Registered from " + startDate + " To " + endDate + " !!", "warning");
-                        reportModalElement.hide();
-                        return null;
-                    }
-                })
-                .then(result => { // Capture the returned value (either {blob, resp} or null)
-
-                    if (result === null) {
-                        return; // Exit the .then() block immediately, preventing the TypeError.
-                    }
-
-                    // Destructuring is now safe only if result is not null
-                    const { blob, resp } = result;
-
-                    // Use backend-provided filename
-                    // const disposition = resp.headers.get("Content-Disposition");
-                    let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
-                    // if (disposition && disposition.includes("filename=")) {
-                    //     filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
-                    // }
-
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    updateDownloadStatus(startDate, endDate, "SUCCESS");
-                    loadReportHistory(token);
-                    reportModalElement.hide();
-
-                    $("#startDateInput, #endDateInput").val("");
-                })
-                .catch(err => {
-                    alert("Failed to download file : " + err.message);
-                    reportModalElement.hide();
-                });
-        }
-    });
-
-    // --- Initial Load of Report History ---
-    loadReportHistory();
     $(document).on("click", ".view-lead-info", function () {
         const lead = JSON.parse($(this).attr("data-lead"));
 
@@ -463,8 +304,8 @@ $("#confirmDeleteBtn").click(function () {
 
         $("#viewLeadModal").modal("show");
     });
-});
 
+});
 
 function loadUsers(token){
     $.ajax({
@@ -509,7 +350,8 @@ function loadUsers(token){
             });
         }
     })
-}
+};
+
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
@@ -537,43 +379,8 @@ function loadLeads(payload, token) {
             }
         },
 
-    columns: [
-        // {data : "id",title: "id" , visible: false},
-        { data: "firstName", title: "First Name" },
-        { data: "lastName", title: "Last Name" },
-        { data: "email", title: "Email" },
-        { data: "mobileNumber", title: "Mobile", visible: false },
-        { data: "gstin", title: "GSTIN" },
-        { data: "description", title: "Description", visible: false },
-        { data: "businessAddress", title: "Address", visible: false },
-
-        {
-            data: "leadStatus",
-            title: "Status",
-            orderable: false,
-            render: function (data, type, row) {
-
-                let badgeClass = "";
-                switch (data) {
-                    case "ADDED": badgeClass = "bg-primary"; break;
-                    case "CONTACTED": badgeClass = "bg-warning"; break;
-                    case "CONVERTED": badgeClass = "bg-success"; break;
-                    case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
-                    default: badgeClass = "bg-secondary";
-                }
-
-                let label = data === "NOT_CONVERTED" ? "NOT CONVERTED" : data;
-
-                return `
-            <span class="badge ${badgeClass}">${label}</span>
-            <br>
-            <button class="btn btn-sm btn-link auto-change-status-btn" data-id="${row.id}" data-status="${data}">
-                Change
-            </button>`;
-            }
-        },
-
         columns: [
+            // {data : "id",title: "id" , visible: false},
             { data: "firstName", title: "First Name" },
             { data: "lastName", title: "Last Name" },
             { data: "email", title: "Email" },
@@ -586,7 +393,8 @@ function loadLeads(payload, token) {
                 data: "leadStatus",
                 title: "Status",
                 orderable: false,
-                render: function (data) {
+                render: function (data, type, row) {
+
                     let badgeClass = "";
                     switch (data) {
                         case "ADDED": badgeClass = "bg-primary"; break;
@@ -595,7 +403,15 @@ function loadLeads(payload, token) {
                         case "NOT_CONVERTED": badgeClass = "bg-danger"; break;
                         default: badgeClass = "bg-secondary";
                     }
-                    return `<span class="badge ${badgeClass}">${data === "NOT_CONVERTED" ? "NOT CONVERTED" : data}</span>`;
+
+                    let label = data === "NOT_CONVERTED" ? "NOT CONVERTED" : data;
+
+                    return `
+            <span class="badge ${badgeClass}">${label}</span>
+            <br>
+            <button class="btn btn-sm btn-link auto-change-status-btn" data-id="${row.id}" data-status="${data}">
+                Change
+            </button>`;
                 }
             },
 
@@ -627,17 +443,16 @@ function loadLeads(payload, token) {
                 `;
                 }
             }
-        }
-    ],
+        ],
 
-    destroy: true,
-    responsive: true,
-    searching: true,
-    paging: true,
-    ordering: true,
-    info: true
+        destroy: true,
+        responsive: true,
+        searching: true,
+        paging: true,
+        ordering: true,
+        info: true
     });
-  }
+}
 
 $('#lead-table').on('click', '.auto-change-status-btn', function () {
     let leadId = $(this).data('id');
@@ -682,9 +497,9 @@ $('#lead-table').on('click', '.auto-change-status-btn', function () {
 
 
 // Function to show bootstrap alert dynamically
-    function showAlert(message, type) {
-      const alertContainer = $("#alert-container");
-      const alert = $(`
+function showAlert(message, type) {
+    const alertContainer = $("#alert-container");
+    const alert = $(`
         <div class="alert alert-${type} small-alert alert-dismissible fade show" role="alert">
           ${message}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -706,107 +521,4 @@ function showPopup(title, message, iconType) {
         icon: iconType, // success, error, warning, info
         confirmButtonText: 'OK'
     });
-}
-
-// --- Report Module ---
-
-// --- Helper: start of End Date restriction ---
-function getNextDay(dateString) {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    date.setDate(date.getDate() + 1);
-    return date.toISOString().split("T")[0];
-}
-
-// // --- Helper: end of End Date restriction ---
-// function formatEndDateForFullDay(dateString) {
-//     if (!dateString) return "";
-//     return dateString + " 23:59:59";
-// }
-
-// --- Initialize or Re-initialize DataTable ---
-function initializeReportDataTable(initialData = []) {
-
-    if ($.fn.DataTable.isDataTable("#report-table")) {
-        reportDataTableInstance.destroy();
-    }
-
-    reportDataTableInstance = $("#report-table").DataTable({
-        pageLength: 10,
-        data: initialData,
-        columns: [
-            { data: null, title: "Sr No" },
-            { data: "userName", title: "User Name" },
-            { data: "downloadedAt", title: "Downloaded At" },
-            { data: "dateRange", title: "Selected Date Range" },
-            { data: "status", title: "Download Status" }
-        ],
-        order: [[2, "desc"]],
-        drawCallback: function (settings) {
-            let api = this.api();
-            let startIndex = api.context[0]._iDisplayStart;
-
-            api.column(0, { page: "current" })
-                .nodes()
-                .each(function (cell, i) {
-                    cell.innerHTML = startIndex + i + 1;
-                });
-        }
-    });
-}
-
-// --- Fetch Report History from Backend ---
-function loadReportHistory(token) {
-
-    const ReportHistoryAllUrl = "http://localhost:8080/crm/report/getDownloadedRecordHistory";
-
-    if (!token) {
-        console.error("Token missing. Cannot fetch report history.");
-        initializeReportDataTable([]);
-        return;
-    }
-
-    fetch(ReportHistoryAllUrl, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-    })
-        .then(response => {
-            if (!response.ok) {
-                console.error("Failed to fetch report history. Status:", response.status);
-                initializeReportDataTable([]);
-                return null;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data) initializeReportDataTable(data);
-        })
-        .catch(error => {
-            console.error("Network error:", error);
-            initializeReportDataTable([]);
-        });
-}
-
-// --- Updates Download status of Report ---
-function updateDownloadStatus(startDate, endDate, status) {
-    if (!reportDataTableInstance) return;
-
-    // Find the row(s) matching startDate and endDate
-    reportDataTableInstance.rows().every(function () {
-        const data = this.data();
-        if (new Date(data.startDate).getTime() === new Date(startDate).getTime() &&
-            new Date(data.endDate).getTime() === new Date(endDate).getTime()) {
-            data.status = status;  // update status field
-            this.data(data);       // update row in DataTable
-        }
-    });
-    reportDataTableInstance.draw(false); // redraw table without resetting pagination
-}
-
-// --- Function: initializes report module ---
-function initializeReportModule(payload, token) {
-    loadReportHistory(token);
 }
