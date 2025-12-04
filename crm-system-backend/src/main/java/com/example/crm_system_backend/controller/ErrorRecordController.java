@@ -5,6 +5,8 @@ import com.example.crm_system_backend.beans.InvalidLeadError;
 import com.example.crm_system_backend.beans.InvalidUserError;
 import com.example.crm_system_backend.dto.LeadDto;
 import com.example.crm_system_backend.dto.UserDTO;
+
+import com.example.crm_system_backend.dto.UserDTO;
 import com.example.crm_system_backend.handler.ErrorRecordHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.crm_system_backend.dto.UserDTO;
 
 import java.util.List;
 
@@ -30,6 +34,12 @@ public class ErrorRecordController {
     private ErrorRecordHandler errorRecordHandler;
 
 
+    /**
+     * Retrieves a list of lead error records associated with a specific upload history ID.
+     * @author Akshay Jadhav
+     * @param uploadHistoryId the ID of the upload history for which lead error records are to be retrieved
+     * @return a ResponseEntity containing a list of InvalidLeadError objects and an HTTP status of OK
+     */
     @Operation(summary = "Find lead error records by upload history ID",
             description = "Retrieves all invalid lead error records associated with the given upload history ID")
     @Parameter(name = "uploadHistoryId", description = "The ID of the upload history to search for", required = true)
@@ -60,11 +70,20 @@ public class ErrorRecordController {
     }
 
 
+    /**
+     * Updates a lead error record associated with a given row number and upload history ID.
+     *
+     * @author Akshay
+     * @param rowNumber the row number of the error record to be updated
+     * @param uploadHistoryId the ID of the upload history containing the error record
+     * @param errorRecord the LeadDto object containing the updated error record information
+     * @return a ResponseEntity containing the updated LeadDto object and an HTTP status of OK
+     */
     @Operation(summary = "Update lead error record",
             description = "Updates a lead error record for the specified row number and upload history ID")
     @Parameter(name = "rowNumber", description = "The row number of the error record", required = true)
     @Parameter(name = "uploadHistoryId", description = "The ID of the upload history", required = true)
-    @PutMapping("/{rowNumber}/{uploadHistoryId}")
+    @PutMapping("/lead/{rowNumber}/{uploadHistoryId}")
     public ResponseEntity<LeadDto> updateErrorRecord(@PathVariable int rowNumber,@PathVariable String uploadHistoryId ,@RequestBody LeadDto errorRecord){
         log.info("Enter: ErrorRecordController.updateErrorRecord");
        LeadDto leadDto = errorRecordHandler.updateErrorRecord(rowNumber,uploadHistoryId,errorRecord);
@@ -73,7 +92,8 @@ public class ErrorRecordController {
     }
 
     /**
-     * Updates a user error record associated with a given row number and upload history ID.
+     * Updates an error record for a specific user associated with a given row number and upload history ID.
+     * The method also updates the record with the "registered by" user ID retrieved from the HTTP request attributes.
      *
      * @author Akshay
      * @param rowNumber the row number of the error record to be updated

@@ -25,6 +25,10 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -191,6 +195,7 @@ public class UserExcelHelper {
                     markError(row.getCell(1), "Invalid First Name", errorStyle);
                     errorMap.put("firstName", "Invalid First Name");
                     hasError = true;
+                } else {
                     user.setFirstName(firstName);
                 }
                 if (isEmpty(lastName) || !lastName.matches(NAME_REGEX)) {
@@ -371,7 +376,6 @@ public class UserExcelHelper {
      * @throws ExcelException if an I/O error occurs while writing the workbook data
      */
     private byte[] getErrorFileAsBytes(Workbook workbook) {
-        log.info("Enter:UserExcelHelper.getErrorFileAsBytes");
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             workbook.write(out);
             log.info("Exit:UserExcelHelper.getErrorFileAsBytes");

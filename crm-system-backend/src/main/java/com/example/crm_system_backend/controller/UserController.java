@@ -267,7 +267,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "Sub-user deleted successfully"),
                     @ApiResponse(responseCode = "403", description = "Insufficient permissions")
             }
-            
+
     )
     @DeleteMapping("/delete-sub_user")
     ResponseEntity<?> deleteSubUser(@RequestBody UserDTO userDTO, HttpServletRequest request) {

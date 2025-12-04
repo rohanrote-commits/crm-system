@@ -405,8 +405,8 @@ function showUpdateConfirm() {
       once: true,
     });
 
-    modal.show();
-  });
+    modal.show();
+  });
 }
 function showDeleteConfirm() {
   return new Promise((resolve) => {
