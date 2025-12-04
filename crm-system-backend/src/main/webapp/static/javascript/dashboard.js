@@ -19,18 +19,18 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-        showAlert("Unauthorized. Please login.","danger");
+       
         showPopup("Error","Unauthorized. Please login.", "error");
         window.location.href = "/crm/login";
         return;
     }
 
     const payload = parseJwt(token);
-    // loadLeads(payload,token);
+    const userRole = payload?.role?.trim();
 
-    // Call the flow handler immediately
+    loadLeads(payload,token);
+
     handleInitialDashboardLoad(token, payload);
-
 
     // Sidebar navigation
     $(".sidebar-btn").click(function () {
@@ -55,6 +55,9 @@ $(document).ready(function () {
         }
 
     });
+
+
+    // ----- 3. Profile, Logout, Lead/User Deletion Handlers -----
 
     $("#profilePic").click(function () {
         $("#profileDropdown").toggleClass("show");
@@ -81,19 +84,19 @@ $(document).ready(function () {
             headers: {
                 Authorization: "Bearer " + token,
             },
-            success: function (response) {
-                showAlert(response.message || response, "info");
+ success: function (response) {
+        showAlert(response.message || response, "info");
 
-                localStorage.removeItem("Authorization");
-                window.location.href = "/crm/login";
-            },
-            error: function (xhr) {
-                let errorMsg = "Failed to delete user";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                }
-                showAlert(errorMsg, "danger");
-            },
+        localStorage.removeItem("Authorization");
+        window.location.href = "/crm/login";
+      },
+      error: function (xhr) {
+        let errorMsg = "Failed to delete user";
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        showAlert(errorMsg, "danger");
+      },
         });
     });
 
@@ -109,56 +112,18 @@ $(document).ready(function () {
         $("#leadDropdown").toggleClass("show");
     });
 
-    // Close dropdown when clicking outside
+// Close dropdown when clicking outside
     $(document).on("click", function () {
         $("#leadDropdown").removeClass("show");
     });
 
-    $('#lead-table').on('click', '.auto-change-status-btn', function () {
-        let leadId = $(this).data('id');
-        let currentStatus = $(this).data('status');
-
-        const leadStatusIntegerMap = {
-            "ADDED": 0,
-            "CONTACTED": 1,
-            "CONVERTED": 2,
-            "NOT_CONVERTED": 3
-        };
-
-        const nextStatusMap = {
-            "ADDED": "CONTACTED",
-            "CONTACTED": "CONVERTED",
-            "CONVERTED": "NOT_CONVERTED",
-            "NOT_CONVERTED": "ADDED"
-        };
-        let nextStatus = nextStatusMap[currentStatus];
-        let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
-
-        $.ajax({
-            url: LEAD_API.UPDATE_STATUS(leadId),
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({ status: statusCode }),
-            headers: { "Authorization": "Bearer " + token},
-            success: function (response) {
-                Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
-                $('#lead-table').DataTable().ajax.reload();
-            },
-            error: function (error) {
-                console.log(error);
-                if (error.status===401){
-                    showPopup("Error","Session expired. Login again.", "error");
-                    window.location.href = "/crm/login";
-                }
-                Swal.fire('Error', 'Failed to update status', 'error');
-            }
-        });
-    });
 
     $("#importLead").click(function (event) {
         sessionStorage.setItem("Authorization", token);
         window.location.href = "/crm/leads/upload";
     });
+
+
 
     //logout
     $("#logout").click(function () {
@@ -182,36 +147,38 @@ $(document).ready(function () {
                 window.location.href = "/crm/login";
             },
             error: function (xhr) {
-                showPopup("Error","Failed to Logout", "error");
-                showAlert("Failed to  : " + xhr.responseText,"warning");
+              showPopup("Error","Failed to Logout", "error");
+                showAlert("Failed to logout: " + xhr.responseText,"warning");
             }
         });
     });
 
-    //delete lead
-    let leadId = null;
-    $(document).on("click", ".delete-lead", function () {
-        leadId = $(this).data("id");
-        $("#deleteConfirmModal").modal("show");
-    });
 
-    // confirm delete
-    $("#confirmDeleteBtn").click(function () {
-        if (!leadId) return;
-        $.ajax({
-            url: LEAD_API.DELETE(leadId),
-            type: "DELETE",
-            headers: { "Authorization": "Bearer " + token },
-            success: function () {
-                showAlert("Lead deleted successfully.", "success");
-                $("#lead-table").DataTable().ajax.reload(null, false);
-            },
-            error: function () {
-                showAlert("Error deleting lead.", "warning");
-            }
-        });
-        $("#deleteConfirmModal").modal("hide");
+//delete lead
+let leadId = null;
+$(document).on("click", ".delete-lead", function () {
+    leadId = $(this).data("id");
+    $("#deleteConfirmModal").modal("show");
+});
+
+
+$("#confirmDeleteBtn").click(function () {
+    if (!leadId) return;
+    $.ajax({
+        url: LEAD_API.DELETE(leadId),
+        type: "DELETE",
+        headers: { "Authorization": "Bearer " + token },
+        success: function () {
+            showAlert("Lead deleted successfully.", "success");
+            $("#lead-table").DataTable().ajax.reload(null, false);
+        },
+        error: function () {
+            showAlert("Error deleting lead.", "warning");
+        }
     });
+    $("#deleteConfirmModal").modal("hide");
+});
+
 
     $('#user-table').on('click', '.delete-user', function() {
         const user = {
@@ -335,23 +302,7 @@ $(document).ready(function () {
         });
     });
 
-    $(document).on("click", ".view-lead-info", function () {
-        const lead = JSON.parse($(this).attr("data-lead"));
-
-        $("#viewFirstName").text(lead.firstName || "-");
-        $("#viewLastName").text(lead.lastName || "-");
-        $("#viewEmail").text(lead.email || "-");
-        $("#viewMobile").text(lead.mobileNumber || "-");
-        $("#viewGstin").text(lead.gstin || "-");
-        $("#viewDescription").text(lead.description || "-");
-        $("#viewAddress").text(lead.businessAddress || "-");
-        $("#viewStatus").text(lead.leadStatus || "-");
-        $("#viewModules").text(lead.interestedModules || "-");
-
-        $("#viewLeadModal").modal("show");
-    });
-
-    // Report
+    // --- Report Module ---
 
     // --- Modal Handlers ---
     const reportModalElement = $("#reportModal");
@@ -399,7 +350,9 @@ $(document).ready(function () {
             const startDate = $("#startDateInput").val();
             const endDate = $("#endDateInput").val();
 
-            fetch(REPORT_API.GET_TEMPLATE(startDate, endDate), {
+            const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
+
+            fetch(getTemplateUrl, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` }
             })
@@ -423,7 +376,12 @@ $(document).ready(function () {
                     // Destructuring is now safe only if result is not null
                     const { blob, resp } = result;
 
+                    // Use backend-provided filename
+                    // const disposition = resp.headers.get("Content-Disposition");
                     let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
+                    // if (disposition && disposition.includes("filename=")) {
+                    //     filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
+                    // }
 
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
@@ -432,7 +390,7 @@ $(document).ready(function () {
                     link.click();
                     document.body.removeChild(link);
 
-                    // updateDownloadStatus(startDate, endDate, "SUCCESS");
+                    updateDownloadStatus(startDate, endDate, "SUCCESS");
                     loadReportHistory(token);
                     reportModalElement.hide();
 
@@ -446,9 +404,24 @@ $(document).ready(function () {
     });
 
     // --- Initial Load of Report History ---
-    loadReportHistory(token);
+    loadReportHistory();
+    $(document).on("click", ".view-lead-info", function () {
+        const lead = JSON.parse($(this).attr("data-lead"));
 
+        $("#viewFirstName").text(lead.firstName || "-");
+        $("#viewLastName").text(lead.lastName || "-");
+        $("#viewEmail").text(lead.email || "-");
+        $("#viewMobile").text(lead.mobileNumber || "-");
+        $("#viewGstin").text(lead.gstin || "-");
+        $("#viewDescription").text(lead.description || "-");
+        $("#viewAddress").text(lead.businessAddress || "-");
+        $("#viewStatus").text(lead.leadStatus || "-");
+        $("#viewModules").text(lead.interestedModules || "-");
+
+        $("#viewLeadModal").modal("show");
+    });
 });
+
 
 function loadUsers(token){
     $.ajax({
@@ -493,7 +466,7 @@ function loadUsers(token){
             });
         }
     })
-}
+};
 
 
 // Function: Load Leads from API
@@ -558,20 +531,20 @@ function loadLeads(payload, token) {
                 }
             },
 
-            {
-                data: "interestedModules",
-                title: "Interested Modules",
-                orderable: false,
-                render: (data) => data?.length ? data.join(", ") : "-"
-            },
+        {
+            data: "interestedModules",
+            title: "Interested Modules",
+            orderable: false,
+            render: (data) => data?.length ? data.join(", ") : "-"
+        },
 
-            {
-                data: null,
-                title: "Action",
-                orderable: false,
-                render: function (data, type, row) {
-                    const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
-                    return `
+        {
+            data: null,
+            title: "Action",
+            orderable: false,
+            render: function (data, type, row) {
+                const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
+                return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
@@ -595,7 +568,49 @@ function loadLeads(payload, token) {
         ordering: true,
         info: true
     });
-}
+  }
+
+$('#lead-table').on('click', '.auto-change-status-btn', function () {
+    let leadId = $(this).data('id');
+    let currentStatus = $(this).data('status');
+
+    const leadStatusIntegerMap = {
+        "ADDED": 0,
+        "CONTACTED": 1,
+        "CONVERTED": 2,
+        "NOT_CONVERTED": 3
+    };
+
+    const nextStatusMap = {
+        "ADDED": "CONTACTED",
+        "CONTACTED": "CONVERTED",
+        "CONVERTED": "NOT_CONVERTED",
+        "NOT_CONVERTED": "ADDED"
+    };
+    let nextStatus = nextStatusMap[currentStatus];
+    let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
+
+    $.ajax({
+        url: LEAD_API.UPDATE_STATUS(leadId),
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ status: statusCode }),
+        headers: { "Authorization": "Bearer " + token },
+        success: function (response) {
+            Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
+            $('#lead-table').DataTable().ajax.reload();
+        },
+        error: function (error) {
+            console.log(error);
+            if (error.status===401){
+                showPopup("Error","Session expired. Login again.", "error");
+                window.location.href = "/crm/login";
+            }
+            Swal.fire('Error', 'Failed to update status', 'error');
+        }
+    });
+});
+
 
 // Function to show bootstrap alert dynamically
 function showAlert(message, type) {

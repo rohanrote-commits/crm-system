@@ -5,19 +5,18 @@ const REPORT_BASE_URL = "http://localhost:8080/crm/report";
 
 const LEAD_API = {
 
-
     GET_ALL: `${API_BASE_URL}`,
     GET_BY_USER: `${API_BASE_URL}`,
-    GET_BY_EMAIL: (email) => `${API_BASE_URL}?email=${email}`,   // GET
+    GET_BY_EMAIL: (email) => `${API_BASE_URL}?email=${email}`,
 
     CREATE: `${API_BASE_URL}`,    // POST
 
-    UPDATE: (id) => `${API_BASE_URL}/${id}`,    // PUT
+    UPDATE: (id) => `${API_BASE_URL}/${id}`,
 
-    DELETE: (id) => `${API_BASE_URL}/${id}`,    // DELETE
+    DELETE: (id) => `${API_BASE_URL}/${id}`,
 
     BULK_IMPORT:  `${API_BASE_URL}/bulk`, // POST (multipart)
-    UPDATE_STATUS: (id) => `${API_BASE_URL}/${id}/status`  ,// PUT
+    UPDATE_STATUS: (id) => `${API_BASE_URL}/${id}/status`  ,
 
     LEAD_UPLOAD_HISTORY: (email)=> `http://localhost:8080/crm/history/lead/${email}`,
 

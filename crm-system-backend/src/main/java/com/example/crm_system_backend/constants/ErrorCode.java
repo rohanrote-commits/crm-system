@@ -25,7 +25,7 @@ public enum ErrorCode {
     PASSWORD_SHOULD_NOT_BE_SAME("PSNS", "Password Should Not Be Same", HttpStatus.NOT_ACCEPTABLE),
     ANOTHER_SESSION_ACTIVE_FOR_USER("ASAU", "Another Session Active For User, Login Again", HttpStatus.CONFLICT),
     USER_NOT_ALLOWED_TO_ACCESS("UNA", "User Not Allowed To Access", HttpStatus.UNAUTHORIZED),
-SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
+    SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
     FILE_PROCESSING_EXCEPTION("FPE", "File Processing Exception", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_NOT_FOUND_EXCEPTION("FNF", "File Not Found", HttpStatus.NOT_FOUND),
     FILE_HISTORY_NOT_FOUND("FHN", "File History Not Found", HttpStatus.NOT_FOUND),
@@ -50,7 +50,10 @@ SESSION_NOT_FOUND("SNF", "Session Not Found", HttpStatus.NOT_FOUND),
 
     FAILED_TO_SCHEDULE_EMAIL("FTSE", "Error in scheduling email", HttpStatus.CONFLICT),
     ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),
-    EMPTY_LEAD_LIST("ELL", "Empty Lead List", HttpStatus.NOT_FOUND),;
+    EMPTY_LEAD_LIST("ELL", "Empty Lead List", HttpStatus.NOT_FOUND),
+    UPLOAD_HISTORY_NOT_FOUND("UHNF", "Upload History Not Found" , HttpStatus.NOT_FOUND ),
+    FILE_EMPTY_EXCEPTION("FE", "File Empty Exception" , HttpStatus.BAD_REQUEST ),;
+
 
     private final String code;
     private final String message;

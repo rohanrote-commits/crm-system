@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.beans;
 
+import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import lombok.Data;
 

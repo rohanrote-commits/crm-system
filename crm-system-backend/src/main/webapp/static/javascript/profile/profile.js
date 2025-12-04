@@ -14,11 +14,11 @@ $(document).ready(function () {
             return null;
         }
     }
-    if (!token) {
-        showAlert("Unauthorized. Please login.","danger");
-        window.location.href = "/Frontend/html/login.jsp";
-        return;
-    }
+    // if (!token) {
+    //     showAlert("Unauthorized. Please login.","danger");
+    //     window.location.href = "/Frontend/html/login.jsp";
+    //     return;
+    // }
   $("#profilePic").click(function () {
     $("#profileDropdown").toggle();
   });

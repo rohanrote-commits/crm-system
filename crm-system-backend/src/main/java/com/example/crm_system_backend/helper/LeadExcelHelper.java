@@ -321,42 +321,36 @@ public class LeadExcelHelper {
         // First Name
         if (isEmpty(lead.getFirstName()) || !lead.getFirstName().matches(RegxConstant.NAME_REGEX)) {
             String msg = "Invalid First Name";
-          //  markError(row.getCell(1), msg, errorStyle);
             errorMap.put("firstName", msg);
         }
 
         // Last Name
         if (isEmpty(lead.getLastName()) || !lead.getLastName().matches(RegxConstant.NAME_REGEX)) {
             String msg = "Invalid Last Name";
-          //  markError(row.getCell(2), msg, errorStyle);
             errorMap.put("lastName", msg);
         }
 
         // Mobile
         if (isEmpty(lead.getMobileNumber()) || !lead.getMobileNumber().matches(RegxConstant.MOBILE_REGEX)) {
             String msg = "Invalid Mobile Number";
-         //   markError(row.getCell(3), msg, errorStyle);
             errorMap.put("mobileNumber", msg);
         }
 
         // Email
         if (isEmpty(lead.getEmail()) || !lead.getEmail().matches(RegxConstant.EMAIL_REGEX)) {
             String msg = "Invalid Email";
-         //   markError(row.getCell(4), msg, errorStyle);
             errorMap.put("email", msg);
         }
 
         // GSTIN
         if (isEmpty(lead.getGstin()) || !lead.getGstin().matches(RegxConstant.GSTIN_REGEX)) {
             String msg = "Invalid GSTIN";
-          //  markError(row.getCell(5), msg, errorStyle);
             errorMap.put("gstin", msg);
         }
 
         // Modules
         if (lead.getInterestedProducts() == null || lead.getInterestedProducts().isEmpty()) {
             String msg = "No Modules Selected";
-          //  markError(row.getCell(6), msg, errorStyle);
             errorMap.put("interestedProducts", msg);
         }
 
@@ -364,7 +358,6 @@ public class LeadExcelHelper {
         if (!isEmpty(lead.getBusinessAddress()) &&
                 !lead.getBusinessAddress().matches(RegxConstant.ADDRESS_REGEX)) {
             String msg = "Invalid Address";
-          //  markError(row.getCell(7), msg, errorStyle);
             errorMap.put("businessAddress", msg);
         }
 
@@ -372,7 +365,6 @@ public class LeadExcelHelper {
         if (!isEmpty(lead.getDescription()) &&
                 !lead.getDescription().matches(RegxConstant.DESCRIPTION_REGEX)) {
             String msg = "Invalid Description";
-        //    markError(row.getCell(8), msg, errorStyle);
             errorMap.put("description", msg);
         }
 
@@ -392,9 +384,9 @@ public class LeadExcelHelper {
      *                   or writing the output file.
      * @author Akshay Jadhav
      */
-    public byte[] generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
+    @Async("bulkUploadExecutor")
+    public CompletableFuture<byte[]> generateErrorExcelFromJson(List<InvalidLeadError> invalidLeads) throws Exception {
         log.info("Enter: LeadExcelHelper.generateErrorExcelFromJson");
-        //File templateFile = new File("crm-system-backend/src/main/resources/templates/Lead Template.xlsx");
         ClassPathResource resource = new ClassPathResource("templates/Lead Template.xlsx");
         try (
                 FileInputStream fis = new FileInputStream(resource.getFile());
@@ -414,18 +406,21 @@ public class LeadExcelHelper {
             for (InvalidLeadError invalid : invalidLeads) {
 
                 Lead lead = invalid.getLead();
+                Integer rowNumber =  invalid.getRowNumber();
                 Map<String, String> errors = invalid.getErrors();
                 Set<Product> products = lead.getInterestedProducts();
 
                 // If no products – write one row with empty product column
                 if (products == null || products.isEmpty()) {
                     Row row = sheet.createRow(rowIndex);
+                    row.createCell(0).setCellValue(rowNumber);
                     writeLeadRow(row, lead);   // null product
                     writeComments(sheet, drawing, rowIndex, errors,errorStyle);
                     rowIndex++;
                     continue;
                 }
                     Row row = sheet.createRow(rowIndex);
+                    row.createCell(0).setCellValue(rowNumber);
                     // Write all lead fields + single product
                     writeLeadRow(row, lead);
                     // Add comments once per row
@@ -437,7 +432,7 @@ public class LeadExcelHelper {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
             workbook.close();
-            return out.toByteArray();
+            return CompletableFuture.completedFuture(out.toByteArray());
         }
         catch (Exception exception){
             log.error("Error writing error file: {}", exception.getMessage());

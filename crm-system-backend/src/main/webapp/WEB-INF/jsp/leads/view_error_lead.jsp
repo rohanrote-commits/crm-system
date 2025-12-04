@@ -56,6 +56,8 @@
                 </div>
                 <p class="text-muted mb-0">Download the Error File, fill in Correct lead details, and upload it to bulk import leads.
                 </p>
+                <p class="text-info mb-0 "  id="errorNote"> Note :- While Correcting Error Records Not Change The Original Row Number..!
+                </p>
             </div>
                         <!-- Table -->
             <div class="section-body">
@@ -280,6 +282,7 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/leads/constants/message_constants.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/view_error_lead.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/users/delete_profile.js"></script>

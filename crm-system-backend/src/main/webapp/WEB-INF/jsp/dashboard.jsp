@@ -6,6 +6,7 @@
     <title>Dashboard | CRM Lead Management</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom CSS -->
@@ -15,10 +16,12 @@
 
     <!-- jQuery must come first -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.js"></script>
 
     <!-- Then DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 </head>
@@ -31,10 +34,13 @@
       <div class="profile-menu">
         <i class="bi bi-gear profile-pic settings-icon" id="profilePic"></i>
         <div class="dropdown" id="profileDropdown">
-          <button id="back" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
+          <button id="manage-users" class="drop-item" onclick="window.location.href =`/crm/users/user-dashboard`">Manage Users</button>
+            <button id="back" class="drop-item">Back</button>
           <button id="delete-profile" class="drop-item">Delete Profile</button>
           <button id="logout" class="drop-item">Logout</button>
+
         </div>
+        
       </div>
        <img src="${pageContext.request.contextPath}/static/assests/profile.png" class="profile-pic" id="view-profile"></div>
   </header>
@@ -102,6 +108,7 @@
                 </div>
             </div>
 
+            <!-- Body -->
             <div class="section-body">
                 <div id="reportModal"
                      style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
@@ -241,12 +248,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
-                    </div>
                 </form>
             </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -566,6 +574,5 @@
 <script src = "${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
-<%--<script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>--%>
 </body>
 </html>

@@ -162,7 +162,6 @@ jQuery(function() {
         $("#upload-table").on("click", ".download-error", function (e) {
                     e.preventDefault();
           const uploadHistoryId = $(this).data("id");
-          const fileName = "Lead_Error"
           $.ajax({
             url: LEAD_API.ERROR_FILE_BY_HISTORY_ID(uploadHistoryId),
             type: "GET",
@@ -172,23 +171,31 @@ jQuery(function() {
             xhrFields: {
               responseType: "blob",
             },
-            success: function (data, status, xhr) {
-              const filename = `${fileName.replace(" ", "_")}`;
-              const blob = new Blob([data], {
-                type: xhr.getResponseHeader("Content-Type"),
-              });
-              // Create a download link dynamically
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = filename;
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              window.URL.revokeObjectURL(url);
-              showPopup("Success","Error File downloded successfully", "success");
-              showAlert("Error File downloded successfully", "success");
-            },
+              success: function (data, status, xhr) {
+                  // Extract filename from response header if available
+                  let disposition = xhr.getResponseHeader("Content-Disposition");
+                  let filename = "Lead_Error"; // fallback filename
+                  if (disposition && disposition.indexOf("filename=") !== -1) {
+                      let filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                      let matches = filenameRegex.exec(disposition);
+                      if (matches != null && matches[1]) {
+                          filename = matches[1].replace(/['"]/g, '');
+                      }
+                  }
+                  const blob = new Blob([data], {
+                      type: xhr.getResponseHeader("Content-Type"),
+                  });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(url);
+
+                  showAlert(" File downloaded successfully", "success");
+              },
             error: function (xhr) {
               if (xhr.status === 401) {
                  showPopup("Error","Session expired. Login again.", "error");

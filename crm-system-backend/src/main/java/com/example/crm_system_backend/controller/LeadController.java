@@ -4,6 +4,11 @@ import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 
 import com.example.crm_system_backend.handler.LeadHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/crm/leads")
+@Tag(name = "Lead Management", description = "APIs for managing leads in the CRM system")
 public class LeadController {
 
     private static final Logger log = LoggerFactory.getLogger(LeadController.class);
@@ -43,10 +49,15 @@ public class LeadController {
      *         If no filters are provided, all leads are returned.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Get all leads", description = "Retrieves leads based on optional filters (userId or email)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved leads"),
+            @ApiResponse(responseCode = "404", description = "No leads found")
+    })
     @GetMapping
     public ResponseEntity<List<LeadDto>> getAllLeads(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String email) {
+            @Parameter(description = "User ID to filter leads") @RequestParam(required = false) Long userId,
+            @Parameter(description = "Email to filter leads") @RequestParam(required = false) String email) {
 
         log.info("Enter: LeadController.getAllLeads");
 
@@ -73,6 +84,11 @@ public class LeadController {
      *         of {@code 201 Created}.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Create new lead", description = "Creates a new lead with the provided details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Lead created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PostMapping
     public ResponseEntity<LeadDto> saveLead(@Valid @RequestBody LeadDto leadDto) {
         log.info("Enter: LeadController.saveLead");
@@ -89,9 +105,16 @@ public class LeadController {
      * @return A {@code ResponseEntity} containing the updated {@code LeadDto} object and an HTTP status of {@code 200 OK}.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Update lead", description = "Updates an existing lead with the provided details")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lead updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Lead not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<LeadDto> updateLead(@PathVariable Long id,
-                                              @Valid @RequestBody LeadDto leadDto) {
+    public ResponseEntity<LeadDto> updateLead(
+            @Parameter(description = "ID of the lead to update") @PathVariable Long id,
+            @Valid @RequestBody LeadDto leadDto) {
         log.info("Enter: LeadController.updateLead");
         return ResponseEntity.ok(leadHandler.edit(id, leadDto));
     }
@@ -105,8 +128,14 @@ public class LeadController {
      *         Indicates that the lead has been successfully deleted.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Delete lead", description = "Deletes a lead by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lead deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Lead not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteLead(@PathVariable Long id) {
+    public ResponseEntity<?> deleteLead(
+            @Parameter(description = "ID of the lead to delete") @PathVariable Long id) {
         log.info("Enter: LeadController.deleteLead");
         leadHandler.delete(id);
         log.info("Exit: LeadController.deleteLead");
@@ -123,9 +152,15 @@ public class LeadController {
      *         along with a confirmation message.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Bulk import leads", description = "Imports multiple leads from a file")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Bulk import successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid file or data")
+    })
     @PostMapping("/bulk")
-    public ResponseEntity<?> bulkImport(@RequestParam MultipartFile file,
-                                        @RequestParam Long userId) {
+    public ResponseEntity<?> bulkImport(
+            @Parameter(description = "File containing lead data") @RequestParam MultipartFile file,
+            @Parameter(description = "ID of the user performing the import") @RequestParam Long userId) {
 
         log.info("Enter: LeadController.bulkImport");
         leadHandler.bulkUpload(file, userId);
@@ -144,9 +179,16 @@ public class LeadController {
      *         and an HTTP status of {@code 200 OK}.
      * @author Akshay Jadhav
      */
+    @Operation(summary = "Update lead status", description = "Updates the status of an existing lead")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lead status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Lead not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid status")
+    })
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateLeadStatus(@PathVariable Long id,
-                                              @RequestBody Map<String, Integer> body) {
+    public ResponseEntity<?> updateLeadStatus(
+            @Parameter(description = "ID of the lead") @PathVariable Long id,
+            @Parameter(description = "New status value") @RequestBody Map<String, Integer> body) {
         log.info("Enter: LeadController.updateLeadStatus");
         Integer status = body.get("status");
         LeadStatus updatedStatus = leadHandler.updateLeadStatus(id, status);

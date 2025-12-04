@@ -189,6 +189,7 @@ $(document).ready(function () {
                 showPopup("Success","File Downloded successfully","success");
             },
             error: function () {
+
                     if (xhr.status === 401) {
         showPopup("Warning","Session expired. Please login again.","warning");
         sessionStorage.clear();

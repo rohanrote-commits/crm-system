@@ -59,7 +59,6 @@ $(document).ready(function () {
         $("#description").val(rowData.description);
 
         $("input[name='interestedModules']").prop("checked", false);
-
         rowData.interestedModules.forEach(mod => {
             $(`input[name='interestedModules'][value='${mod}']`).prop("checked", true);
         });
@@ -69,8 +68,6 @@ $(document).ready(function () {
 
         $("#leadModal").modal("show");
     });
-
-
 
     $("#saveLeadBtn").click(function () {
 
@@ -96,7 +93,7 @@ $(document).ready(function () {
 
     // ========== VALIDATION ==========
     $.validator.addMethod("namePattern", value => REGX_CONSTANT.NAME.test(value),
-        ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
+       ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
 
     $.validator.addMethod("emailPattern", value => REGX_CONSTANT.EMAIL.test(value),
         ERROR_MESSAGE_CONSTANTS.INVALID_EMAIL);
@@ -105,7 +102,7 @@ $(document).ready(function () {
         ERROR_MESSAGE_CONSTANTS.INVALID_MOBILE_NUMBER);
 
     $.validator.addMethod("gstinPattern", value => REGX_CONSTANT.GSTIN.test(value),
-        ERROR_MESSAGE_CONSTANTS.INVALID_GSTIN );
+     ERROR_MESSAGE_CONSTANTS.INVALID_GSTIN );
 
     $.validator.addMethod("addressPattern", function (value, element) {
         return this.optional(element) || REGX_CONSTANT.ADDRESS_DESC.test(value);
