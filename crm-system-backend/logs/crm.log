@@ -5699,3 +5699,8 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 2025-12-04 18:25:11 INFO  c.e.c.handler.UploadedHistoryHandler - Enter : findUserUploadHistoryByEmail
 2025-12-04 18:25:11 INFO  c.e.c.s.s.UploadHistoryService - Enter: ErrorRecordHandler.findByUser
 2025-12-04 18:25:11 INFO  c.e.c.handler.UploadedHistoryHandler - Exit : findUserUploadHistoryByEmail
+2025-12-04 18:32:27 INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-12-04 18:32:27 INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-12-04 18:32:27 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-12-04 18:32:27 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-12-04 18:32:27 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
