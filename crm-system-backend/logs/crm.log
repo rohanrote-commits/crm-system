@@ -35,10 +35,10 @@
 2025-12-04 11:01:05 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2025-12-04 11:01:05 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2025-12-04 11:01:05 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2025-12-04 11:01:05 INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+2025-12-04 11:01:05 INFO  o.s.b.a.l.ConditionEvaluationReportLogger -
 
 Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-12-04 11:01:05 ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+2025-12-04 11:01:05 ERROR o.s.b.d.LoggingFailureAnalysisReporter -
 
 ***************************
 APPLICATION FAILED TO START

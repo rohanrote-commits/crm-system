@@ -18,6 +18,7 @@ import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.ProductService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -223,63 +225,189 @@ public class LeadHandler implements IHandler<LeadDto> {
      * @throws RuntimeException  if any other unexpected error occurs during the upload process
      * @author Akshay Jadhav
      */
+//    @Override
+//    public void bulkUpload(MultipartFile file, Long userId) {
+//        log.info("Enter: LeadHandler.bulkUpload");
+//
+//        if (!file.isEmpty()) {
+//            String fileName = file.getOriginalFilename();
+//            String uploadHistoryId  = fileName.substring(11 ,fileName.lastIndexOf("."));
+//            if (uploadHistoryId.length()>36){
+//                uploadHistoryId = uploadHistoryId.substring(0,36);
+//             UploadHistory uploadHistory =  uploadHistoryService.findById(uploadHistoryId);
+//             if (uploadHistory!=null){
+//                 try {
+//                     LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory).get();
+//
+//                 } catch (InterruptedException e) {
+//                     throw new RuntimeException(e);
+//                 }
+//             }
+//            }
+//
+//            return;
+//        }
+//
+//        UploadHistory uploadHistory = new UploadHistory();
+//        uploadHistory.setFileName(file.getOriginalFilename());
+//        uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
+//        uploadHistory.setUploadedAt(LocalDateTime.now());
+//        uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
+//
+//        try {
+//            // Validate User
+//            User user = userService.getUserById(userId).orElseThrow(
+//                    () -> new UserException(ErrorCode.USER_NOT_FOUND)
+//            );
+//            uploadHistory.setUploadedBy(user.getEmail());
+//            // Process Excel
+//            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory).get();
+//            List<Lead> validLeadList = leadList.getValidLeadList();
+//            List<Lead> invalidLeadList = leadList.getInvalidLeadList();
+//            // Save valid data
+//            if (!validLeadList.isEmpty()) {
+//                validLeadList.forEach(lead -> {
+//                    lead.setCreatedAt(new Date());
+//                    lead.setUpdatedAt(new Date());
+//                    lead.setLeadStatus(LeadStatus.ADDED);
+//                    lead.setUser(user);
+//                });
+//
+//                leadService.bulkUpload(validLeadList);
+//            }
+//            // ------ Set Status ------
+//            if (!validLeadList.isEmpty() && !invalidLeadList.isEmpty()) {
+//                uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
+//            }
+//            else if (!validLeadList.isEmpty()) {
+//                uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+//            }
+//            else if (!invalidLeadList.isEmpty()) {
+//                uploadHistory.setUploadStatus(UploadStatus.FAILED);
+//            }
+//            else {
+//                uploadHistory.setUploadStatus(UploadStatus.FAILED); // empty file or unexpected
+//            }
+//            uploadHistoryService.save(uploadHistory);
+//        }
+//        catch (Exception e) {
+//            log.error("Exit: LeadHandler.bulkUpload Exception:", e);
+//            uploadHistory.setUploadStatus(UploadStatus.FAILED);
+//            uploadHistory.setUploadedAt(LocalDateTime.now());
+//            uploadHistoryService.save(uploadHistory);
+//            throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+//        }
+//
+//        log.info("Exit: LeadHandler.bulkUpload");
+//    }
+
     @Override
+    @Transactional
     public void bulkUpload(MultipartFile file, Long userId) {
+
         log.info("Enter: LeadHandler.bulkUpload");
+        if (file.isEmpty()) {
+            throw new LeadException(ErrorCode.FILE_EMPTY_EXCEPTION);
+        }
+
+        try {
+            String fileName = file.getOriginalFilename();
+            String uploadHistoryId = null;
+            if(fileName !=null && !fileName.equalsIgnoreCase("Lead_Teamplate.xlsx")){
+                uploadHistoryId   = extractHistoryIdFromFilename(fileName);
+            }
+            UploadHistory uploadHistory;
+            if (uploadHistoryId != null) {
+                // Correction Upload Flow
+                uploadHistory = this.handleCorrectionUpload(uploadHistoryId);
+            } else {
+                // Fresh Upload Flow
+                uploadHistory = this.createNewUploadHistory(fileName, userId);
+            }
+            // Process Valid & Invalid Leads
+            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory).get();
+            this.saveValidLeads(leadList.getValidLeadList(), userId);
+            this.updateUploadStatus(uploadHistory, leadList);
+
+            log.info("Exit: LeadHandler.bulkUpload");
+        }
+        catch (Exception ex) {
+            log.error("Error during bulk upload:", ex);
+            throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+        }
+    }
+
+    private String extractHistoryIdFromFilename(String fileName) {
+        if (fileName == null || !fileName.contains(".")) return null;
+
+        String uploadHistoryId  = fileName.substring(11 ,fileName.lastIndexOf("."));
+            if (uploadHistoryId.length()>36) {
+                uploadHistoryId = uploadHistoryId.substring(0, 36);
+            }
+        return uploadHistoryId;
+    }
+
+    private UploadHistory handleCorrectionUpload(String uploadHistoryId) {
+        UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
+
+        if (uploadHistory == null) {
+            throw new LeadException(ErrorCode.UPLOAD_HISTORY_NOT_FOUND);
+        }
+        // Delete previous invalid data (error records)
+        uploadHistoryService.deleteErrorRecords(uploadHistoryId);
+        uploadHistory.setUploadedAt(LocalDateTime.now());
+        uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
+        uploadHistoryService.save(uploadHistory);
+        log.info("Correction upload: Previous invalid records removed");
+        return uploadHistory;
+    }
+
+    private UploadHistory createNewUploadHistory(String fileName, Long userId) {
+        User user = userService.getUserById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         UploadHistory uploadHistory = new UploadHistory();
-        uploadHistory.setFileName(file.getOriginalFilename());
+        uploadHistory.setFileName(fileName);
         uploadHistory.setFileTemplateType(FileTemplateType.LEAD);
+        uploadHistory.setUploadedBy(user.getEmail());
         uploadHistory.setUploadedAt(LocalDateTime.now());
         uploadHistory.setUploadStatus(UploadStatus.PROCESSING);
 
-        try {
-            // Validate User
-            User user = userService.getUserById(userId).orElseThrow(
-                    () -> new UserException(ErrorCode.USER_NOT_FOUND)
-            );
-            uploadHistory.setUploadedBy(user.getEmail());
-            // Process Excel
-            LeadList leadList = leadExcelHelper.processExcelData(file, uploadHistory).get();
-            List<Lead> validLeadList = leadList.getValidLeadList();
-            List<Lead> invalidLeadList = leadList.getInvalidLeadList();
-            // Save valid data
-            if (!validLeadList.isEmpty()) {
-                validLeadList.forEach(lead -> {
-                    lead.setCreatedAt(new Date());
-                    lead.setUpdatedAt(new Date());
-                    lead.setLeadStatus(LeadStatus.ADDED);
-                    lead.setUser(user);
-                });
+        return uploadHistoryService.save(uploadHistory);
+    }
 
-                leadService.bulkUpload(validLeadList);
-            }
-            // ------ Set Status ------
-            if (!validLeadList.isEmpty() && !invalidLeadList.isEmpty()) {
+    private void saveValidLeads(List<Lead> validLeadList, Long userId) {
+        if (validLeadList.isEmpty()) return;
+        User user = userService.getUserById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        validLeadList.forEach(lead -> {
+            lead.setCreatedAt(new Date());
+            lead.setUpdatedAt(new Date());
+            lead.setLeadStatus(LeadStatus.ADDED);
+            lead.setUser(user);
+        });
+
+        leadService.bulkUpload(validLeadList);
+    }
+
+    private void updateUploadStatus(UploadHistory uploadHistory, LeadList leadList) {
+
+        if (!leadList.getValidLeadList().isEmpty() && ! leadList.getInvalidLeadList().isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.PARTIALLY_SUCCESS);
             }
-            else if (!validLeadList.isEmpty()) {
+            else if (!leadList.getValidLeadList().isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.SUCCESS);
             }
-            else if (!invalidLeadList.isEmpty()) {
+            else if (!leadList.getInvalidLeadList().isEmpty()) {
                 uploadHistory.setUploadStatus(UploadStatus.FAILED);
             }
             else {
                 uploadHistory.setUploadStatus(UploadStatus.FAILED); // empty file or unexpected
             }
-            uploadHistoryService.save(uploadHistory);
-        }
-        catch (Exception e) {
-            log.error("Exit: LeadHandler.bulkUpload Exception:", e);
-            uploadHistory.setUploadStatus(UploadStatus.FAILED);
-            uploadHistory.setUploadedAt(LocalDateTime.now());
-            uploadHistoryService.save(uploadHistory);
-            throw new LeadException(ErrorCode.FILE_PROCESSING_EXCEPTION);
-        }
 
-        log.info("Exit: LeadHandler.bulkUpload");
+        uploadHistoryService.save(uploadHistory);
     }
-
 
     /**
      * Retrieves a list of leads associated with the user identified by the provided email address.

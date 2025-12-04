@@ -125,4 +125,11 @@ public class UploadHistoryService implements IUploadHistoryService {
                 }
         );
     }
+
+
+    public void deleteErrorRecords (String uploadHistoryId){
+        log.info("Enter: ErrorRecordHandler.deleteErrorRecords");
+        iUploadHistoryRepository.clearErrorRecords(uploadHistoryId);
+        log.info("Exit: ErrorRecordHandler.deleteErrorRecords");
+    }
 }

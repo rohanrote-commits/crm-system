@@ -135,7 +135,7 @@ $(document).ready(function () {
                 window.location.href = "/crm/login";
             },
             error: function (xhr) {
-                showPopup("Error","Failed to Logout", "error");
+              showPopup("Error","Failed to Logout", "error");
                 showAlert("Failed to logout: " + xhr.responseText,"warning");
             }
         });
@@ -143,29 +143,29 @@ $(document).ready(function () {
 
 
 //delete lead
-    let leadId = null;
-    $(document).on("click", ".delete-lead", function () {
-        leadId = $(this).data("id");
-        $("#deleteConfirmModal").modal("show");
-    });
+let leadId = null;
+$(document).on("click", ".delete-lead", function () {
+    leadId = $(this).data("id");
+    $("#deleteConfirmModal").modal("show");
+});
 
-// confirm delete
-    $("#confirmDeleteBtn").click(function () {
-        if (!leadId) return;
-        $.ajax({
-            url: LEAD_API.DELETE(leadId),
-            type: "DELETE",
-            headers: { "Authorization": "Bearer " + token },
-            success: function () {
-                showAlert("Lead deleted successfully.", "success");
-                $("#lead-table").DataTable().ajax.reload(null, false);
-            },
-            error: function () {
-                showAlert("Error deleting lead.", "warning");
-            }
-        });
-        $("#deleteConfirmModal").modal("hide");
+
+$("#confirmDeleteBtn").click(function () {
+    if (!leadId) return;
+    $.ajax({
+        url: LEAD_API.DELETE(leadId),
+        type: "DELETE",
+        headers: { "Authorization": "Bearer " + token },
+        success: function () {
+            showAlert("Lead deleted successfully.", "success");
+            $("#lead-table").DataTable().ajax.reload(null, false);
+        },
+        error: function () {
+            showAlert("Error deleting lead.", "warning");
+        }
     });
+    $("#deleteConfirmModal").modal("hide");
+});
 
     $('#user-table').on('click', '.delete-user', function() {
         const user = {
@@ -179,8 +179,8 @@ $(document).ready(function () {
                 data : JSON.stringify(user),
                 headers: { "Authorization": "Bearer " + token },
                 success: function() {
-                    showPopup("Success","User deleted successfully", "success");
-                    //showAlert("User deleted successfully.","success");
+                   showPopup("Success","User deleted successfully", "success");
+                   //showAlert("User deleted successfully.","success");
                     $('#user-table').DataTable().ajax.reload();
                 },
                 error: function() {
@@ -415,20 +415,20 @@ function loadLeads(payload, token) {
                 }
             },
 
-            {
-                data: "interestedModules",
-                title: "Interested Modules",
-                orderable: false,
-                render: (data) => data?.length ? data.join(", ") : "-"
-            },
+        {
+            data: "interestedModules",
+            title: "Interested Modules",
+            orderable: false,
+            render: (data) => data?.length ? data.join(", ") : "-"
+        },
 
-            {
-                data: null,
-                title: "Action",
-                orderable: false,
-                render: function (data, type, row) {
-                    const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
-                    return `
+        {
+            data: null,
+            title: "Action",
+            orderable: false,
+            render: function (data, type, row) {
+                const leadData = JSON.stringify(row).replace(/"/g, '&quot;');
+                return `
                     <div class="d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning edit-lead" data-email="${row.email}">
                             <i class="bi bi-pencil"></i>
