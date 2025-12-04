@@ -25,7 +25,6 @@ import java.util.List;
 @RequestMapping("/crm/history")
 @AllArgsConstructor
 @Tag(name = "Upload History", description = "APIs for managing upload history")
-@SecurityRequirement(name = "Bearer Authentication")
 public class UploadHistoryController {
 
 

@@ -4,14 +4,9 @@ import com.example.crm_system_backend.beans.UserList;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.constants.FileTemplateType;
 import com.example.crm_system_backend.constants.Roles;
-import com.example.crm_system_backend.constants.UploadStatus;
 import com.example.crm_system_backend.dto.UserDTO;
-import com.example.crm_system_backend.entity.UploadHistory;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.exception.UserException;
-import com.example.crm_system_backend.handler.AuthHandler;
-import com.example.crm_system_backend.handler.ErrorRecordHandler;
-import com.example.crm_system_backend.handler.UserHandler;
 import com.example.crm_system_backend.helper.UserExcelHelper;
 import com.example.crm_system_backend.repository.IUserRepo;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
@@ -24,8 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.BeanUtils;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -600,60 +594,5 @@ class UserHandlerTest {
         }
     }
 
-    // ==================== DELETE SUB USER TESTS ====================
-//    @Nested
-//    @DisplayName("Delete Sub User Tests")
-//    class DeleteSubUserTests {
-//
-//        @Test
-//        @DisplayName("Should delete sub-user successfully")
-//        void testDeleteSubUserSuccess() {
-//            // Arrange
-//            UserDTO subUserDTO = new UserDTO();
-//            subUserDTO.setEmail("subuser@example.com");
-//
-//            User subUser = new User();
-//            subUser.setId(2L);
-//            subUser.setEmail("subuser@example.com");
-//
-//            List<UserDTO> usersList = new ArrayList<>();
-//            UserDTO userDTOInList = new UserDTO();
-//            userDTOInList.setEmail("subuser@example.com");
-//            usersList.add(userDTOInList);
-//
-//            when(userService.getUserById(1L)).thenReturn(Optional.of(user));
-//            when(userRepo.findRoleById(1L)).thenReturn(Roles.ADMIN);
-//            when(userService.getAllUsersByAdmin(1L)).thenReturn(List.of(subUser));
-//            when(userRepo.findEmailById(anyLong())).thenReturn("admin@example.com");
-//            when(userService.getUserByEmail("subuser@example.com")).thenReturn(Optional.of(subUser));
-//
-//            // Act
-//            userHandler.deleteSubUser(1L, subUserDTO);
-//
-//            // Assert
-//            verify(userService, times(1)).deleteUser(subUser);
-//        }
-//
-//        @Test
-//        @DisplayName("Should throw UserException when sub-user not found")
-//        void testDeleteSubUserNotFound() {
-//            // Arrange
-//            UserDTO subUserDTO = new UserDTO();
-//            subUserDTO.setEmail("nonexistent@example.com");
-//
-//            when(userService.getUserById(1L)).thenReturn(Optional.of(user));
-//            when(userRepo.findRoleById(1L)).thenReturn(Roles.ADMIN);
-//            when(userService.getAllUsersByAdmin(1L)).thenReturn(new ArrayList<>());
-//            when(userRepo.findEmailById(anyLong())).thenReturn("admin@example.com");
-//
-//            // Act & Assert
-//            UserException exception = assertThrows(UserException.class, () -> {
-//                userHandler.deleteSubUser(1L, subUserDTO);
-//            });
-//
-//            assertEquals(ErrorCode.USER_NOT_PRESENT_WITH_EMAIL.getMessage(), exception.getMessage());
-//            verify(userService, never()).deleteUser(any(User.class));
-//        }
-//    }
 
 }

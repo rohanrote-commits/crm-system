@@ -20,6 +20,7 @@ jQuery(function () {
         window.location.href = "/crm/login";
         return;
     }
+    $("#manage-users").hide();
 
    const payload = parseJwt(token);
   const id = sessionStorage.getItem("id");

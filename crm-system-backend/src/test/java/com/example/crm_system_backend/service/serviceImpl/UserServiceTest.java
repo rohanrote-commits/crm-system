@@ -105,7 +105,7 @@ class UserServiceTest {
         // Master admin (ID=1) has two users
         User admin = new User();
         admin.setId(100L);
-        admin.setRole(Roles.ADMIN);
+        admin.setRole(Roles.MASTER_ADMIN);
 
         User normalUser = new User();
         normalUser.setId(101L);

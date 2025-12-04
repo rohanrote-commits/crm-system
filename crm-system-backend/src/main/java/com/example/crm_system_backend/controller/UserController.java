@@ -138,7 +138,6 @@ public class UserController {
      * @param request the HTTP servlet request containing attributes like the `userId` of the requester
      * @return a ResponseEntity containing a list of UserDTOs representing user details and an HTTP status of OK
      */
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Get all users",
             description = "Retrieve list of all users accessible to the requester",
@@ -190,7 +189,6 @@ public class UserController {
      * @param request the HTTP servlet request containing the `userId` attribute of the user being updated
      * @return a ResponseEntity containing the updated user details and an HTTP status of OK
      */
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Update user",
             description = "Update existing user details",
@@ -215,7 +213,6 @@ public class UserController {
      * @return a ResponseEntity containing the updated sub-user details and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Update sub-user",
             description = "Update sub-user details. Required roles: ADMIN or MASTER_ADMIN",
@@ -237,7 +234,6 @@ public class UserController {
      *
      * @param request the HTTP servlet request containing the `userId` attribute of the
      */
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Delete user",
             description = "Delete user account and log them out",
@@ -264,7 +260,6 @@ public class UserController {
      * @return a ResponseEntity with a message of successful deletion and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Delete sub-user",
             description = "Delete sub-user account. Required roles: ADMIN or MASTER_ADMIN",
@@ -292,7 +287,6 @@ public class UserController {
      * @return a ResponseEntity containing a success message and an HTTP status of OK
      */
     @RoleRequired({"ADMIN", "MASTER_ADMIN"})
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "Bulk upload users",
             description = "Upload multiple users via file. Required roles: ADMIN or MASTER_ADMIN",
@@ -316,7 +310,6 @@ public class UserController {
      * @param request the HTTP servlet request containing attributes such as the user's email
      * @return a ResponseEntity containing a success message and an HTTP status of OK
      */
-    @SecurityRequirement(name = "JWT")
     @Operation(
             summary = "User logout",
             description = "Invalidate user session",
