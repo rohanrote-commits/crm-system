@@ -51,6 +51,8 @@ $(document).ready(function () {
 
 
     $("#view-profile").click(function () {
+
+
         $.ajax({
             url: `http://localhost:8080/crm/user/get-user`,
             type: "GET",
