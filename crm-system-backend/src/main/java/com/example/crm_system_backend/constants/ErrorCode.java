@@ -49,7 +49,11 @@ public enum ErrorCode {
     NULL_ARGUMENT_RECEIVED("NA", "Null Argument", HttpStatus.BAD_REQUEST),
 
     FAILED_TO_SCHEDULE_EMAIL("FTSE", "Error in scheduling email", HttpStatus.CONFLICT),
-    ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),;
+    ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),
+    EMPTY_LEAD_LIST("ELL", "Empty Lead List", HttpStatus.NOT_FOUND),
+    UPLOAD_HISTORY_NOT_FOUND("UHNF", "Upload History Not Found" , HttpStatus.NOT_FOUND ),
+    FILE_EMPTY_EXCEPTION("FE", "File Empty Exception" , HttpStatus.BAD_REQUEST ),;
+
 
     private final String code;
     private final String message;

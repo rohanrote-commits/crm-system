@@ -12,7 +12,6 @@ public class UserPageController {
     public String bulkUpload(){
         return "users/bulk-upload";
     }
-
     @GetMapping("/dashboard")
     public String dashboard(){
         return "dashboard";

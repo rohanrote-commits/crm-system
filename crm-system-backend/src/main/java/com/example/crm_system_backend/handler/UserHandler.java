@@ -121,7 +121,7 @@ public class UserHandler implements IHandler<UserDTO> {
      * @return a list of {@code UserDTO} objects representing the users
      */
     public List<UserDTO> getUsers(Long id) {
-        log.info("Enter : UserHandler:getUsers");
+        log.info("START :: CLASS :: UserHandler :: METHOD :: getUsers");
         List<User> users = new ArrayList<>();
         User accessingUser = userService.getUserById(id).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         if (userRepo.findRoleById(id) == Roles.MASTER_ADMIN) {

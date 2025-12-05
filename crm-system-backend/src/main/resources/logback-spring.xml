@@ -1,18 +1,15 @@
 <configuration>
 
-    <!-- ===== Console Logging ===== -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- ===== File Logging with Daily Rotation ===== -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/crm.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- New log for every day -->
             <fileNamePattern>logs/crm-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
@@ -22,11 +19,9 @@
         </encoder>
     </appender>
 
-    <!-- ===== Package Specific Logging ===== -->
     <logger name="com.example.crm_system_backend" level="DEBUG"/>
     <logger name="org.springframework" level="INFO"/>
 
-    <!-- ===== Root Logger ===== -->
     <root level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />

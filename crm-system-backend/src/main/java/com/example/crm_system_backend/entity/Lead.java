@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
+
+import javax.management.relation.Role;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,8 +76,8 @@ public class Lead {
     @Column(length = 1000)
     private String description;
     private String businessAddress;
-//    @ManyToOne(fetch = FetchType.LAZY)
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
+//    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Enumerated(EnumType.STRING)
@@ -90,5 +92,21 @@ public class Lead {
     private Set<Product> interestedProducts = new HashSet<>();
     private Date createdAt;
     private Date updatedAt;
+
+    public Lead() {}
+
+    // Constructor for Testing ONLY
+
+    public Lead(Long id, Date createdAt) {
+        this.id = id;
+        this.createdAt = createdAt;
+    }
+
+    public Lead(Long id, Date createdAt, User user) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.user = user;
+    }
+
 }
 

@@ -151,8 +151,10 @@ public class DownloadHandler {
                             new TypeReference<List<InvalidLeadError>>() {
                             }
                     );
-            byte [] errorFile = leadExcelHelper.generateErrorExcelFromJson(errorList);
-            log.info("Exit: DownloadErrorFile.dowloadErrorFile");
+            byte [] errorFile = leadExcelHelper.generateErrorExcelFromJson(errorList).get();
+            uploadHistory.setErrorFileName("Lead_Error_"+uploadHistoryId+".xlsx");
+            uploadHistoryService.update(uploadHistory);
+            log.info("Exit: DownloadErrorFile.downloadErrorFile");
             return errorFile;
 
         }

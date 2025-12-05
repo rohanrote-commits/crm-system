@@ -4,7 +4,8 @@ import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.ReportException;
-import com.example.crm_system_backend.service.Report.ReportService;
+import com.example.crm_system_backend.helper.ReportExcelHelper;
+import com.example.crm_system_backend.service.serviceImpl.ReportService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Date;
 import java.time.ZoneId;
@@ -39,6 +39,9 @@ public class AutoEmailScheduler {
     @Autowired
     private ReportService reportService;
 
+    @Autowired
+    private ReportExcelHelper helper;
+
 
     private static final Logger LOGGER = Logger.getLogger(AutoEmailScheduler.class.getName());
     private static final String SENDER_EMAIL = "akanksha.senad@perennialsys.com";
@@ -50,10 +53,10 @@ public class AutoEmailScheduler {
      * Cron Expression format:
      * <seconds> <minutes> <hours> <day-of-month> <month> <day-of-week> <year> (year is optional)
      */
-    @Scheduled(cron = "0 26 18 1 * *")
+    @Scheduled(cron = "0 0 9 1 * *")
     public void scheduleMonthlyReportEmail() {
 
-        LOGGER.log(Level.INFO,"Scheduling monthly report");
+        LOGGER.log(Level.INFO,"Auto-Scheduling monthly report");
 
         try {
             sendMonthlyReport();
@@ -68,11 +71,11 @@ public class AutoEmailScheduler {
     /**
      * Calculates suitable start date and end date and compose email with or without attachment.
      * Attachment is provided only if any records are present in previous month.
-     * @throws MessagingException
+     * @throws MessagingException for message helper
      */
     private void sendMonthlyReport() throws MessagingException {
 
-        LOGGER.log(Level.INFO, "Sending monthly report Email");
+         LOGGER.log(Level.INFO, "Sending monthly report via Email");
 
          YearMonth previousMonth = YearMonth.now(ZoneId.systemDefault()).minusMonths(1);
 
@@ -85,13 +88,14 @@ public class AutoEmailScheduler {
 
         String reportName = previousMonth.getMonth().name() + "-" + previousMonth.getYear() + " Monthly Report";
 
+        LOGGER.log(Level.FINEST, "Calculated previous month start date and end date");
 
         // --- Generate Report ---
         // The ResponseEntity contains the StreamingResponseBody which holds the logic for ZIP generation.
         ResponseEntity<StreamingResponseBody> monthlyReportResponse;
         try {
 
-            Set<Lead> leadList = reportService.getLeads(startDate, endDate);
+            Set<Lead> leadList = helper.getLeads(startDate, endDate);
             if (leadList.isEmpty()) {
                 // --- Send Email WITHOUT Attachment ---
                 MimeMessage message = mailSender.createMimeMessage();
@@ -121,7 +125,7 @@ public class AutoEmailScheduler {
                     if(streamingBody != null) {
                         streamingBody.writeTo(baos);
                     } else {
-                        LOGGER.log(Level.WARNING, "Streaming Body Null - Service :: Email :: AutoEmailScheduler :: sendMonthlyReport() ");
+                        LOGGER.log(Level.WARNING, "Service :: Email :: AutoEmailScheduler :: sendMonthlyReport() :: ");
                     }
                 } catch (IOException e) {
                     log.error("Failed capturing the final zipped data");

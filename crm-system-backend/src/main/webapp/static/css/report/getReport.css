@@ -9,19 +9,19 @@
     transition: transform 0.2s, background 0.3s;
 }
 
-.btn-primary {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1.2rem;
-    color:white;
-    background-color:#f46a28;
-    align-items: center;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+/*.btn-primary {*/
+/*    display: block;*/
+/*    width: 100%;*/
+/*    padding: 10px;*/
+/*    margin: 10px 0;*/
+/*    font-size: 1.2rem;*/
+/*    color:white;*/
+/*    background-color:#f46a28;*/
+/*    align-items: center;*/
+/*    border: none;*/
+/*    border-radius: 5px;*/
+/*    cursor: pointer;*/
+/*}*/
 
 .btn-section {
     background-color: #f46a28;
