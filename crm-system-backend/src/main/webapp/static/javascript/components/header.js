@@ -36,7 +36,7 @@ $(document).ready(function () {
             headers: { Authorization: "Bearer " + token },
             success: function (response) {
                 showPopup("Success", response.message || response, "success");
-                localStorage.removeItem("Authorization");
+                sessionStorage.removeItem("Authorization");
                 window.location.href = "/crm/login";
             },
             error: function (xhr) {
@@ -200,7 +200,7 @@ $(document).ready(function () {
                 success: function (response) {
                     showPopup("Info", response.message || response, "info");
 
-                    localStorage.removeItem("Authorization");
+                    sessionStorage.removeItem("Authorization");
                     window.location.href = "/crm/login";
                 },
                 error: function (xhr) {
