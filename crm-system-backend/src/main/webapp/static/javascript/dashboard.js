@@ -486,12 +486,14 @@ function loadLeads(payload, token) {
                 return response || [];
             },
             error: function (xhr) {
-                if (xhr.status === 401 || xhr.status === 403 ) {
-                    showPopup("Error", "Session expired. Login again.", "error");
-                    window.location.href = "/crm/login";
-                } else {
-                    showPopup("Error", "Error loading leads.", "error");
-                }
+                errorMsg = xhr.responseJSON.message;
+                showPopup("Error", errorMsg, "error");
+                // if (xhr.status === 401 || xhr.status === 403 ) {
+                //     showPopup("Error", "Session expired. Login again.", "error");
+                //     window.location.href = "/crm/login";
+                // } else {
+                //     showPopup("Error", "Error loading leads.", "error");
+                // }
             }
         },
 
