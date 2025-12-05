@@ -109,10 +109,6 @@ public class ReportService implements IReportService {
                 throw new LeadException(ErrorCode.LEAD_NOT_FOUND);
             }
 
-//            for (int i = 0; i < summaryReport_headers.length; i++) {
-//                summaryReport_sheet.autoSizeColumn(i, true);
-//            }
-
             // Personalized Report
             for (User user : users) {
 

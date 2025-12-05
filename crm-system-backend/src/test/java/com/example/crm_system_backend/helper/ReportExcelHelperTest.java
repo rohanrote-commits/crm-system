@@ -124,7 +124,6 @@ public class ReportExcelHelperTest {
 
 
     // ----- getName -----
-
     @Test
     void getName_success() {
         String inputEmail = "abc@gmail.com";
@@ -262,8 +261,8 @@ public class ReportExcelHelperTest {
     // start date, end date test cases
 
 
-    // ----- getFilteredDownloadHistory -----
 
+    // ----- getFilteredDownloadHistory -----
     @Test
     void getFilteredDownloadHistory_Success() {
         Roles role = ADMIN;

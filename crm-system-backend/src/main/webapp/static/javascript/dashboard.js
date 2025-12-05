@@ -350,7 +350,7 @@ $("#confirmDeleteBtn").click(function () {
             const startDate = $("#startDateInput").val();
             const endDate = $("#endDateInput").val();
 
-            const getTemplateUrl = `${ReportTemplateBaseUrl}/getTemplate?start=${startDate}&end=${endDate}`;
+            const getTemplateUrl =  REPORT_API.GET_TEMPLATE(startDate,endDate);
 
             fetch(getTemplateUrl, {
                 method: "POST",
@@ -390,7 +390,7 @@ $("#confirmDeleteBtn").click(function () {
                     link.click();
                     document.body.removeChild(link);
 
-                    updateDownloadStatus(startDate, endDate, "SUCCESS");
+                    // updateDownloadStatus(startDate, endDate, "SUCCESS");
                     loadReportHistory(token);
                     reportModalElement.hide();
 
@@ -404,7 +404,7 @@ $("#confirmDeleteBtn").click(function () {
     });
 
     // --- Initial Load of Report History ---
-    loadReportHistory();
+    loadReportHistory(token);
     $(document).on("click", ".view-lead-info", function () {
         const lead = JSON.parse($(this).attr("data-lead"));
 

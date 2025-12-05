@@ -572,7 +572,6 @@
 <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
 <script src = "${pageContext.request.contextPath}/static/javascript/users/upload-users.js"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/profile/profile.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 </body>
 </html>

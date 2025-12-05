@@ -26,7 +26,6 @@ public class DownloadReportController {
 
     public static final Logger LOGGER = Logger.getLogger(DownloadReportController.class.getName());
 
-
     /**
      * Retrieves the download history records filtered based on the role, user ID, and email
      * of the logged-in user. This endpoint is accessible via HTTP GET request at the
@@ -63,6 +62,7 @@ public class DownloadReportController {
                     description = "Internal server error during processing"
             )
     })
+
     @GetMapping("/getDownloadedRecordHistory")
     public ResponseEntity<Set<downloadReport>> getAllHistory(HttpServletRequest request) {
 
