@@ -95,6 +95,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Reports Section -->
         <div class="dashboard-section" id="reports" style="display: none;">
 
@@ -150,7 +151,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 </div>
 

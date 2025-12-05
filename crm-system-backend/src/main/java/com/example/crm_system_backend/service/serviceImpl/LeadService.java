@@ -60,9 +60,7 @@ public class LeadService implements ILeadService {
         Lead lead;
 
         if (existingLeadOpt.isPresent()) {
-            // Update existing lead
             lead = existingLeadOpt.get();
-            // Map updatable fields only
             lead.setFirstName (leadDto.getFirstName());
             lead.setLastName(leadDto.getLastName());
             lead.setGstin(leadDto.getGstin().toUpperCase());

@@ -96,7 +96,7 @@ $(document).ready(function () {
        ERROR_MESSAGE_CONSTANTS.INVALID_NAME );
 
     $.validator.addMethod("emailPattern", value => REGX_CONSTANT.EMAIL.test(value),
-       ERROR_MESSAGE_CONSTANTS.INVALID_EMAIL);
+        ERROR_MESSAGE_CONSTANTS.INVALID_EMAIL);
 
     $.validator.addMethod("mobilePattern", value =>REGX_CONSTANT.MOBILE.test(value),
         ERROR_MESSAGE_CONSTANTS.INVALID_MOBILE_NUMBER);
