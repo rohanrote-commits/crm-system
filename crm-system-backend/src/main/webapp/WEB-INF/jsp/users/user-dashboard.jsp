@@ -11,7 +11,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/user-dashboard.css?v=2">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/user-dashboard.css">
 
   <!-- jQuery & Plugins -->
   <script src="${pageContext.request.contextPath}/static/javascript/jquery.js"></script>

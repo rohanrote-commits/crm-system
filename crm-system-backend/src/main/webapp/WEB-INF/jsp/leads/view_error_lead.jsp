@@ -176,12 +176,12 @@
                             </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
+                    </div>
+                </form>
             </div>
-                <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" id="saveLeadBtn" class="btn text-white">Save Lead</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

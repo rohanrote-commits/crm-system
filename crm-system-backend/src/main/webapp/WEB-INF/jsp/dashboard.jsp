@@ -95,6 +95,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Reports Section -->
         <div class="dashboard-section" id="reports" style="display: none;">
 
@@ -150,7 +151,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 </div>
 
@@ -566,7 +566,7 @@
 <!-- Custom JS -->
 <script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/constants/message_constants.js?v=1"></script>
-<script src="${pageContext.request.contextPath}/static/javascript/dashboard.js?v=1"></script>
+<script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/leads/add_lead.js"></script>
 <script src="${pageContext.request.contextPath}/static/javascript/users/add_users.js"></script>
