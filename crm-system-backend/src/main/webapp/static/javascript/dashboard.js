@@ -305,6 +305,46 @@ $("#confirmDeleteBtn").click(function () {
         $("#viewLeadModal").modal("show");
     });
 
+    $('#lead-table').on('click', '.auto-change-status-btn', function () {
+        let leadId = $(this).data('id');
+        let currentStatus = $(this).data('status');
+
+        const leadStatusIntegerMap = {
+            "ADDED": 0,
+            "CONTACTED": 1,
+            "CONVERTED": 2,
+            "NOT_CONVERTED": 3
+        };
+
+        const nextStatusMap = {
+            "ADDED": "CONTACTED",
+            "CONTACTED": "CONVERTED",
+            "CONVERTED": "NOT_CONVERTED",
+            "NOT_CONVERTED": "ADDED"
+        };
+        let nextStatus = nextStatusMap[currentStatus];
+        let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
+
+        $.ajax({
+            url: LEAD_API.UPDATE_STATUS(leadId),
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ status: statusCode }),
+            headers: { "Authorization": "Bearer " + token },
+            success: function (response) {
+                Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
+                $('#lead-table').DataTable().ajax.reload();
+            },
+            error: function (error) {
+                console.log(error);
+                if (error.status===401){
+                    showPopup("Error","Session expired. Login again.", "error");
+                    window.location.href = "/crm/login";
+                }
+                Swal.fire('Error', 'Failed to update status', 'error');
+            }
+        });
+    });
 });
 
 function loadUsers(token){
@@ -350,7 +390,7 @@ function loadUsers(token){
             });
         }
     })
-};
+}
 
 
 // Function: Load Leads from API
@@ -454,46 +494,7 @@ function loadLeads(payload, token) {
     });
 }
 
-$('#lead-table').on('click', '.auto-change-status-btn', function () {
-    let leadId = $(this).data('id');
-    let currentStatus = $(this).data('status');
 
-    const leadStatusIntegerMap = {
-        "ADDED": 0,
-        "CONTACTED": 1,
-        "CONVERTED": 2,
-        "NOT_CONVERTED": 3
-    };
-
-    const nextStatusMap = {
-        "ADDED": "CONTACTED",
-        "CONTACTED": "CONVERTED",
-        "CONVERTED": "NOT_CONVERTED",
-        "NOT_CONVERTED": "ADDED"
-    };
-    let nextStatus = nextStatusMap[currentStatus];
-    let statusCode = leadStatusIntegerMap[nextStatus]; // convert to integer
-
-    $.ajax({
-        url: LEAD_API.UPDATE_STATUS(leadId),
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ status: statusCode }),
-        headers: { "Authorization": "Bearer " + token },
-        success: function (response) {
-            Swal.fire('Updated!', `Status changed to ${nextStatus}`, 'success');
-            $('#lead-table').DataTable().ajax.reload();
-        },
-        error: function (error) {
-            console.log(error);
-            if (error.status===401){
-                showPopup("Error","Session expired. Login again.", "error");
-                window.location.href = "/crm/login";
-            }
-            Swal.fire('Error', 'Failed to update status', 'error');
-        }
-    });
-});
 
 
 // Function to show bootstrap alert dynamically
