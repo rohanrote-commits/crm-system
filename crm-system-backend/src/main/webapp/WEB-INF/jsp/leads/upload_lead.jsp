@@ -185,14 +185,15 @@
     </div>
   </div>
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom JS -->
     <script src="${pageContext.request.contextPath}/static/javascript/leads/constants/end_point_constants.js?v=1"></script>
-  <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
-  <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
-   <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_file_history.js"></script>
-  <script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>
+    <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
+    <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
+    <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_file_history.js"></script>
+<%--    <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>--%>
+<%--    <script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>--%>
 </body>
 
 </html>
