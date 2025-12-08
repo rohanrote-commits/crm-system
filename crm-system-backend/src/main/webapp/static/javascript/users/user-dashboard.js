@@ -308,8 +308,4 @@ function showPopup(title, message, iconType) {
   });
 }
 
-// });
 
-//     modal.show();
-//   });
-// }
