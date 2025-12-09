@@ -53,4 +53,18 @@ public class User {
         this.role = role;
         this.registeredBy = registeredBy;
     }
+
+    public User(Long id, String email, Long registeredBy) {
+        this.id = id;
+        this.email = email;
+        this.registeredBy = registeredBy;
+    }
+
+    public User(Long id, Roles role, Long registeredBy, String email) {
+        this.id = id;
+        this.role = role;
+        this.registeredBy = registeredBy;
+        this.email = email;
+    }
+
 }

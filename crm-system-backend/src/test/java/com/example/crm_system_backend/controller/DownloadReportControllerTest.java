@@ -1,38 +1,113 @@
-//package com.example.crm_system_backend.controller;
-//
-//import com.example.crm_system_backend.entity.downloadReport;
-//import com.example.crm_system_backend.helper.ReportExcelHelper;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//
-//import java.util.Set;
-//
-//import static com.example.crm_system_backend.constants.Roles.ADMIN;
-//
-//@ExtendWith(MockitoExtension.class)
-//public class DownloadReportControllerTest {
-//
-//    @Mock
-//    ReportExcelHelper helper;
-//
-//    @Test
-//    void getAllReport_Success() {
-//        String role = ADMIN.getDescription();
-//        Long id = 1010101L;
-//        String email = "abc@gmail.com";
-//
-//        Set<downloadReport> filteredHistoryRecords = helper.getFilteredDownloadHistory(id, role, email);
-//    }
-//    @Test
-//    void getAllReport_Fail_RoleMissing() {
-//    }
-//    @Test
-//    void getAllReport_Fail_userIdMissing() {
-//    }
-//    @Test
-//    void getAllReport_Fail_emailMissing() {
-//    }
-//
-//}
+package com.example.crm_system_backend.controller;
+
+import com.example.crm_system_backend.entity.downloadReport;
+import com.example.crm_system_backend.helper.ReportExcelHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import java.util.*;
+import static com.example.crm_system_backend.constants.Roles.ADMIN;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ExtendWith(MockitoExtension.class)
+public class DownloadReportControllerTest {
+
+    private MockMvc mockMvc;
+
+    @Mock
+    ReportExcelHelper helper;
+
+    @InjectMocks
+    DownloadReportController downloadReportController;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(downloadReportController).build();
+    }
+
+
+    @Test
+    void getAllReport_Success() throws Exception {
+
+        // Dummy input data
+        String role = ADMIN.getDescription();
+        Long id = 202L;
+        String email = "admin@gmail.com";
+
+        // Expected Output
+        Set<downloadReport> history = new HashSet<>();
+
+        downloadReport record = new downloadReport();
+        record.setId(102345L);
+        record.setUserName("Akanksha Senad");
+        record.setDownloadedAt("2025-11-20 10:00:00");
+        record.setDateRange("2025-10-01 to 2025-10-31");
+        record.setStatus("SUCCESS");
+        record.setEmail("user@gmail.com");
+        history.add(record);
+
+        when(helper.getFilteredDownloadHistory(id, role, email)).thenReturn(history);
+
+        mockMvc.perform(get("/crm/report/getDownloadedRecordHistory")
+                .contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("role", role)
+                .requestAttr("userId", id)
+                .requestAttr("email", email))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    void getAllReport_Fail_userIdMissing() {
+
+        Long id = eq(202L);
+        String role = isNull();
+        String email = eq("admin@gmail.com");
+
+        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        assertTrue(result.isEmpty(), "Role must be present to get the downloaded record history");
+
+    }
+
+    @Test
+    void getAllReport_Fail_roleMissing() {
+
+        Long id = isNull();
+        String role = eq(ADMIN.getDescription());
+        String email = eq("admin@gmail.com");
+
+        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        assertTrue(result.isEmpty(), "User ID must be present to get the downloaded record history");
+
+    }
+
+    @Test
+    void getAllReport_Fail_invalidRole() {
+        // role other than master admin, admin, basic
+    }
+
+    @Test
+    void getAllReport_Fail_emailMissing() {
+
+        Long id = eq(202L);
+        String role = eq(ADMIN.getDescription());
+        String email = isNull();
+
+        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        assertTrue(result.isEmpty(), "Email must be present to get the downloaded record history");
+
+    }
+
+}

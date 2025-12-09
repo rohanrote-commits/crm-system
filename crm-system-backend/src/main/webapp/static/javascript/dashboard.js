@@ -2,6 +2,7 @@
 let reportDataTableInstance = null;
 
 $(document).ready(function () {
+
     // Parse JWT
     function parseJwt(token) {
         try {
@@ -19,7 +20,7 @@ $(document).ready(function () {
     // Get token from sessionStorage
     const token = sessionStorage.getItem("Authorization");
     if (!token) {
-       
+
         showPopup("Error","Unauthorized. Please login.", "error");
         window.location.href = "/crm/login";
         return;
@@ -44,7 +45,7 @@ $(document).ready(function () {
         console.log(target);
 
         // Saving the state
-        localStorage.setItem("activeDashboardSection", target);
+        sessionStorage.setItem("activeDashboardSection", target);
 
         if(target === "leads"){
             loadLeads(payload,token);
@@ -142,6 +143,8 @@ $(document).ready(function () {
 
                 // remove token
                 sessionStorage.removeItem("Authorization");
+                sessionStorage.removeItem("hasVisitedDashboard")
+                sessionStorage.removeItem("activeDashboardSection");
 
                 // redirect to login
                 window.location.href = "/crm/login";
@@ -376,12 +379,7 @@ $("#confirmDeleteBtn").click(function () {
                     // Destructuring is now safe only if result is not null
                     const { blob, resp } = result;
 
-                    // Use backend-provided filename
-                    // const disposition = resp.headers.get("Content-Disposition");
                     let filename = "COVORO Report " + startDate + " To " + endDate + ".zip"; // fallback
-                    // if (disposition && disposition.includes("filename=")) {
-                    //     filename = disposition.split("filename=")[1].replace(/"/g, "").trim();
-                    // }
 
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
@@ -650,10 +648,10 @@ function handleInitialDashboardLoad(token, payload) {
     if (isFirstLoadAfterLogin) {
         // Flow: Login -> Always Leads
         activeSection = "leads";
-        localStorage.setItem("activeDashboardSection", "leads");
+        sessionStorage.setItem("activeDashboardSection", "leads");
     } else {
         // Flow: Refresh -> Last viewed section
-        activeSection = localStorage.getItem("activeDashboardSection") || "leads";
+        activeSection = sessionStorage.getItem("activeDashboardSection") || "leads";
     }
 
     // Apply active state
@@ -667,7 +665,7 @@ function handleInitialDashboardLoad(token, payload) {
         loadLeads(payload, token);
     } else if (activeSection === "reports") {
         // Assuming this function is outside and accepts (payload, token)
-        initializeReportModule(payload, token);
+        loadReportHistory(payload, token);
     }
 
     // Mark the dashboard as visited for this session

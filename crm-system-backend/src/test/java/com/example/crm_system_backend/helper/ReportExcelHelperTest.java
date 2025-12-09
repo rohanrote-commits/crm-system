@@ -4,8 +4,11 @@ import com.example.crm_system_backend.constants.Roles;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
+import com.example.crm_system_backend.exception.ReportException;
+import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
 import com.example.crm_system_backend.repository.IUserRepo;
+import com.example.crm_system_backend.service.serviceImpl.ReportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,9 @@ public class ReportExcelHelperTest {
 
     @Mock
     private IUserRepo userRepo;
+
+    @Mock
+    private DownloadReportHistoryRepo historyRepo;
 
     @InjectMocks
     private ReportExcelHelper reportExcelHelper;
@@ -258,46 +264,100 @@ public class ReportExcelHelperTest {
 
     }  // no necessary that user list will also be empty
 
-    // start date, end date test cases
-
 
 
     // ----- getFilteredDownloadHistory -----
     @Test
     void getFilteredDownloadHistory_Success() {
-        Roles role = ADMIN;
 
-        User user1 = new User(1010101L, MASTER_ADMIN, 0L);
-        User user2 = new User(2020202L, ADMIN, 1010101L);
-        User user3 = new User(3030303L, USER, 2020202L);
-        User user4 = new User(4040404L, USER, 1010102L);
+            // ARRANGE
 
-        // Defining mock inputs
-        List<User> allUsers = Arrays.asList(user1, user2, user3, user4);
-        Set<Long> adminList;
+            // Define Test Data
+            Long userId = 1010101L;
+            String UserEmail = "ma@gmail.com";
 
-        when(userRepo.findAll()).thenReturn(allUsers);
+            User user1 = new User(userId, MASTER_ADMIN, 0L, UserEmail);
+            User user2 = new User(2020202L, ADMIN, userId, "adm@gmail.com");
+            User user3 = new User(3030303L, USER, 2020202L, "admu@gmail.com");
+            User user4 = new User(4040404L, USER, 1010102L, "mau@gmail.com");
+
+            List<User> allUsers = Arrays.asList(user1, user2, user3, user4);
+
+            downloadReport dr1 = new downloadReport(101L, "ma@gmail.com");
+            downloadReport dr2 = new downloadReport(202L, "adm@gmail.com");
+            downloadReport dr3 = new downloadReport(303L, "admu@gmail.com");
+            downloadReport dr4 = new downloadReport(404L, "mau@gmail.com");
+
+            List<downloadReport> allReports = Arrays.asList(dr1, dr2, dr3, dr4);
+
+            Set<downloadReport> expectedRecords = Set.of(dr1, dr2, dr3);
+
+            // Mock Repository Calls
+            when(userRepo.findAll()).thenReturn(allUsers);
+            when(historyRepo.findAll()).thenReturn(allReports);
+
+            // ACT
+            Set<downloadReport> actualRecords = reportExcelHelper.getFilteredDownloadHistory(
+                    userId, "MASTER_ADMIN", UserEmail
+            );
+
+            // ASSERT
+            assertNotNull(actualRecords, "Actual records should not be null");
+            assertEquals(expectedRecords.size(), actualRecords.size(), "The number of filtered records should match the expected size.");
+            assertTrue(actualRecords.containsAll(expectedRecords), "The filtered records should contain all expected reports.");
     }
 
     @Test
-    void getFilteredDownloadHistory_fail_idMissing() {}
+    void getFilteredDownloadHistory_fail_emptyUserList() {
+
+        Long UserId = 1010101L;
+        String role = MASTER_ADMIN.getDescription();
+        String email = "abc@gmail.com";
+
+        assertThrows(ReportException.class, () -> reportExcelHelper.getFilteredDownloadHistory(UserId, role, email), "Should throw Lead not found exception");
+
+    }
 
     @Test
-    void getFilteredDownloadHistory_fail_roleMissing() {}
-
-    @Test
-    void getFilteredDownloadHistory_fail_emailMissing() {}
-
-    @Test
-    void getFilteredDownloadHistory_fail_emptyUserList() {}
-
-    @Test
-    void getFilteredDownloadHistory_fail_adminIdList() {}
+    void getFilteredDownloadHistory_fail_emptyAdminIdList() {
+//        Long userId = 1010101L;
+//        String UserEmail = "ma@gmail.com";
+//
+//        User user1 = new User(userId, MASTER_ADMIN, 0L, UserEmail);
+//        User user2 = new User(2020202L, USER, userId, "adm@gmail.com");
+//        User user3 = new User(3030303L, USER, 2020202L, "admu@gmail.com");
+//        User user4 = new User(4040404L, USER, 1010102L, "mau@gmail.com");
+//
+//        List<User> allUsers = Arrays.asList(user1, user2, user3, user4);
+//
+//        downloadReport dr1 = new downloadReport(101L, "ma@gmail.com");
+//        downloadReport dr2 = new downloadReport(202L, "adm@gmail.com");
+//        downloadReport dr3 = new downloadReport(303L, "admu@gmail.com");
+//        downloadReport dr4 = new downloadReport(404L, "mau@gmail.com");
+//
+//        List<downloadReport> allReports = Arrays.asList(dr1, dr2, dr3, dr4);
+//
+//        Set<downloadReport> expectedRecords = Set.of(dr1, dr2, dr3);
+//
+//        // Mock Repository Calls
+//        when(userRepo.findAll()).thenReturn(allUsers);
+//        when(historyRepo.findAll()).thenReturn(allReports);
+//
+//        // ACT
+//        Set<downloadReport> actualRecords = reportExcelHelper.getFilteredDownloadHistory(
+//                userId, "MASTER_ADMIN", UserEmail
+//        );
+//
+//        // ASSERT
+//        assertNotNull(actualRecords, "Actual records should not be null");
+//        assertEquals(expectedRecords.size(), actualRecords.size(), "The number of filtered records should match the expected size.");
+//        assertTrue(actualRecords.containsAll(expectedRecords), "The filtered records should contain all expected reports.");
+    }
 
     @Test
     void getFilteredDownloadHistory_fail_emptyEmailList() {}
 
     @Test
-    void getFilteredDownloadHistory_fail_downloadReportList() {}
+    void getFilteredDownloadHistory_fail_emptyDownloadReportList() {}
 
 }

@@ -17,13 +17,6 @@ public class downloadReport {
     private String userName;
     @NotBlank
     private String downloadedAt;
-//    @NotBlank
-//    private String dateOfDownload;
-//    @NotBlank
-//    private String timeOfDownload;
-//    @NotNull
-//    private String role;
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String dateRange;
     private String status;
     private String email;
@@ -34,5 +27,12 @@ public class downloadReport {
                 "\nDownloaded At: " + downloadedAt +
                 "\ndateRange: " + dateRange +
                 "\nstatus: " + status;
+    }
+
+    public downloadReport(){}
+
+    public downloadReport(Long id, String email){
+        this.id = id;
+        this.email = email;
     }
 }

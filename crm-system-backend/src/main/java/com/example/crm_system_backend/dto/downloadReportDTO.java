@@ -1,26 +1,19 @@
 package com.example.crm_system_backend.dto;
 
+import com.example.crm_system_backend.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 @Schema
 public class downloadReportDTO {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank
     private String userName;
-    @NotBlank
     private String downloadedAt;
-    @NotBlank
     private String dateRange;
     private String status;
     private String email;
+    private User user;
 
     public String toString(){
         return "\nID: " + id +
@@ -28,5 +21,11 @@ public class downloadReportDTO {
                 "\nDownloaded At: " + downloadedAt +
                 "\nstartRange: " + dateRange +
                 "\nstatus: " + status;
+    }
+
+    public downloadReportDTO(Long id, String email, User user){
+        this.id = id;
+        this.email = email;
+        this.user = user;
     }
 }

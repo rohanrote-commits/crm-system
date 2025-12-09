@@ -52,7 +52,12 @@ public enum ErrorCode {
     ERROR_IN_ZIP_FILE_CREATION("EZFC", "Error In Zip File Creation", HttpStatus.CONFLICT),
     EMPTY_LEAD_LIST("ELL", "Empty Lead List", HttpStatus.NOT_FOUND),
     UPLOAD_HISTORY_NOT_FOUND("UHNF", "Upload History Not Found" , HttpStatus.NOT_FOUND ),
-    FILE_EMPTY_EXCEPTION("FE", "File Empty Exception" , HttpStatus.BAD_REQUEST ),;
+    FILE_EMPTY_EXCEPTION("FE", "File Empty Exception" , HttpStatus.BAD_REQUEST ),
+
+    // For testing
+    ROLE_MISSING("RM", "User role is missing", HttpStatus.BAD_REQUEST ),
+    USER_ID_MISSING("UM", "User id is missing", HttpStatus.BAD_REQUEST ),
+    EMAIL_MISSING("UM", "User email is missing", HttpStatus.BAD_REQUEST );
 
 
     private final String code;

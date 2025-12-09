@@ -45,19 +45,14 @@ public class ReportControllerTest {
     }
 
     @Test
-    void getTemplate_Fail_NoLeadsRegistered() {
-
-    }
+    void getTemplate_Fail_NoLeadsRegistered() {}
 
     @Test
-    void getTemplate_Fail_CouldNotFindEmail() {
-    }
+    void getTemplate_Fail_CouldNotFindEmail() {}
 
     @Test
-    void getTemplate_Fail_CouldNotSaveInDb() {
-    }
+    void getTemplate_Fail_CouldNotSaveInDb() {}
 
     @Test
-    void getTemplate_Fail_returnsNull() {
-    }
+    void getTemplate_Fail_returnsNull() {}
 }
