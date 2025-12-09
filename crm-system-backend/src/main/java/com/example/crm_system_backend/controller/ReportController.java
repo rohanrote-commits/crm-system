@@ -42,6 +42,12 @@ public class ReportController {
     private static final Logger LOGGER = Logger.getLogger(ReportController.class.getName());
 
 
+    public ReportController(ReportService reportService, ReportExcelHelper helper, JwtUtil jwtUtil) {
+        this.reportService = reportService;
+        this.helper = helper;
+        this.jwtUtil = jwtUtil;
+    }
+
     /**
      * Returns complete Report template including summary report and per user reports
      * @param start start date
@@ -90,10 +96,23 @@ public class ReportController {
         }
         LOGGER.log(Level.INFO, "Successfully generated Zip file");
 
-        // Access Token
-        String email = jwtUtil.getEmail(token);
-        reportService.saveInDb(start, end, email);
+        String email;
+        try {
+            email = jwtUtil.getEmail(token);
+        } catch(Exception ex) {
+            LOGGER.log(Level.WARNING, "JWT Signature failed for token", ex);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(email == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
+        try {
+            reportService.saveInDb(start, end, email);
+        } catch(Exception ex) {
+            LOGGER.log(Level.WARNING, "Report Template Saving failed for token", ex);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return reportService.excelToZipConverter(leadList, start, end);
     }
 }

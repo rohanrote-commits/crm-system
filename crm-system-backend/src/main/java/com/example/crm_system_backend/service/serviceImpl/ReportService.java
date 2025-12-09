@@ -7,6 +7,7 @@ import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.exception.ExcelException;
 import com.example.crm_system_backend.exception.LeadException;
+import com.example.crm_system_backend.exception.ReportException;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
@@ -76,6 +77,10 @@ public class ReportService implements IReportService {
             // Summary Report
             Sheet summaryReport_sheet = workbook.createSheet("Summary Report");
 
+            if(leads == null){
+                throw new ReportException(ErrorCode.EMPTY_LEAD_LIST);
+            }
+
             Set<User> users = new HashSet<>();
             for (Lead lead : leads) {
                 users.add(lead.getUser());
@@ -96,9 +101,13 @@ public class ReportService implements IReportService {
             }
 
             if (!users.isEmpty()) {
-                SummaryReport(head_style, header_style, data_style,
-                        summaryReport_sheet, summaryReport_headers,
-                        users, start, end);
+                try {
+                    SummaryReport(head_style, header_style, data_style,
+                            summaryReport_sheet, summaryReport_headers,
+                            users, start, end);
+                } catch (ExcelException ex) {
+                    throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+                }
 
                 for (int i = 0; i < summaryReport_headers.length; i++) {
                     summaryReport_sheet.autoSizeColumn(i, true);
@@ -115,17 +124,19 @@ public class ReportService implements IReportService {
                 String name = user.getFirstName() + "_" + user.getEmail();
                 Sheet perUserReport_sheet = workbook.createSheet(name);
 
-
-                perUserReport(head_style, header_style, data_style,
-                        perUserReport_sheet, perUserReport_headers, columnCount,
-                        map.get(user));
+                try {
+                    perUserReport(head_style, header_style, data_style,
+                            perUserReport_sheet, perUserReport_headers, columnCount,
+                            map.get(user));
+                } catch (ExcelException ex) {
+                    throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
+                }
 
                 for (int i = 0; i < perUserReport_headers.length; i++) {
                     perUserReport_sheet.autoSizeColumn(i, true);
                 }
             }
             LOGGER.log(Level.INFO, "Per user reports generated successfully !!");
-
 
             // Write Workbook to response stream
             workbook.write(outputStream);
@@ -327,7 +338,7 @@ public class ReportService implements IReportService {
             row.createCell(cellNum++).setCellValue(converted);
             row.getCell(cellNum - 1).setCellStyle(data_style);
             // Column 6:
-            float process_percent = 0;
+            float process_percent;
             if(count == 0) {
                 process_percent = 0;
             } else {
@@ -337,7 +348,7 @@ public class ReportService implements IReportService {
             row.createCell(cellNum++).setCellValue(process);
             row.getCell(cellNum - 1).setCellStyle(data_style);
             // Column 7:
-            float convert_percent = 0;
+            float convert_percent;
             if(count == 0) {
                 convert_percent = 0;
             } else {

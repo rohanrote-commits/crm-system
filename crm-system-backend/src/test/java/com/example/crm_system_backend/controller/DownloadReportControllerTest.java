@@ -12,7 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.*;
-import static com.example.crm_system_backend.constants.Roles.ADMIN;
+import static com.example.crm_system_backend.constants.Roles.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -94,11 +94,6 @@ public class DownloadReportControllerTest {
     }
 
     @Test
-    void getAllReport_Fail_invalidRole() {
-        // role other than master admin, admin, basic
-    }
-
-    @Test
     void getAllReport_Fail_emailMissing() {
 
         Long id = eq(202L);
@@ -108,6 +103,18 @@ public class DownloadReportControllerTest {
         Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
         assertTrue(result.isEmpty(), "Email must be present to get the downloaded record history");
 
+    }
+
+    @Test
+    void getAllReport_Fail_invalidRole() {
+        Long id = 101L;
+        String email = "abc@gmail.com";
+        String role = "invalidRole";
+        Set<downloadReport> result = null;
+        if(!Objects.equals(role, MASTER_ADMIN.getDescription()) || !Objects.equals(role, ADMIN.getDescription()) || !Objects.equals(role, BASIC.getDescription()) || !Objects.equals(role, USER.getDescription())) {
+            result = helper.getFilteredDownloadHistory(id, role, email);
+        }
+        assertEquals(Collections.emptySet(), result, "Role should be either master admin, admin or basic, no other role allowed");
     }
 
 }
