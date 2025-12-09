@@ -111,79 +111,85 @@
     </div>
   </div>
 
-      <!-- Profile Modal -->
-  <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
 
-        <div class="modal-header text-white">
-          <h5 class="modal-title text-white" id="profileModalLabel">User Profile</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <form id="profileForm">
+
+                    <div class="modal-header text-white">
+                        <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Name</label>
+                                <input type="text" class="form-control" id="profileName" name="profileName" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Mobile</label>
+                                <input type="text" class="form-control" id="profileMobile" name="profileMobile" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Email</label>
+                                <input type="email" class="form-control" id="profileEmail" name="profileEmail" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Role</label>
+                                <input type="text" class="form-control" id="profileRole" name="profileRole" readonly>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Address</label>
+                                <textarea class="form-control" id="profileAddress" name="profileAddress" readonly></textarea>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">City</label>
+                                <input type="text" class="form-control" id="profileCity" name="profileCity" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">State</label>
+                                <input type="text" class="form-control" id="profileState" name="profileState" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Country</label>
+                                <input type="text" class="form-control" id="profileCountry" name="profileCountry" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Pin Code</label>
+                                <input type="text" class="form-control" id="profilePin" name="profilePin" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Registered On</label>
+                                <input type="text" class="form-control" id="profileDate" readonly>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="editProfileBtn" class="btn btn-primary">Edit</button>
+                        <button type="button" id="saveProfileBtn" class="btn btn-success d-none">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+
+                </form>
+
+            </div>
         </div>
-
-        <div class="modal-body">
-          <div class="row g-3">
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Name</label>
-              <p class="form-control-plaintext" id="profileName"></p>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Mobile</label>
-              <p class="form-control-plaintext" id="profileMobile"></p>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Email</label>
-              <p class="form-control-plaintext" id="profileEmail"></p>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Role</label>
-              <p class="form-control-plaintext" id="profileRole"></p>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label fw-bold">Address</label>
-              <p class="form-control-plaintext" id="profileAddress"></p>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label fw-bold">City</label>
-              <p class="form-control-plaintext" id="profileCity"></p>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label fw-bold">State</label>
-              <p class="form-control-plaintext" id="profileState"></p>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label fw-bold">Country</label>
-              <p class="form-control-plaintext" id="profileCountry"></p>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Pin Code</label>
-              <p class="form-control-plaintext" id="profilePin"></p>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Registered On</label>
-              <p class="form-control-plaintext" id="profileDate"></p>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-
-      </div>
     </div>
-  </div>
   <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -192,8 +198,7 @@
     <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_lead.js"></script>
     <script src="${pageContext.request.contextPath}/static/javascript/leads/download_templates.js"></script>
     <script src="${pageContext.request.contextPath}/static/javascript/leads/upload_file_history.js"></script>
-<%--    <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>--%>
-<%--    <script src="${pageContext.request.contextPath}/static/javascript/dashboard.js"></script>--%>
+    <script src="${pageContext.request.contextPath}/static/javascript/components/header.js"></script>
 </body>
 
 </html>
