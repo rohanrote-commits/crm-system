@@ -37,6 +37,8 @@ $(document).ready(function () {
             success: function (response) {
                 showPopup("Success", response.message || response, "success");
                 sessionStorage.removeItem("Authorization");
+                sessionStorage.removeItem("hasVisitedDashboard")
+                sessionStorage.removeItem("activeDashboardSection");
                 window.location.href = "/crm/login";
             },
             error: function (xhr) {
