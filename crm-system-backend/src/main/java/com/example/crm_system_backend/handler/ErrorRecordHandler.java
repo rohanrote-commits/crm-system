@@ -14,19 +14,17 @@ import com.example.crm_system_backend.exception.ErrorRecordException;
 import com.example.crm_system_backend.exception.UploadHistoryException;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.repository.IUserRepo;
-import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.LeadService;
 import com.example.crm_system_backend.service.serviceImpl.UploadHistoryService;
 import com.example.crm_system_backend.service.serviceImpl.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.example.crm_system_backend.service.serviceImpl.UserService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -46,7 +44,6 @@ public class ErrorRecordHandler {
     private final ObjectMapper objectMapper;
 
 
-
     /**
      * Retrieves a list of invalid lead error records based on the given upload history ID.
      * This method fetches the associated upload history, extracts the error records in JSON format,
@@ -54,22 +51,23 @@ public class ErrorRecordHandler {
      *
      * @param uploadHistoryId the unique identifier of the upload history containing error records
      * @return a list of {@code InvalidLeadError} objects representing the invalid lead errors
-     *         associated with the provided upload history
+     * associated with the provided upload history
      * @throws UploadHistoryException if the upload history does not contain error records
-     * @throws ErrorRecordException if an error occurs while processing the error records
+     * @throws ErrorRecordException   if an error occurs while processing the error records
      * @author Akshay Jadhav
      */
-    public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId){
+    public List<InvalidLeadError> findErrorRecordByUploadHistoryId(String uploadHistoryId) {
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
         if (history.getErrorRecord() == null) {
-            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId ---> for uploadHistoryId {}",uploadHistoryId);
+            log.error("Exception : ErrorRecordHandler.findErrorRecordByUploadHistoryId ---> for uploadHistoryId {}", uploadHistoryId);
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
 
         try {
             List<InvalidLeadError> errorList =
-                    objectMapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {});
+                    objectMapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidLeadError>>() {
+                    });
 
             log.info("Exit: ErrorRecordHandler.findErrorRecordByUploadHistoryId");
             return errorList;
@@ -88,11 +86,11 @@ public class ErrorRecordHandler {
      *
      * @param uploadHistoryId the unique identifier of the upload history containing error records
      * @return a list of {@code InvalidUserError} objects representing the invalid user errors
-     *         associated with the provided upload history
+     * associated with the provided upload history
      * @throws UploadHistoryException if the upload history does not contain error records
-     * @throws RuntimeException if there is an issue while processing the error records
+     * @throws RuntimeException       if there is an issue while processing the error records
      */
-    public List<InvalidUserError> findUserErrorRecordByUploadHistoryId(String uploadHistoryId){
+    public List<InvalidUserError> findUserErrorRecordByUploadHistoryId(String uploadHistoryId) {
         log.info("Enter:ErrorRecordHandler.findErrorRecordByUploadHistoryId");
         UploadHistory history = uploadHistoryService.findById(uploadHistoryId);
         if (history.getErrorRecord() == null) {
@@ -102,7 +100,8 @@ public class ErrorRecordHandler {
         try {
             ObjectMapper mapper = new ObjectMapper();
             List<InvalidUserError> errorList =
-                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidUserError>>() {});
+                    mapper.readValue(history.getErrorRecord(), new TypeReference<List<InvalidUserError>>() {
+                    });
 
             return errorList;
 
@@ -118,12 +117,12 @@ public class ErrorRecordHandler {
      * and saves the corrected lead details as a valid lead. If no error records remain,
      * it updates the upload status to success.
      *
-     * @param rowNumber the row number of the invalid lead record to be corrected
+     * @param rowNumber       the row number of the invalid lead record to be corrected
      * @param uploadHistoryId the identifier of the upload history containing the error records
-     * @param leadDto the updated details of the lead to replace the invalid record
+     * @param leadDto         the updated details of the lead to replace the invalid record
      * @return the updated {@code LeadDto} object containing the corrected lead details
      * @throws UploadHistoryException if the upload history does not exist or contains no error records
-     * @throws ErrorRecordException if the specified error record is not found or an issue occurs during processing
+     * @throws ErrorRecordException   if the specified error record is not found or an issue occurs during processing
      * @author Akshay Jadhav
      */
     @Transactional
@@ -139,33 +138,34 @@ public class ErrorRecordHandler {
             List<InvalidLeadError> errorList =
                     objectMapper.readValue(
                             uploadHistory.getErrorRecord(),
-                            new TypeReference<List<InvalidLeadError>>() {}
+                            new TypeReference<List<InvalidLeadError>>() {
+                            }
                     );
             // 2 Find the invalid lead by rowNumber
             InvalidLeadError toFix = errorList.stream()
-                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .filter(e -> e.getRowNumber() != null && e.getRowNumber().equals(rowNumber))
                     .findFirst()
                     .orElseThrow(() -> new ErrorRecordException(ErrorCode.INVALID_LEAD_NOT_FOUND));
 
             // 3 Remove the resolved error record
             errorList.remove(toFix);
-            if(!errorList.isEmpty() ){
+            if (!errorList.isEmpty()) {
                 uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
             } else {
-              uploadHistory.setErrorRecord(null);
+                uploadHistory.setErrorRecord(null);
             }
             // 4 Save updated JSON back to DB
 
             //update error record number
-            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
-            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
             uploadHistory.setUpdatedAt(LocalDateTime.now());
-           UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
-           //if no error record then status is success
-           if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
-               savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
-               uploadHistoryService.save(savedUploadHistory1);
-           }
+            UploadHistory savedUploadHistory1 = uploadHistoryService.save(uploadHistory);
+            //if no error record then status is success
+            if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
+                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+                uploadHistoryService.save(savedUploadHistory1);
+            }
 
             // 5 Save corrected lead as valid lead
             Lead savedLead = leadService.save(leadDto);
@@ -181,16 +181,16 @@ public class ErrorRecordHandler {
      * Updates the error record for a user in the system by removing the error from the upload history
      * and saving the updated user data.
      *
-     * @param rowNumber the row number of the invalid user record to be fixed
+     * @param rowNumber       the row number of the invalid user record to be fixed
      * @param uploadHistoryId the identifier for the upload history containing error records
-     * @param userDTO the updated user details to replace the invalid user record
+     * @param userDTO         the updated user details to replace the invalid user record
      * @return the updated {@code UserDTO} object containing corrected user details
      * @throws UploadHistoryException if the upload history does not exist or contains no error records
-     * @throws ErrorRecordException if the specified error record cannot be found or other issues occur during processing
-     * @throws UserException if a user with the provided email or mobile number already exists
+     * @throws ErrorRecordException   if the specified error record cannot be found or other issues occur during processing
+     * @throws UserException          if a user with the provided email or mobile number already exists
      */
     @Transactional
-    public UserDTO updateUserErrorRecord(int rowNumber, String uploadHistoryId, UserDTO userDTO){
+    public UserDTO updateUserErrorRecord(int rowNumber, String uploadHistoryId, UserDTO userDTO) {
         log.info("Enter: ErrorRecordHandler.updateErrorRecord");
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
 
@@ -203,11 +203,12 @@ public class ErrorRecordHandler {
             List<InvalidUserError> errorList =
                     objectMapper.readValue(
                             uploadHistory.getErrorRecord(),
-                            new TypeReference<List<InvalidUserError>>() {}
+                            new TypeReference<List<InvalidUserError>>() {
+                            }
                     );
             // 2 Find the invalid User by rowNumber
             InvalidUserError toFix = errorList.stream()
-                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .filter(e -> e.getRowNumber() != null && e.getRowNumber().equals(rowNumber))
                     .findFirst()
                     .orElseThrow(() -> new ErrorRecordException(ErrorCode.INVALID_USER_NOT_ACTIVE));
 
@@ -216,27 +217,27 @@ public class ErrorRecordHandler {
             // 4 Save updated JSON back to DB
             uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
             //update error record number
-            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
-            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
             uploadHistory.setUpdatedAt(LocalDateTime.now());
-            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            UploadHistory savedUploadHistory1 = uploadHistoryService.save(uploadHistory);
             //if no error record then status is success
-            if(hasNoErrors(savedUploadHistory1)){
+            if (hasNoErrors(savedUploadHistory1)) {
                 savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
             }
             uploadHistoryService.save(savedUploadHistory1);
 
             // 5 Save and return corrected user
-            if(userRepo.existsByEmail(userDTO.getEmail())){
+            if (userRepo.existsByEmail(userDTO.getEmail())) {
                 log.error("User with email {} already exists", userDTO.getEmail());
                 throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
             }
-            if(userRepo.existsByMobileNumber(userDTO.getMobileNumber())){
+            if (userRepo.existsByMobileNumber(userDTO.getMobileNumber())) {
                 log.error("User with mobile number {} already exists", userDTO.getMobileNumber());
                 throw new UserException(ErrorCode.MOBILE_NUMBER_ALREADY_EXISTS);
             }
             User user = new User();
-            BeanUtils.copyProperties(userDTO,user);
+            BeanUtils.copyProperties(userDTO, user);
             User savedUser = userRepo.save(user);
             return modelMapper.map(savedUser, UserDTO.class);
 
@@ -253,13 +254,13 @@ public class ErrorRecordHandler {
      * The method updates the error record list in the database, adjusts the
      * upload statistics, and updates the upload status if no error records remain.
      *
-     * @param rowNumber the row number of the invalid lead record to be deleted
+     * @param rowNumber       the row number of the invalid lead record to be deleted
      * @param uploadHistoryId the unique identifier of the upload history containing the error records
      * @throws UploadHistoryException if the upload history does not exist or contains no error records
-     * @throws ErrorRecordException if the specified error record is not found or there is an issue during processing
+     * @throws ErrorRecordException   if the specified error record is not found or there is an issue during processing
      * @author Akshay Jadhav
      */
-    public void deleteErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
+    public void deleteErrorRecordByEmail(int rowNumber, String uploadHistoryId) {
         log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
 
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
@@ -277,20 +278,20 @@ public class ErrorRecordHandler {
                     );
             // 2 Find the invalid lead by rowNumber
             InvalidLeadError toFix = errorList.stream()
-                    .filter(e -> e.getRowNumber() == rowNumber)
+                    .filter(e -> e.getRowNumber() != null && e.getRowNumber().equals(rowNumber))
                     .findFirst()
-                    .orElseThrow(() ->{
+                    .orElseThrow(() -> {
                         log.error("Exception : ErrorRecordHandler.deleteErrorRecordByEmail -->InvalidLeadNotFound");
-                       return new ErrorRecordException(ErrorCode.INVALID_LEAD_NOT_FOUND);
+                        return new ErrorRecordException(ErrorCode.INVALID_LEAD_NOT_FOUND);
                     });
             errorList.remove(toFix);
             // 4 Save updated JSON back to DB
             uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
             //update error record number
-            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
-            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
             uploadHistory.setUpdatedAt(LocalDateTime.now());
-            UploadHistory savedUploadHistory1 =  uploadHistoryService.save(uploadHistory);
+            UploadHistory savedUploadHistory1 = uploadHistoryService.save(uploadHistory);
             //if no error record then status is success
             if (savedUploadHistory1.getErrorRecord() == null || savedUploadHistory1.getErrorRecord().isEmpty()) {
                 savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
@@ -309,13 +310,13 @@ public class ErrorRecordHandler {
      * This method updates the error record list in the database, adjusts the
      * upload statistics, and changes the upload status if no error records remain.
      *
-     * @param rowNumber the row number of the invalid user record to be deleted
+     * @param rowNumber       the row number of the invalid user record to be deleted
      * @param uploadHistoryId the unique identifier of the upload history containing the user error records
      * @throws UploadHistoryException if the upload history does not exist or contains no error records
-     * @throws ErrorRecordException if the specified error record is not found or there is an issue during processing
+     * @throws ErrorRecordException   if the specified error record is not found or there is an issue during processing
      * @author Akshay Jadhav
      */
-    public void deleteUserErrorRecordByEmail(int rowNumber,String uploadHistoryId) {
+    public void deleteUserErrorRecordByEmail(int rowNumber, String uploadHistoryId) {
         log.info("Enter: ErrorRecordHandler.deleteErrorRecordByEmail");
 
         UploadHistory uploadHistory = uploadHistoryService.findById(uploadHistoryId);
@@ -336,7 +337,7 @@ public class ErrorRecordHandler {
             InvalidUserError toFix = errorList.stream()
                     .filter(e -> e.getRowNumber() == rowNumber)
                     .findFirst()
-                    .orElseThrow(() ->{
+                    .orElseThrow(() -> {
                         log.error("Exception : ErrorRecordHandler.deleteErrorRecordByEmail -->InvalidLeadNotFound");
                         return new ErrorRecordException(ErrorCode.INVALID_USER_NOT_ACTIVE);
                     });
@@ -345,14 +346,14 @@ public class ErrorRecordHandler {
             // 4 Save updated JSON back to DB
             uploadHistory.setErrorRecord(objectMapper.writeValueAsString(errorList));
             //update error record number
-            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords()-1);
-            uploadHistory.setValidRecords(uploadHistory.getValidRecords()+1);
+            uploadHistory.setInvalidRecords(uploadHistory.getInvalidRecords() - 1);
+            uploadHistory.setValidRecords(uploadHistory.getValidRecords() + 1);
             uploadHistory.setUpdatedAt(LocalDateTime.now());
-            UploadHistory savedUploadHistory1 =  uploadHistoryService.update(uploadHistory);
+            UploadHistory savedUploadHistory1 = uploadHistoryService.update(uploadHistory);
             //if no error record then status is success
-           if(hasNoErrors(savedUploadHistory1)){
-               savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
-           }
+            if (hasNoErrors(savedUploadHistory1)) {
+                savedUploadHistory1.setUploadStatus(UploadStatus.SUCCESS);
+            }
             uploadHistoryService.save(savedUploadHistory1);
         } catch (Exception e) {
             log.error("Exception in updateErrorRecord", e);
@@ -381,7 +382,8 @@ public class ErrorRecordHandler {
             json = json.trim();
             if ("[]".equals(json)) return true;
             // Parse and check size
-            List<Object> items = objectMapper.readValue(json, new TypeReference<List<Object>>() {});
+            List<Object> items = objectMapper.readValue(json, new TypeReference<List<Object>>() {
+            });
             return items == null || items.isEmpty();
         } catch (Exception e) {
             log.warn("Failed to parse errorRecord; treating as not empty. Value: {}", history.getErrorRecord(), e);
