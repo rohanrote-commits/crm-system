@@ -459,7 +459,7 @@ jQuery(function () {
     function showAlert(message, type) {
       const alertContainer = $("#alert-container");
       const alert = $(`
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-${type} alert-dismissible fade show d-flex justify-content-center align-items-center" role="alert">
           ${message}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

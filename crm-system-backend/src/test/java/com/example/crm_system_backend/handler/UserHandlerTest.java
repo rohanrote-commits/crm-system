@@ -526,7 +526,8 @@ class UserHandlerTest {
             verify(userService, times(1)).registerUser(any(User.class));
         }
     }
-    // ==================== DELETE USER TESTS ====================
+
+
     @Nested
     @DisplayName("Delete User Tests")
     class DeleteUserTests {

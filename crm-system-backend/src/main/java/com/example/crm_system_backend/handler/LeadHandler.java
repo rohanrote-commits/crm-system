@@ -313,7 +313,7 @@ public class LeadHandler implements IHandler<LeadDto> {
         try {
             String fileName = file.getOriginalFilename();
             String uploadHistoryId = null;
-            if(fileName !=null && !fileName.equalsIgnoreCase("Lead_Teamplate.xlsx")){
+            if(fileName !=null && !fileName.contains("Lead_Teamplate")){
                 uploadHistoryId   = extractHistoryIdFromFilename(fileName);
             }
             UploadHistory uploadHistory;

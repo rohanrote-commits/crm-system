@@ -22,8 +22,6 @@ import org.mockito.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -61,7 +59,6 @@ class LeadHandlerTest {
 
     @Test
     void save_ShouldSaveAndReturnDto_WhenLeadNotExists() {
-        // Arrange
         LeadDto dto = new LeadDto();
         dto.setEmail("a@x.com");
         dto.setUser("user@x.com");
@@ -73,10 +70,8 @@ class LeadHandlerTest {
         when(leadService.save(dto)).thenReturn(saved);
         when(modelMapper.map(saved, LeadDto.class)).thenReturn(dto);
 
-        // Act
         LeadDto result = leadHandler.save(dto);
 
-        // Assert
         Assertions.assertNotNull(result);
         Assertions.assertEquals(dto.getEmail(), result.getEmail());
         verify(leadService).getLeadByEmail(dto.getEmail());
@@ -121,7 +116,6 @@ class LeadHandlerTest {
         when(leadService.findByUserIn(argThat(list -> list.size() == 2))).thenReturn(List.of(l1));
 
         // modelMapper.map is called but its return is not used for mapping fields in getLeadsByUser (destination is new object)
-        // no stubbing required
 
         // Act
         List<LeadDto> result = leadHandler.getLeadsByUser(userId);
@@ -228,40 +222,6 @@ class LeadHandlerTest {
         verify(leadService).deleteLead(id);
     }
 
-//    // ---------- bulkUpload ----------
-//    @Test
-//    void bulkUpload_ShouldProcessAndSaveUploadHistory_SuccessPath() throws Exception {
-//        // Arrange
-//        String fileName = "leads.xlsx";
-//        MockMultipartFile file = new MockMultipartFile("file", fileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "dummy".getBytes());
-//        Long userId = 7L;
-//
-//        User user = new User();
-//        user.setId(userId);
-//        user.setEmail("u@x.com");
-//
-//        Lead validLead = new Lead();
-//
-//        // Mock LeadList and behavior
-//        LeadList leadListMock = mock(LeadList.class);
-//        when(leadListMock.getValidLeadList()).thenReturn(List.of(validLead));
-//        when(leadListMock.getInvalidLeadList()).thenReturn(Collections.emptyList());
-//
-//        when(userService.getUserById(userId)).thenReturn(Optional.of(user));
-//        // processExcelData receives a newly created UploadHistory inside method; we don't need to match it exactly
-//        when(leadExcelHelper.processExcelData(any(MultipartFile.class), any(UploadHistory.class))).thenReturn(Optional.of(leadListMock));
-//
-//        // Act
-//        leadHandler.bulkUpload(file, userId);
-//
-//        // Assert
-//        // capture the upload history saved
-//        ArgumentCaptor<UploadHistory> captor = ArgumentCaptor.forClass(UploadHistory.class);
-//        verify(uploadHistoryService).save(captor.capture());
-//        UploadHistory saved = captor.getValue();
-//        Assertions.assertEquals(UploadStatus.SUCCESS, saved.getUploadStatus());
-//        verify(leadService).bulkUpload(anyList());
-//    }
 
     @Test
     void bulkUpload_ShouldMarkFailedAndThrow_WhenProcessingThrows() throws Exception {
