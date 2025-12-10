@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -52,6 +53,13 @@ public class ReportService implements IReportService {
     DownloadReportHistoryRepo historyRepo;
 
     private static final Logger LOGGER = Logger.getLogger(ReportService.class.getName());
+
+    public ReportService() {}
+
+    public ReportService(ReportExcelHelper helper, DownloadReportHistoryRepo historyRepo) {
+        this.helper = helper;
+        this.historyRepo = historyRepo;
+    }
 
     /**
      * Creates the Excel Template and adds multiple sheets (summary report-1, per user reports-multiple) in it according to requirement

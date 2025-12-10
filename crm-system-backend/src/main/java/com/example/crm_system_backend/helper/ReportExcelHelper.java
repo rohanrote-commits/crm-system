@@ -4,7 +4,6 @@ import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
-import com.example.crm_system_backend.exception.ErrorRecordException;
 import com.example.crm_system_backend.exception.ReportException;
 import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.repository.ILeadRepository;
@@ -12,13 +11,11 @@ import com.example.crm_system_backend.repository.IUserRepo;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import static com.example.crm_system_backend.constants.Roles.ADMIN;
 import static com.example.crm_system_backend.constants.Roles.MASTER_ADMIN;
 

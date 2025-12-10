@@ -113,5 +113,11 @@ public class Lead {
         this.email = email;
     }
 
+    public Lead(Long id, String email, User user) {
+        this.id = id;
+        this.email = email;
+        this.user = user;
+    }
+
 }
 
