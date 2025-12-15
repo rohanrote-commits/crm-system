@@ -76,6 +76,7 @@ public class DownloadReportController {
         Long loggedInUserId = (Long) id;
         String loggedInUserEmail = (String) email;
 
+//       TODO : Use DTO class instead of entity class to transfer the data to UI.
         Set<downloadReport> filteredHistoryRecords = helper.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
         LOGGER.log(Level.INFO, "Generated filtered download history of logged in user");
         return ResponseEntity.ok(filteredHistoryRecords);

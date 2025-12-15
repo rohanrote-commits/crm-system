@@ -238,6 +238,7 @@ public class ReportService implements IReportService {
 
         data.setDateRange(dateRange);
         data.setEmail(email);
+//        TDOD: set the userId instead of name.
         data.setUserName(name);
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

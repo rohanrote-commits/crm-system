@@ -13,6 +13,7 @@ public class downloadReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //TODO : Use userId.
     @NotBlank
     private String userName;
     @NotBlank

@@ -83,6 +83,7 @@ public class ReportController {
     })
 
     @PostMapping("/getTemplate")
+    // TODO - Do not get the email from the token. Get the masked user Id from header then unmask it get the user email from the user Id.
     public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
                                                              @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
                                                              @RequestHeader("Authorization")String authorizationHeader) {
