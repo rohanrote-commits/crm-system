@@ -4,6 +4,7 @@ import com.example.crm_system_backend.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -12,6 +13,8 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
+    @Autowired
+    private GeneralUtils generalUtils;
 
     private final String SECRET_KEY = "mysecretkeymysecretkeymysecretkeymysecretkey"; // must be 32+ chars
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
@@ -37,8 +40,9 @@ public class JwtUtil {
     public String generateToken(User user) {
         log.info("Enter: JwtUtil:generateToken");
         log.info("Exit: JwtUtil:generateToken");
+
         return Jwts.builder()
-                .setSubject(user.getId().toString())
+                .setSubject(generalUtils.maskUserId(user.getId()))
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().toString())
                 .setIssuedAt(new Date())
@@ -94,10 +98,10 @@ public class JwtUtil {
      *
      * @param token the JWT as a String
      */
-    public Long getId(String token) {
+    public String getId(String token) {
         log.info("Enter: JwtUtil:getId");
         log.info("Exit: JwtUtil:getId");
-        return Long.parseLong(extractAllClaims(token).getSubject());
+        return extractAllClaims(token).getSubject();
     }
 
     /**

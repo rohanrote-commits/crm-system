@@ -1,4 +1,6 @@
 
+let reportDataTableInstance = null;
+
 $(document).ready(function () {
 
     // Parse JWT
@@ -506,9 +508,10 @@ function loadUsers(token){
 
 // Function: Load Leads from API
 function loadLeads(payload, token) {
+    console.log("Loading leads for user:", payload.sub);
     $("#lead-table").DataTable({
         ajax: {
-            url: LEAD_API.GET_BY_USER ,
+            url: LEAD_API.GET_BY_USER,
             type: "GET",
             headers: {
                 "Authorization": "Bearer " + token
