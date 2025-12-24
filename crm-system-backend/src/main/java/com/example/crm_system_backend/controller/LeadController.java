@@ -4,6 +4,7 @@ import com.example.crm_system_backend.constants.LeadStatus;
 import com.example.crm_system_backend.dto.LeadDto;
 
 import com.example.crm_system_backend.handler.LeadHandler;
+import com.example.crm_system_backend.utils.GeneralUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,6 +31,9 @@ public class LeadController {
     private static final Logger log = LoggerFactory.getLogger(LeadController.class);
 
     private final LeadHandler leadHandler;
+    @Autowired
+    private GeneralUtils generalUtils;
+
 
     @Autowired
     public LeadController(LeadHandler leadHandler) {
@@ -56,10 +60,11 @@ public class LeadController {
     })
     @GetMapping
     public ResponseEntity<List<LeadDto>> getAllLeads(
-            @Parameter(description = "User ID to filter leads") @RequestParam(required = false) Long userId,
+            @Parameter(description = "User ID to filter leads") @RequestParam(required = false) String id,
             @Parameter(description = "Email to filter leads") @RequestParam(required = false) String email) {
 
         log.info("Enter: LeadController.getAllLeads");
+        Long userId = generalUtils.unmaskUserId(id);
 
         if (userId != null) {
             log.info("LeadController.getLeads By User ID: {}", userId);
@@ -160,9 +165,10 @@ public class LeadController {
     @PostMapping("/bulk")
     public ResponseEntity<?> bulkImport(
             @Parameter(description = "File containing lead data") @RequestParam MultipartFile file,
-            @Parameter(description = "ID of the user performing the import") @RequestParam Long userId) {
+            @Parameter(description = "ID of the user performing the import") @RequestParam String id) {
 
         log.info("Enter: LeadController.bulkImport");
+        Long userId = generalUtils.unmaskUserId(id);
         leadHandler.bulkUpload(file, userId);
         log.info("Exit: LeadController.bulkImport");
         return ResponseEntity.ok("Bulk upload successful");

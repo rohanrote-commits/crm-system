@@ -3,6 +3,7 @@ package com.example.crm_system_backend.interceptor;
 import com.example.crm_system_backend.constants.ErrorCode;
 import com.example.crm_system_backend.exception.UserException;
 import com.example.crm_system_backend.service.serviceImpl.UserSessionService;
+import com.example.crm_system_backend.utils.GeneralUtils;
 import com.example.crm_system_backend.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,8 @@ public class RequestInterceptor implements HandlerInterceptor {
     private UserSessionService userSessionService;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private GeneralUtils generalUtils;
 
     /**
      * Intercepts HTTP requests to perform pre-processing and authorization checks for requests
@@ -103,9 +106,9 @@ public class RequestInterceptor implements HandlerInterceptor {
                 throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
 
-            Long id = jwtUtil.getId(token);
+            String id = jwtUtil.getId(token);
             request.setAttribute("role", role);
-            request.setAttribute("userId", id);
+            request.setAttribute("userId", generalUtils.unmaskUserId(id));
             request.setAttribute("email", email);
         }
 

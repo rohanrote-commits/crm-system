@@ -36,7 +36,7 @@ body {
 
 .profile-icon:hover {
     transform: scale(1.1);      /* Slight zoom on hover */
-    color: #f0f0f0;             /* Optional: lighter color on hover */
+    color: #d4cfcf;             /* Optional: lighter color on hover */
 }
 
 .required {
@@ -93,7 +93,7 @@ body {
 }
 
 .drop-item:hover {
-    background-color: #f5f5f5;
+    background-color: #d6d6d6;
 }
 
 /* Layout */

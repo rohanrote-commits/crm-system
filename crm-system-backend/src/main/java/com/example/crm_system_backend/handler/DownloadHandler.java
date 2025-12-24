@@ -97,7 +97,7 @@ public class DownloadHandler {
             throw new UploadHistoryException(ErrorCode.NO_ERROR_RECORDS);
         }
         try {
-            // 1 Read JSON → List<InvalidLeadError>
+            // 1 Read JSON → List<InvalidUserError>
             List<InvalidUserError> errorList =
                     objectMapper.readValue(
                             uploadHistory.getErrorRecord(),
