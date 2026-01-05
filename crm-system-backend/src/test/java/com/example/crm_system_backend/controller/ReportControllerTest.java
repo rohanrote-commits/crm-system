@@ -43,8 +43,7 @@ public class ReportControllerTest {
     void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(new ReportController(
                 reportService,
-                helper,
-                jwtUtil
+                helper
         ))
         .build();
     }
@@ -55,7 +54,7 @@ public class ReportControllerTest {
         // --- ARRANGE ---
 
         // 1. Define inputs and expected outputs
-        String email = "testuser@example.com";
+        Long userId = 1010101L;
         String token = "valid-jwt-token";
         String authorizationHeader = "Bearer " + token;
 
@@ -75,7 +74,7 @@ public class ReportControllerTest {
 
         // 2. Mock service behavior
         when(helper.getLeads(any(Date.class), any(Date.class))).thenReturn(mockLeadList);
-        when(jwtUtil.getEmail(token)).thenReturn(email);
+        when(jwtUtil.getId(token)).thenReturn(userId);
 
         @SuppressWarnings("unchecked")
         ResponseEntity<StreamingResponseBody> mockResponse = (ResponseEntity<StreamingResponseBody>) mock(ResponseEntity.class);
@@ -96,7 +95,7 @@ public class ReportControllerTest {
         // --- VERIFICATION ---
         verify(helper, times(1)).getLeads(eq(expectedStartDate), eq(expectedEndDate));
         verify(jwtUtil, times(1)).getEmail(token);
-        verify(reportService, times(1)).saveInDb(eq(expectedStartDate), eq(expectedEndDate), eq(email));
+        verify(reportService, times(1)).saveInDb(eq(expectedStartDate), eq(expectedEndDate), eq(userId));
         verify(reportService, times(1)).excelToZipConverter(eq(mockLeadList), eq(expectedStartDate), eq(expectedEndDate));
     }
 
@@ -158,16 +157,16 @@ public class ReportControllerTest {
         // --- ARRANGE ---
         String token = "valid-token";
         String authorizationHeader = "Bearer " + token;
-        String email = "test@example.com";
+        Long userId = 101L;
 
         Set<Lead> mockLeadList = new HashSet<>();
         mockLeadList.add(new Lead(101L, "lead1@gmail.com"));
 
         when(helper.getLeads(any(), any())).thenReturn(mockLeadList);
-        when(jwtUtil.getEmail(eq(token))).thenReturn(email);
+        when(jwtUtil.getEmail(eq(token))).thenReturn(String.valueOf(userId));
 
         doThrow(new RuntimeException("Simulated database write failure"))
-                .when(reportService).saveInDb(any(), any(), eq(email));
+                .when(reportService).saveInDb(any(), any(), eq(userId));
 
         // --- ACT & ASSERT ---
         mockMvc.perform(post("/crm/report/getTemplate")
@@ -178,7 +177,7 @@ public class ReportControllerTest {
                 .andExpect(status().isInternalServerError());
 
         // --- VERIFICATION ---
-        verify(reportService, times(1)).saveInDb(any(), any(), eq(email));
+        verify(reportService, times(1)).saveInDb(any(), any(), eq(userId));
         verify(reportService, never()).excelToZipConverter(any(), any(), any());
     }
 

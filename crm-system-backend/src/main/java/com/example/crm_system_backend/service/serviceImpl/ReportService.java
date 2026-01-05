@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.service.serviceImpl;
 
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.constants.ReportConstant;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.Product;
 import com.example.crm_system_backend.entity.User;
@@ -25,7 +26,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -62,7 +62,8 @@ public class ReportService implements IReportService {
     }
 
     /**
-     * Creates the Excel Template and adds multiple sheets (summary report-1, per user reports-multiple) in it according to requirement
+     * Creates the Excel Template and adds multiple sheets (summary report-1, per user reports-multiple) in it according
+     * to requirement
      * @param leads leads to be considered
      * @param start start date
      * @param end end date
@@ -71,10 +72,11 @@ public class ReportService implements IReportService {
      */
     public void ListToExcelStream(Set<Lead> leads, Date start, Date end, OutputStream outputStream) throws IOException {
 
+        LOGGER.log(Level.INFO, "START : CLASS >>  ReportService >> METHOD >> ListToExcelStream from start date: "
+                + start + " to end date: " + end);
+
         // Create new workbook and sheet
         try (Workbook workbook = new XSSFWorkbook()) {
-
-            LOGGER.log(Level.FINEST, "Service :: ServiceImpl :: ReportService :: ListToExcelStream :: Excel Workbook Created");
 
             CellStyle head_style = helper.headStyle(workbook);       // Create style for Head
             CellStyle header_style = helper.headerStyle(workbook);   // Create style for headers
@@ -120,9 +122,12 @@ public class ReportService implements IReportService {
                 for (int i = 0; i < summaryReport_headers.length; i++) {
                     summaryReport_sheet.autoSizeColumn(i, true);
                 }
+                LOGGER.log(Level.INFO, "INTERMEDIATE: CLASS >> ReportService >> METHOD >> ListToExcelStream from "
+                        + "start date: " + start + " to end date: " + end + " >> " + ReportConstant.getSummary);
 
             } else {
-                LOGGER.log(Level.WARNING, "Service :: ServiceImpl :: ReportService :: ListToExcelStream :: Could not generate Summary Report, no leads have registered.");
+                LOGGER.log(Level.WARNING, "WARNING: CLASS >> ReportService >> METHOD >> ListToExcelStream from " +
+                        "start date: " + start + " to end date: " + end + " >> Warning: " + ReportConstant.noSummaryReport);
                 throw new LeadException(ErrorCode.LEAD_NOT_FOUND);
             }
 
@@ -135,7 +140,7 @@ public class ReportService implements IReportService {
                 try {
                     perUserReport(head_style, header_style, data_style,
                             perUserReport_sheet, perUserReport_headers, columnCount,
-                            map.get(user));
+                            map.get(user), start, end);
                 } catch (ExcelException ex) {
                     throw new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION);
                 }
@@ -144,11 +149,14 @@ public class ReportService implements IReportService {
                     perUserReport_sheet.autoSizeColumn(i, true);
                 }
             }
-            LOGGER.log(Level.INFO, "Per user reports generated successfully !!");
+            LOGGER.log(Level.INFO, "INTERMEDIATE: CLASS >> ReportService >> METHOD >> ListToExcelStream from " +
+                    "start date: " + start + " to end date: " + end + " >> " + ReportConstant.getPerUser);
 
             // Write Workbook to response stream
             workbook.write(outputStream);
         }
+        LOGGER.log(Level.INFO, "END : CLASS >>  ReportService >> METHOD >> ListToExcelStream from start date: " +
+                start + " to end date: " + end);
     }
 
 
@@ -161,10 +169,12 @@ public class ReportService implements IReportService {
      */
     public ResponseEntity<StreamingResponseBody> excelToZipConverter(Set<Lead> leadList, Date start, Date end) {
 
-        LOGGER.log(Level.INFO, "Converting Excel Template into a ZIP file");
+        LOGGER.log(Level.INFO, "START : CLASS >>  ReportService >> METHOD >> excelToZipConverter from start date: " +
+                start + " to end date: " + end);
 
         if (leadList.isEmpty()) {
-            LOGGER.log(Level.WARNING, "Service :: ServiceImpl :: ReportService :: No leads have registered in this time period.");
+            LOGGER.log(Level.WARNING, "WARNING: CLASS >> ReportService >> Method: excelToZipConverter from start " +
+                    "date: " + start + " to end date: " + end + ReportConstant.noDataText);
             return ResponseEntity.noContent().build();
         } else {
 
@@ -195,19 +205,18 @@ public class ReportService implements IReportService {
 
                     // 2. Call the service to write Excel data directly to the ZipOutputStream
                     ListToExcelStream(leadList, start, end, zos);
-                    LOGGER.log(Level.FINE, "Received Excel Template, proceeding to convert it into Zip file");
 
                     // 3. Close the current ZIP entry
                     zos.closeEntry();
 
-                    LOGGER.log(Level.INFO, "Successfully converted Excel Template into a ZIP file");
-
                 } catch (IOException e) {
-                    log.error("Error streaming ZIP content.");
-                    LOGGER.log(Level.SEVERE, "Service :: ServiceImpl :: ReportService :: excelToZipConverter : ", e);
+                    LOGGER.log(Level.SEVERE, "ERROR: CLASS >> ReportService >> METHOD: excelToZipConverter from " +
+                            "start date: " + start + " to end date: " + end + " >> Error: ", e);
                     throw new ExcelException(ErrorCode.ERROR_IN_FILE_DOWNLOAD);
                 }
             };
+            LOGGER.log(Level.INFO, "END : CLASS >>  ReportService >> METHOD >> excelToZipConverter from start date: " +
+                    start + " to end date: " + end);
             return ResponseEntity.ok().headers(headers).body(responseBody);
         }
     }
@@ -217,36 +226,41 @@ public class ReportService implements IReportService {
      * Accepts the data from frontend, makes necessary changes, saves the data in download_history database
      * @param start start date
      * @param end end date
-     * @param email accessed from token to apply role based filter later (email is unique property)
      */
-    public void saveInDb(Date start, Date end, String email) {
+    public void saveInDb(Date start, Date end, Long userId) {
 
-        // Save in DB
-        downloadReport data = new downloadReport();
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportService >> METHOD >> saveInDb from start date: " + start +
+                " to end date: " + end);
 
-        String name = helper.getName(email);
+        try {
+            // Save in DB
+            downloadReport data = new downloadReport();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        LocalDate startLocal = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endLocal = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate startLocal = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate endLocal = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        String formattedStart = formatter.format(startLocal);
-        String formattedEnd = formatter.format(endLocal);
+            String formattedStart = formatter.format(startLocal);
+            String formattedEnd = formatter.format(endLocal);
 
-        String dateRange = formattedStart + " To " + formattedEnd;
+            String dateRange = formattedStart + " To " + formattedEnd;
 
-        data.setDateRange(dateRange);
-        data.setEmail(email);
-//        TDOD: set the userId instead of name.
-        data.setUserName(name);
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        data.setDownloadedAt(now.format(formatter2));
-        data.setStatus("Success");
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        historyRepo.save(data);
-        LOGGER.log(Level.INFO, "Made necessary changes and saved the data in database");
+            data.setUserId(userId);
+            data.setDateRange(dateRange);
+            data.setDownloadedAt(now.format(formatter2));
+            data.setStatus("Success");
+
+            historyRepo.save(data);
+        } catch(ExcelException ex) {
+            LOGGER.log(Level.SEVERE, "ERROR: CLASS >> ReportService >> METHOD >> saveInDb >> Failed to save data in database >> Error: " , ex);
+            throw new ExcelException(ErrorCode.FAILED_TO_SAVE_IN_DB);
+        }
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportService >> METHOD >> saveInDb from start date: " + start +
+                " to end date: " + end);
 
     }
 
@@ -265,6 +279,9 @@ public class ReportService implements IReportService {
     public void SummaryReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                               Sheet sheet, String[] headers,
                               Set<User> users, Date start, Date end) {
+
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportService >> METHOD >> SummaryReport from start date: " +
+                start + " to end date: " + end);
 
         Map<Long, List<Lead>> map = new HashMap<>();
 
@@ -368,7 +385,8 @@ public class ReportService implements IReportService {
             row.getCell(cellNum - 1).setCellStyle(data_style);
 
         }
-        LOGGER.log(Level.INFO, "Summary report generated successfully !!");
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportService >> METHOD >> SummaryReport from start date: " +
+                start + " to end date: " + end);
 
     }
 
@@ -385,7 +403,10 @@ public class ReportService implements IReportService {
      */
     public void perUserReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                               Sheet sheet, String[] headers, int columnCount,
-                              List<Lead> leads) {
+                              List<Lead> leads, Date start, Date end) {
+
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportService >> METHOD >> perUserReport from start date: " +
+                start + " to end date: " + end);
 
         // Row 1
         Row headRow = sheet.createRow(0);
@@ -437,5 +458,7 @@ public class ReportService implements IReportService {
                 row.createCell(cellNum++).setCellValue(lead.getDescription());
                 row.getCell(cellNum - 1).setCellStyle(data_style);
         }
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportService >> METHOD >> perUserReport from start date: " +
+                start + " to end date: " + end);
     }
 }

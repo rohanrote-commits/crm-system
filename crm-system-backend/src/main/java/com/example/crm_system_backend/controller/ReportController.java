@@ -1,10 +1,11 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.constants.ReportConstant;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
-import com.example.crm_system_backend.repository.DownloadReportHistoryRepo;
 import com.example.crm_system_backend.service.serviceImpl.ReportService;
-import com.example.crm_system_backend.utils.JwtUtil;
+import com.example.crm_system_backend.utils.GeneralUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,24 +29,17 @@ import java.util.logging.Logger;
 public class ReportController {
 
     @Autowired
-    private DownloadReportHistoryRepo historyRepo;
-
-    @Autowired
     ReportExcelHelper helper;
 
     @Autowired
     ReportService reportService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
 
     private static final Logger LOGGER = Logger.getLogger(ReportController.class.getName());
 
-
-    public ReportController(ReportService reportService, ReportExcelHelper helper, JwtUtil jwtUtil) {
+    public ReportController(ReportService reportService, ReportExcelHelper helper) {
         this.reportService = reportService;
         this.helper = helper;
-        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -83,37 +77,41 @@ public class ReportController {
     })
 
     @PostMapping("/getTemplate")
-    // TODO - Do not get the email from the token. Get the masked user Id from header then unmask it get the user email from the user Id.
-    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-                                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
-                                                             @RequestHeader("Authorization")String authorizationHeader) {
+    public ResponseEntity<StreamingResponseBody> getTemplate(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                                                             @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd") Date end,
+                                                             @RequestHeader("userId") Long userId
+                                                             ) {
 
-        String token = authorizationHeader.replace("Bearer ", "");
+        userId = GeneralUtils.unmaskOnId(userId);
+        String email = helper.getEmailByUserId(userId);
+
+        LOGGER.log(Level.INFO, "START : CLASS >> ReportController >> METHOD >> " +
+                "getTemplate with start date: " + start + " and end date: " + end + " for user with email: " + email);
 
         Set<Lead> leadList = helper.getLeads(start, end);
         if(leadList.isEmpty()) {
-            LOGGER.log(Level.WARNING, "No leads are registered in this time period.");
+            LOGGER.log(Level.WARNING, "CLASS >> ReportController >> METHOD >> getTemplate with start date: " + start +
+                    " and end date: " + end + " for user with email: " + email + " >> " + ReportConstant.noDataText);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        LOGGER.log(Level.INFO, "Successfully generated Zip file");
+        LOGGER.log(Level.INFO, "INTERMEDIATE : CLASS >> ReportController >> METHOD >> " + "getTemplate >> " +
+                "Successfully generated Zip file with start date: " + start + " and end date: " + end + " for user " +
+                "with email: " + email);
 
-        String email;
-        try {
-            email = jwtUtil.getEmail(token);
-        } catch(Exception ex) {
-            LOGGER.log(Level.WARNING, "JWT Signature failed for token", ex);
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
         if(email == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         try {
-            reportService.saveInDb(start, end, email);
+            reportService.saveInDb(start, end, userId);
         } catch(Exception ex) {
-            LOGGER.log(Level.WARNING, "Report Template Saving failed for token", ex);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.log(Level.SEVERE, "ERROR : CLASS >> ReportController >> METHOD >> " +
+                    "getTemplate with start date: " + start + " and end date: " + end + " for user with email: " + email
+                    + " >> Error: ", ex);
+            return new ResponseEntity<>(ErrorCode.FAILED_TO_SAVE_IN_DB.getStatus());
         }
+        LOGGER.log(Level.INFO, "END : CLASS >> ReportController >> METHOD >> " +
+                "getTemplate with start date: " + start + " and end date: " + end + " for user with email: " + email);
         return reportService.excelToZipConverter(leadList, start, end);
     }
 }

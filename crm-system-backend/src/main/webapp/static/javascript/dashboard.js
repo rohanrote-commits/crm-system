@@ -356,7 +356,10 @@ $("#confirmDeleteBtn").click(function () {
 
             fetch(getTemplateUrl, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${token}` }
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    userId: `${payload.sub}`
+                }
             })
                 .then(resp => {
                     if (!resp.ok) throw new Error(`HTTP Error! status: ${resp.status}`);
@@ -743,6 +746,7 @@ function loadReportHistory(token) {
         })
         .catch(error => {
             console.error("Network error:", error);
+            // Send empty
             initializeReportDataTable([]);
         });
 }

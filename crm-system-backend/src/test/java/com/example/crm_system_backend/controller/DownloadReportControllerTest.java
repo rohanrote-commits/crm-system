@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.controller;
 
+import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.downloadReport;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,14 +51,12 @@ public class DownloadReportControllerTest {
 
         downloadReport record = new downloadReport();
         record.setId(102345L);
-        record.setUserName("Akanksha Senad");
         record.setDownloadedAt("2025-11-20 10:00:00");
         record.setDateRange("2025-10-01 to 2025-10-31");
         record.setStatus("SUCCESS");
-        record.setEmail("user@gmail.com");
+        record.setUserId(202L);
         history.add(record);
 
-        when(helper.getFilteredDownloadHistory(id, role, email)).thenReturn(history);
 
         mockMvc.perform(get("/crm/report/getDownloadedRecordHistory")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +75,7 @@ public class DownloadReportControllerTest {
         String role = isNull();
         String email = eq("admin@gmail.com");
 
-        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        Set<downloadReportDTO> result = helper.getFilteredDownloadHistory(id, role, email);
         assertTrue(result.isEmpty(), "Role must be present to get the downloaded record history");
 
     }
@@ -88,7 +87,7 @@ public class DownloadReportControllerTest {
         String role = eq(ADMIN.getDescription());
         String email = eq("admin@gmail.com");
 
-        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        Set<downloadReportDTO> result = helper.getFilteredDownloadHistory(id, role, email);
         assertTrue(result.isEmpty(), "User ID must be present to get the downloaded record history");
 
     }
@@ -100,7 +99,7 @@ public class DownloadReportControllerTest {
         String role = eq(ADMIN.getDescription());
         String email = isNull();
 
-        Set<downloadReport> result = helper.getFilteredDownloadHistory(id, role, email);
+        Set<downloadReportDTO> result = helper.getFilteredDownloadHistory(id, role, email);
         assertTrue(result.isEmpty(), "Email must be present to get the downloaded record history");
 
     }
@@ -110,7 +109,7 @@ public class DownloadReportControllerTest {
         Long id = 101L;
         String email = "abc@gmail.com";
         String role = "invalidRole";
-        Set<downloadReport> result = null;
+        Set<downloadReportDTO> result = null;
         if(!Objects.equals(role, MASTER_ADMIN.getDescription()) || !Objects.equals(role, ADMIN.getDescription()) || !Objects.equals(role, BASIC.getDescription()) || !Objects.equals(role, USER.getDescription())) {
             result = helper.getFilteredDownloadHistory(id, role, email);
         }

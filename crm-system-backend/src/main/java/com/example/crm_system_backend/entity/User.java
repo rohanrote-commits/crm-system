@@ -33,7 +33,6 @@ public class User {
     private String country;
     @Column(nullable = true)
     private String pinCode;
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Roles role;

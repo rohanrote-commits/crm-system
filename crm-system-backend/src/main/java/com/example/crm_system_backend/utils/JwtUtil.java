@@ -42,7 +42,8 @@ public class JwtUtil {
         log.info("Exit: JwtUtil:generateToken");
 
         return Jwts.builder()
-                .setSubject(generalUtils.maskUserId(user.getId()))
+//                .setSubject(generalUtils.maskUserId(user.getId()))
+                .setSubject(String.valueOf(GeneralUtils.maskOnId(user.getId())))
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().toString())
                 .setIssuedAt(new Date())
@@ -98,10 +99,15 @@ public class JwtUtil {
      *
      * @param token the JWT as a String
      */
-    public String getId(String token) {
+//    public String getId(String token) {
+//        log.info("Enter: JwtUtil:getId");
+//        log.info("Exit: JwtUtil:getId");
+//        return extractAllClaims(token).getSubject();
+//    }
+    public long getId(String token) {
         log.info("Enter: JwtUtil:getId");
         log.info("Exit: JwtUtil:getId");
-        return extractAllClaims(token).getSubject();
+        return Long.parseLong(extractAllClaims(token).getSubject());
     }
 
     /**

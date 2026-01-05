@@ -1,5 +1,6 @@
 package com.example.crm_system_backend.helper;
 
+import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
@@ -35,8 +36,8 @@ public class ReportExcelHelperTest {
     @InjectMocks
     private ReportExcelHelper reportExcelHelper;
 
-    @BeforeEach     // JUnit 5 Annotation
-    void setUp(){   // Runs before every @Test executes
+    @BeforeEach     // JUnit 5 Annotation ->
+    void setUp(){   // Runs before every @Test executes (17 times in this class)
         reportExcelHelper = spy(reportExcelHelper);
     }
 
@@ -50,6 +51,7 @@ public class ReportExcelHelperTest {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
+
 
 
     // ----- getLeadList -----
@@ -127,6 +129,7 @@ public class ReportExcelHelperTest {
     }
 
 
+
     // ----- getName -----
     @Test
     void getName_success() {
@@ -200,6 +203,7 @@ public class ReportExcelHelperTest {
         verify(userRepo, times(1)).findUserFirstNameByEmail(inputEmail);
         verify(userRepo, times(1)).findUserLastNameByEmail(inputEmail);
     }
+
 
 
     // ----- getLeads -----
@@ -281,10 +285,10 @@ public class ReportExcelHelperTest {
 
             List<User> allUsers = Arrays.asList(user1, user2, user3, user4);
 
-            downloadReport dr1 = new downloadReport(101L, "ma@gmail.com");
-            downloadReport dr2 = new downloadReport(202L, "adm@gmail.com");
-            downloadReport dr3 = new downloadReport(303L, "admu@gmail.com");
-            downloadReport dr4 = new downloadReport(404L, "mau@gmail.com");
+            downloadReport dr1 = new downloadReport(1010101L, 0L);
+            downloadReport dr2 = new downloadReport(202L, 1010101L);
+            downloadReport dr3 = new downloadReport(303L, 2020202L);
+            downloadReport dr4 = new downloadReport(404L, 3030303L);
 
             List<downloadReport> allReports = Arrays.asList(dr1, dr2, dr3, dr4);
 
@@ -295,7 +299,7 @@ public class ReportExcelHelperTest {
             when(historyRepo.findAll()).thenReturn(allReports);
 
             // ACT
-            Set<downloadReport> actualRecords = reportExcelHelper.getFilteredDownloadHistory(
+            Set<downloadReportDTO> actualRecords = reportExcelHelper.getFilteredDownloadHistory(
                     userId, "MASTER_ADMIN", UserEmail
             );
 
@@ -316,4 +320,101 @@ public class ReportExcelHelperTest {
 
     }
 
+    @Test
+    void getFilteredDownloadHistory_fail_WrongMasterAdminList() {
+        Long UserId = 101L;
+        String role = MASTER_ADMIN.getDescription();
+        String email = "abc@gmail.com";
+
+        User user1 = new User(101L, MASTER_ADMIN, 0L);
+        User user2 = new User(102L, ADMIN, 101L);
+        User user3 = new User(103L, USER, 101L);
+        User user4 = new User(104L, USER, 102L);
+        User user5 = new User(111L, MASTER_ADMIN, 0L);
+        User user6 = new User(112L, ADMIN, 111L);
+        User user7 = new User(113L, USER, 111L);
+        User user8 = new User(114L, USER, 112L);
+
+        downloadReportDTO data1 = new downloadReportDTO(1L, user1);
+        downloadReportDTO data2 = new downloadReportDTO(1L, user2);
+        downloadReportDTO data3 = new downloadReportDTO(1L, user3);
+        downloadReportDTO data4 = new downloadReportDTO(1L, user4);
+        downloadReportDTO data5 = new downloadReportDTO(1L, user5);
+        downloadReportDTO data6 = new downloadReportDTO(1L, user6);
+        downloadReportDTO data7 = new downloadReportDTO(1L, user7);
+        downloadReportDTO data8 = new downloadReportDTO(1L, user8);
+
+        Set<downloadReportDTO> expectedResult = Set.of(data1, data2, data3, data4);
+        Set<downloadReportDTO> actualResult = reportExcelHelper.getFilteredDownloadHistory(UserId, role, email);
+
+        assertNotEquals(expectedResult, actualResult, "Received download history list for Master Admin matches " +
+                "the actual download history list");
+
+    }
+
+    @Test
+    void getFilteredDownloadHistory_fail_WrongAdminList() {
+        Long UserId = 102L;
+        String role = ADMIN.getDescription();
+        String email = "abc@gmail.com";
+
+        User user1 = new User(101L, MASTER_ADMIN, 0L);
+        User user2 = new User(102L, ADMIN, 101L);
+        User user3 = new User(103L, USER, 101L);
+        User user4 = new User(104L, USER, 102L);
+        User user5 = new User(111L, MASTER_ADMIN, 0L);
+        User user6 = new User(112L, ADMIN, 111L);
+        User user7 = new User(113L, USER, 111L);
+        User user8 = new User(114L, USER, 112L);
+
+        downloadReportDTO data1 = new downloadReportDTO(1L, user1);
+        downloadReportDTO data2 = new downloadReportDTO(1L, user2);
+        downloadReportDTO data3 = new downloadReportDTO(1L, user3);
+        downloadReportDTO data4 = new downloadReportDTO(1L, user4);
+        downloadReportDTO data5 = new downloadReportDTO(1L, user5);
+        downloadReportDTO data6 = new downloadReportDTO(1L, user6);
+        downloadReportDTO data7 = new downloadReportDTO(1L, user7);
+        downloadReportDTO data8 = new downloadReportDTO(1L, user8);
+
+        Set<downloadReportDTO> expectedResult = Set.of(data2, data4);
+        Set<downloadReportDTO> actualResult = reportExcelHelper.getFilteredDownloadHistory(UserId, role, email);
+
+        assertNotEquals(expectedResult, actualResult, "Received download history list for Admin matches " +
+                "the actual download history list");
+
+    }
+
+    @Test
+    void getFilteredDownloadHistory_fail_WrongBasicUserList() {
+        Long UserId = 103L;
+        String role = ADMIN.getDescription();
+        String email = "abc@gmail.com";
+
+        User user1 = new User(101L, MASTER_ADMIN, 0L);
+        User user2 = new User(102L, ADMIN, 101L);
+        User user3 = new User(103L, USER, 101L);
+        User user4 = new User(104L, USER, 102L);
+        User user5 = new User(111L, MASTER_ADMIN, 0L);
+        User user6 = new User(112L, ADMIN, 111L);
+        User user7 = new User(113L, USER, 111L);
+        User user8 = new User(114L, USER, 112L);
+
+        downloadReportDTO data1 = new downloadReportDTO(1L, user1);
+        downloadReportDTO data2 = new downloadReportDTO(1L, user2);
+        downloadReportDTO data3 = new downloadReportDTO(1L, user3);
+        downloadReportDTO data4 = new downloadReportDTO(1L, user4);
+        downloadReportDTO data5 = new downloadReportDTO(1L, user5);
+        downloadReportDTO data6 = new downloadReportDTO(1L, user6);
+        downloadReportDTO data7 = new downloadReportDTO(1L, user7);
+        downloadReportDTO data8 = new downloadReportDTO(1L, user8);
+
+        Set<downloadReportDTO> expectedResult = Set.of(data2, data4);
+        Set<downloadReportDTO> actualResult = reportExcelHelper.getFilteredDownloadHistory(UserId, role, email);
+
+        assertNotEquals(expectedResult, actualResult, "Received download history list for Basic/ User matches " +
+                "the actual download history list");
+
+    }
+
 }
+

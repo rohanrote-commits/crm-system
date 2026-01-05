@@ -106,9 +106,11 @@ public class RequestInterceptor implements HandlerInterceptor {
                 throw new UserException(ErrorCode.USER_NOT_FOUND);
             }
 
-            String id = jwtUtil.getId(token);
+//            String id = jwtUtil.getId(token);
+            Long id = jwtUtil.getId(token);
             request.setAttribute("role", role);
-            request.setAttribute("userId", generalUtils.unmaskUserId(id));
+//            request.setAttribute("userId", generalUtils.unmaskUserId(id));
+            request.setAttribute("userId", generalUtils.unmaskOnId(id));
             request.setAttribute("email", email);
         }
 

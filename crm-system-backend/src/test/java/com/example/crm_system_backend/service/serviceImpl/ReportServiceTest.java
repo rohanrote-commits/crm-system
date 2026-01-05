@@ -51,6 +51,8 @@ class ReportServiceTest {
     @Mock
     private DownloadReportHistoryRepo historyRepo;
 
+    // @Captor- It is used to capture the arguments passed to a mock's method so you can perform detailed assertions on
+    // them later.
     @Captor
     private ArgumentCaptor<downloadReport> downloadReportCaptor;
 
@@ -67,7 +69,7 @@ class ReportServiceTest {
     private String expectedEndDate;
 
     private final String TEST_EMAIL = "test.user@example.com";
-    private final String TEST_NAME = "Test User";
+    private final Long USERID = 1L;
     private final String EXPECTED_DATE_RANGE = "2025-01-01 To 2025-01-31";
     private final String EXPECTED_DOWNLOAD_TIME = "2025-02-15 10:30:00";
 
@@ -103,7 +105,6 @@ class ReportServiceTest {
         startDate = Date.from(LocalDate.of(2025, 1, 1).atStartOfDay(systemZone).toInstant());
         endDate = Date.from(LocalDate.of(2025, 1, 31).atStartOfDay(systemZone).toInstant());
 
-        when(helper.getName(TEST_EMAIL)).thenReturn(TEST_NAME);
     }
 
 
@@ -142,11 +143,20 @@ class ReportServiceTest {
             when(mockWorkbook.createSheet("Jane_jane@example.com")).thenReturn(mockUser2Sheet);
 
         })) {
-//  TODO: spy requirement ?
+
+            // Spy- wrapper around real instance
+            //    - executes real methods
+            //    - Use: Testing legacy code
+            // @Spy Vs spy():
+            // @Spy- annotated at class level, requires @ExtendWith/ openMocks(this) to work, creates instance for you
+            //     - preferred when spy is a permanent dependency of the class to be tested.
+            // spy()- called manualy inside method, no special extension required, do not create real object instance
+            //      - preferred when temporary spy is needed
+
             spyReportService = spy(reportService);
 
             doNothing().when(spyReportService).SummaryReport(any(), any(), any(), any(), any(), any(), any(), any());
-            doNothing().when(spyReportService).perUserReport(any(), any(), any(), any(), any(), anyInt(), any());
+            doNothing().when(spyReportService).perUserReport(any(), any(), any(), any(), any(), anyInt(), any(), any(), any());
 
             spyReportService.ListToExcelStream(leads, startDate, endDate, outputStream);
 
@@ -156,7 +166,7 @@ class ReportServiceTest {
 
             verify(spyReportService, times(2)).perUserReport(
                     eq(mockCellStyle), eq(mockCellStyle), eq(mockCellStyle), any(Sheet.class),
-                    eq(ReportConstant.perUserReport_headers), eq(0), anyList());
+                    eq(ReportConstant.perUserReport_headers), eq(0), anyList(), eq(startDate), eq(endDate));
 
             int summaryHeaderCount = ReportConstant.summaryReport_headers.length;
             int perUserHeaderCount = ReportConstant.perUserReport_headers.length;
@@ -282,7 +292,7 @@ class ReportServiceTest {
             doNothing().when(spyReportService).SummaryReport(any(), any(), any(), any(), any(), any(), any(), any());
 
             doThrow(new ExcelException(ErrorCode.FILE_PROCESSING_EXCEPTION))
-                    .when(spyReportService).perUserReport(any(), any(), any(), any(), any(), anyInt(), any());
+                    .when(spyReportService).perUserReport(any(), any(), any(), any(), any(), anyInt(), any(), any(), any());
 
             ExcelException thrown = assertThrows(ExcelException.class, () -> {
                 spyReportService.ListToExcelStream(leads, startDate, endDate, outputStream);
@@ -382,15 +392,11 @@ class ReportServiceTest {
     @Test
     void saveInDb_Success() {
 
-        when(helper.getName(TEST_EMAIL)).thenReturn(TEST_NAME);
-        reportService.saveInDb(startDate, endDate, TEST_EMAIL);
+        reportService.saveInDb(startDate, endDate, USERID);
+
         verify(historyRepo, times(1)).save(downloadReportCaptor.capture());
         downloadReport capturedReport = downloadReportCaptor.getValue();
         assertEquals(EXPECTED_DATE_RANGE, capturedReport.getDateRange());
-
-        assertEquals(TEST_EMAIL, capturedReport.getEmail());
-
-        assertEquals(TEST_NAME, capturedReport.getUserName());
 
         assertEquals("Success", capturedReport.getStatus());
 
@@ -404,7 +410,7 @@ class ReportServiceTest {
     @Test
     void saveInDb_DateConversionEdgeCase_DifferentTimeZone() {
 
-        reportService.saveInDb(startDate, endDate, TEST_EMAIL);
+        reportService.saveInDb(startDate, endDate, USERID);
 
         verify(historyRepo, times(1)).save(downloadReportCaptor.capture());
         downloadReport capturedReport = downloadReportCaptor.getValue();
@@ -418,7 +424,7 @@ class ReportServiceTest {
         when(helper.getName(TEST_EMAIL)).thenThrow(new RuntimeException("Simulated helper error"));
 
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
-            reportService.saveInDb(startDate, endDate, TEST_EMAIL);
+            reportService.saveInDb(startDate, endDate, USERID);
         });
 
         assertEquals("Simulated helper error", thrown.getMessage());

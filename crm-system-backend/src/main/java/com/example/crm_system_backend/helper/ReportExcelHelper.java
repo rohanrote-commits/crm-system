@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.helper;
 
 import com.example.crm_system_backend.constants.ErrorCode;
+import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.entity.Lead;
 import com.example.crm_system_backend.entity.User;
 import com.example.crm_system_backend.entity.downloadReport;
@@ -11,8 +12,6 @@ import com.example.crm_system_backend.repository.IUserRepo;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,17 +113,24 @@ public class ReportExcelHelper {
      * @return list of all leads registered in time period between start date and end date
      */
     public List<Lead> getLeadList(Date start, Date end) {
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportExcelHelper >> METHOD >> getLeadList from " + start + " to " + end);
         List<Lead> leadList = new ArrayList<>();
         for(Lead lead : leadRepo.findAll()) {
             Date createdAt = lead.getCreatedAt();
             if(createdAt == null) {    // for test case
                 continue;
             }
-            if(createdAt.compareTo(start) >= 0 && createdAt.compareTo(end) < 0) {
+
+            // Reason for this condition:
+            // Since the monthly report is scheduled to run on the 1st of every month, it generates the report for the complete previous
+            // month—starting from the 1st day of the previous month and ending on its last day (28, 29, 30, or 31), i.e., up to the day
+            // immediately before the current month begins.
+            // So, if I add a lead on 1st December, and try to get November month leads, the leads added on 1st December will not be considered.
+            if(createdAt.after(start) && createdAt.before(end)) {
                 leadList.add(lead);
             }
         }
-        LOGGER.log(Level.FINE, "helper :: ReportExcelHelper :: getLeadList :: Successfully fetched all Leads registered from "  + start + " to " + end);
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportExcelHelper >> METHOD >> getLeadList from " + start + " to " + end);
         return leadList;
     }
 
@@ -137,12 +143,7 @@ public class ReportExcelHelper {
      */
     public Set<Lead> getLeads(Date start, Date end) {
 
-        Date date = new Date();
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalDate startDate = date.toInstant().atZone(zoneId).toLocalDate();
-        LocalDate endDate = end.toInstant().atZone(zoneId).toLocalDate();
-
-        LOGGER.log(Level.FINE, "Getting appropriate leads list ");
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportExcelHelper >> METHOD >> getLeads from " + start + " to " + end);
 
         List<Lead> leadList = getLeadList(start, end);
         Set<Lead> finalLeads = new HashSet<>(leadList);
@@ -171,7 +172,7 @@ public class ReportExcelHelper {
 
         finalLeads.addAll(leadsToAdd);
 
-        LOGGER.log(Level.FINE, "Successfully received a list of all leads registered from " + startDate + " to " + endDate);
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportExcelHelper >> METHOD >> getLeads from " + start + " to " + end);
         return finalLeads;
     }
 
@@ -183,13 +184,15 @@ public class ReportExcelHelper {
      * @param email logged-in user email
      * @return filtered Set of downloaded report's record according to user's role
      */
-    public Set<downloadReport> getFilteredDownloadHistory(Long id, String role, String email) {
+    public Set<downloadReportDTO> getFilteredDownloadHistory(Long id, String role, String email) {
+
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportExcelHelper >> METHOD >> getFilteredDownloadHistory for " + email + " ( " + role + " )");
 
         Set<User> users = new HashSet<>();
         Set<Long> adminIds = new HashSet<>();
-        Set<String> emailList = new HashSet<>();
+        Set<Long> userIdList = new HashSet<>();
         Set<downloadReport> filteredRecords = new HashSet<>();
-        Set<downloadReport> finalFilteredRecords = new HashSet<>();
+        Set<downloadReportDTO> finalFilteredRecords = new HashSet<>();
 
         if(role.equalsIgnoreCase("MASTER_ADMIN")) {
             for(User user : userRepo.findAll()) {
@@ -216,17 +219,20 @@ public class ReportExcelHelper {
             }
 
             for(User user : users) {
-                emailList.add(user.getEmail());
+                userIdList.add(user.getId());
             }
 
             for(downloadReport record : historyRepo.findAll()) {
-                for(String one_email : emailList) {
-                    if(record.getEmail().equals(one_email)) {
+                for(Long user_id : userIdList) {
+                    if(record.getUserId().equals(user_id)) {
                         filteredRecords.add(record);
                     }
                 }
             }
-            finalFilteredRecords.addAll(filteredRecords);
+            for(downloadReport rec : filteredRecords) {
+                downloadReportDTO dto = classToDto(rec);
+                finalFilteredRecords.add(dto);
+            }
 
         } else if(role.equalsIgnoreCase("ADMIN")) {
             for(User user : userRepo.findAll()) {
@@ -239,34 +245,48 @@ public class ReportExcelHelper {
             }
 
             for(User user : users) {
-                emailList.add(user.getEmail());
+                userIdList.add(user.getId());
             }
 
             for(downloadReport record : historyRepo.findAll()) {
-                for(String one_email : emailList) {
-                    if(record.getEmail().equals(one_email)) {
+                for(Long user_id : userIdList) {
+                    if(record.getUserId().equals(user_id)) {
                         filteredRecords.add(record);
                     }
                 }
             }
-            finalFilteredRecords.addAll(filteredRecords);
+            for(downloadReport rec : filteredRecords) {
+                downloadReportDTO dto = classToDto(rec);
+                finalFilteredRecords.add(dto);
+            }
 
-        } else if(role.equalsIgnoreCase("USER")) {
+        } else if(role.equalsIgnoreCase("USER") || role.equalsIgnoreCase("BASIC")) {
             for(downloadReport record : historyRepo.findAll()) {
-                if(record.getEmail().equals(email)) {
+                Long uid = record.getUserId();
+                String user_email = getEmailByUserId(uid);
+                if(user_email.equals(email)) {
                     filteredRecords.add(record);
                 }
             }
-            finalFilteredRecords.addAll(filteredRecords);
+            for(downloadReport rec : filteredRecords) {
+                downloadReportDTO dto = classToDto(rec);
+                finalFilteredRecords.add(dto);
+            }
         }
+
         if(!finalFilteredRecords.isEmpty()) {
-            LOGGER.log(Level.FINE, "Successfully generated list of leads according to logged-in user's role");
+            LOGGER.log(Level.INFO, "INTERMEDIATE: CLASS >> ReportExcelHelper >> METHOD >> " +
+                    "getFilteredDownloadHistory for " + email + " ( " + role + " )");
+            LOGGER.log(Level.INFO, "END: CLASS >> ReportExcelHelper >> METHOD >> getFilteredDownloadHistory for "
+                    + email + " ( " + role + " )");
             return finalFilteredRecords;
 
         } else {
-            LOGGER.log(Level.FINE, "helper :: ReportExcelHelper :: Could not generate list of leads according to logged-in user's role, no leads registered");
+            LOGGER.log(Level.WARNING, "WARNING: CLASS >> ReportExcelHelper >> METHOD >> " +
+                    "getFilteredDownloadHistory for " + email + " ( " + role + " )");
             throw new ReportException(ErrorCode.EMPTY_LEAD_LIST);
         }
+
     }
 
 
@@ -276,6 +296,9 @@ public class ReportExcelHelper {
      * @return a String containing name of user
      */
     public String getName(String email) {
+
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportExcelHelper >> METHOD >> getName for " + email);
+
         String name = null;
         for(User user : userRepo.findAll()) {
             if(user.getEmail().equals(email)) {
@@ -285,9 +308,48 @@ public class ReportExcelHelper {
             }
         }
         if(name == null) {
-            LOGGER.log(Level.FINE, "helper :: ReportExcelHelper :: getName :: Email not found");
+            LOGGER.log(Level.WARNING, "WARNING:  CLASS >> ReportExcelHelper >> METHOD >> getName for " + email + " >> Warning: Email not Found");
         }
-        LOGGER.log(Level.FINE, "helper :: ReportExcelHelper :: getName :: Successfully fetched User name using email");
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportExcelHelper >> METHOD >> getName for " + email);
         return name;
+    }
+
+
+    /**
+     * This method fetch returns email by passing userId as input parameter (required in Report Controller)
+     * @param userId userId
+     * @return email
+     */
+    public String getEmailByUserId(long userId) {
+
+        LOGGER.log(Level.INFO, "START: CLASS >> ReportExcelHelper >> METHOD >> getEmailByUserId with userId " + userId);
+        String email = null;
+        for(User user : userRepo.findAll()) {
+            if(user.getId().equals(userId)) {
+                email = user.getEmail();
+            }
+        }
+        LOGGER.log(Level.INFO, "END: CLASS >> ReportExcelHelper >> METHOD >> getEmailByUserId with userId " + userId);
+        return email;
+    }
+
+    // Method to convert class to DTO
+    public downloadReportDTO classToDto(downloadReport record) {
+        downloadReportDTO dto = new downloadReportDTO();
+        if(record == null) {
+            return null;
+        } else {
+            Long userid = record.getUserId();
+            for(User user : userRepo.findAll()) {
+                if(user.getId().equals(userid)) {
+                    dto.setUserName(user.getFirstName() + " " + user.getLastName());
+                    break;
+                }
+            }
+            dto.setDownloadedAt(record.getDownloadedAt());
+            dto.setDateRange(record.getDateRange());
+            dto.setStatus(record.getStatus());
+        }
+        return dto;
     }
 }

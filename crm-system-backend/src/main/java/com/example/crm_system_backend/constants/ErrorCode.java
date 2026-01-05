@@ -53,12 +53,15 @@ public enum ErrorCode {
     EMPTY_LEAD_LIST("ELL", "Empty Lead List", HttpStatus.NOT_FOUND),
     UPLOAD_HISTORY_NOT_FOUND("UHNF", "Upload History Not Found" , HttpStatus.NOT_FOUND ),
     FILE_EMPTY_EXCEPTION("FE", "File Empty Exception" , HttpStatus.BAD_REQUEST ),
+    EMAIL_NOT_FOUND("ENF", "User with this email is not found", HttpStatus.NOT_FOUND),
+
+    INVALID_USER_ID("IUI", "Invalid user id", HttpStatus.CONFLICT ),
 
     // For testing
     ROLE_MISSING("RM", "User role is missing", HttpStatus.BAD_REQUEST ),
     USER_ID_MISSING("UM", "User id is missing", HttpStatus.BAD_REQUEST ),
-    EMAIL_MISSING("UM", "User email is missing", HttpStatus.BAD_REQUEST );
-
+    EMAIL_MISSING("UM", "User email is missing", HttpStatus.BAD_REQUEST ),
+    FAILED_TO_SAVE_IN_DB("FTSID", "Failed to save data in database", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

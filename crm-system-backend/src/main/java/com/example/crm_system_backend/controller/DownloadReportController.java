@@ -1,8 +1,6 @@
 package com.example.crm_system_backend.controller;
 
-import com.example.crm_system_backend.constants.ErrorCode;
-import com.example.crm_system_backend.entity.downloadReport;
-import com.example.crm_system_backend.exception.ReportException;
+import com.example.crm_system_backend.dto.downloadReportDTO;
 import com.example.crm_system_backend.helper.ReportExcelHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +29,7 @@ public class DownloadReportController {
     /**
      * Retrieves the download history records filtered based on the role, user ID, and email
      * of the logged-in user. This endpoint is accessible via HTTP GET request at the
-     * "/getDownloadedRecordHistory" endpoint.
+     * /getDownloadedRecordHistory" endpoint.
      * @param request the HTTP servlet request containing attributes such as role, userId,
      *                and email of the logged-in user
      * @return a ResponseEntity containing a set of filtered downloadReport objects
@@ -66,7 +64,7 @@ public class DownloadReportController {
     })
 
     @GetMapping("/getDownloadedRecordHistory")
-    public ResponseEntity<Set<downloadReport>> getAllHistory(HttpServletRequest request) {
+    public ResponseEntity<Set<downloadReportDTO>> getAllHistory(HttpServletRequest request) {
 
         Object role = request.getAttribute("role");
         Object id = request.getAttribute("userId");
@@ -76,8 +74,7 @@ public class DownloadReportController {
         Long loggedInUserId = (Long) id;
         String loggedInUserEmail = (String) email;
 
-//       TODO : Use DTO class instead of entity class to transfer the data to UI.
-        Set<downloadReport> filteredHistoryRecords = helper.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
+        Set<downloadReportDTO> filteredHistoryRecords = helper.getFilteredDownloadHistory(loggedInUserId, loggedInUserRole, loggedInUserEmail);
         LOGGER.log(Level.INFO, "Generated filtered download history of logged in user");
         return ResponseEntity.ok(filteredHistoryRecords);
     }

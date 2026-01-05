@@ -31,8 +31,6 @@ public class LeadController {
     private static final Logger log = LoggerFactory.getLogger(LeadController.class);
 
     private final LeadHandler leadHandler;
-    @Autowired
-    private GeneralUtils generalUtils;
 
 
     @Autowired
@@ -60,15 +58,15 @@ public class LeadController {
     })
     @GetMapping
     public ResponseEntity<List<LeadDto>> getAllLeads(
-            @Parameter(description = "User ID to filter leads") @RequestParam(required = false) String id,
+            @Parameter(description = "User ID to filter leads") @RequestParam(required = false) Long userId,
             @Parameter(description = "Email to filter leads") @RequestParam(required = false) String email) {
 
         log.info("Enter: LeadController.getAllLeads");
-        Long userId = generalUtils.unmaskUserId(id);
+        long uid = GeneralUtils.unmaskOnId(userId);
 
-        if (userId != null) {
-            log.info("LeadController.getLeads By User ID: {}", userId);
-            return ResponseEntity.ok(leadHandler.getLeadsByUser(userId));
+        if (uid != 0) {
+            log.info("LeadController.getLeads By User ID: {}", uid);
+            return ResponseEntity.ok(leadHandler.getLeadsByUser(uid));
         }
 
         if (email != null) {
@@ -165,10 +163,10 @@ public class LeadController {
     @PostMapping("/bulk")
     public ResponseEntity<?> bulkImport(
             @Parameter(description = "File containing lead data") @RequestParam MultipartFile file,
-            @Parameter(description = "ID of the user performing the import") @RequestParam String id) {
+            @Parameter(description = "ID of the user performing the import") @RequestParam Long userId) {
 
         log.info("Enter: LeadController.bulkImport");
-        Long userId = generalUtils.unmaskUserId(id);
+        Long uid = GeneralUtils.unmaskOnId(userId);
         leadHandler.bulkUpload(file, userId);
         log.info("Exit: LeadController.bulkImport");
         return ResponseEntity.ok("Bulk upload successful");

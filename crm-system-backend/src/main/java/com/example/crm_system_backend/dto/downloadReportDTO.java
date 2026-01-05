@@ -12,20 +12,20 @@ public class downloadReportDTO {
     private String downloadedAt;
     private String dateRange;
     private String status;
-    private String email;
     private User user;
+
+    public downloadReportDTO() {}
+
+    public downloadReportDTO(Long id, User userId) {
+        this.id = id;
+        user = userId;
+    }
 
     public String toString(){
         return "\nID: " + id +
-                "\nUser Email: " + userName +
+                "\nUsername: " + userName +
                 "\nDownloaded At: " + downloadedAt +
                 "\nstartRange: " + dateRange +
                 "\nstatus: " + status;
-    }
-
-    public downloadReportDTO(Long id, String email, User user){
-        this.id = id;
-        this.email = email;
-        this.user = user;
     }
 }

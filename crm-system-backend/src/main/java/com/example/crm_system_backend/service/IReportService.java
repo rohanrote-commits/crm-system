@@ -23,6 +23,6 @@ public interface IReportService {
 
     void perUserReport(CellStyle head_style, CellStyle header_style, CellStyle data_style,
                        Sheet sheet, String[] headers, int columnCount,
-                       List<Lead> leads);
+                       List<Lead> leads, Date start, Date end);
 
 }

@@ -1,6 +1,7 @@
 package com.example.crm_system_backend.dto;
 
 import com.example.crm_system_backend.constants.Roles;
+import com.example.crm_system_backend.utils.GeneralUtils;
 import lombok.Data;
 
 @Data

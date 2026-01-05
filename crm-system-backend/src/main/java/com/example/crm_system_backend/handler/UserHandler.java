@@ -19,7 +19,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +36,8 @@ public class UserHandler implements IHandler<UserDTO> {
     private AuthHandler authHandler;
     @Autowired
     private UserExcelHelper userExcelHelper;
-
     @Autowired
     private UploadHistoryService uploadHistoryService;
-
     @Autowired
     private ErrorRecordHandler errorRecordHandler;
 
@@ -57,6 +54,7 @@ public class UserHandler implements IHandler<UserDTO> {
     @Override
     public UserDTO save(UserDTO userDTO) {
         log.info("Enter : UserHandler:save");
+
         if (userService.checkUserByEmail(userDTO.getEmail())) {
             log.error("Email already exists: {}", userDTO.getEmail());
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);

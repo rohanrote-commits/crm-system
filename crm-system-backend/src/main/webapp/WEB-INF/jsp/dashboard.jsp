@@ -216,7 +216,7 @@
                                         <label class="form-check-label" for="modGSTR">GSTR</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="ITC Reconsilation" id="modITC" name="interestedModules">
+                                        <input class="form-check-input" type="checkbox" value="ITC Reconciliation" id="modITC" name="interestedModules">
                                         <label class="form-check-label" for="modITC">ITC Reconciliation</label>
                                     </div>
                                     <div class="form-check">
